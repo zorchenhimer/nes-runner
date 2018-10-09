@@ -1,0 +1,74 @@
+= basics
+    mapper MMC1 w/ battery backed PRG RAM
+    selectable difficulties/modes
+        easy
+        normal
+        hard
+        "classic" no powerups/downs
+    side scrolling runner
+    jumping
+        controllable height
+    ducking?
+    infinitely scrolling RNG map
+    PRNG for obstacles
+        have manually enterable seed option
+        seed inputs
+            initial seed frame counting and button presses
+            previous seeds (saved in ram)
+            previous high score data?
+    character selection
+    gravity handling of some sort
+    powerups?
+        ;double jump for higher platforms?
+        point multiplier?
+    powerdowns?
+        ground speedup?
+        swap palettes an hide player sprite
+    powerup/down
+        move player back and forth on playfield
+    obstacles
+        boxes etc
+        pitfalls?
+        collision detection with BG layer
+    high scores stored in ram
+        initials or name stored with score
+        with seed for that high score?
+    konami code that kills player?
+        spawns a wall or pit that can't be jumped over
+    hard mode where the player sprite isn't at the left edge of screen
+
+    background music
+    SFX
+
+= gamestates
+    title
+        "character" select
+        seed input
+        change gamestate to:
+            high scores
+            credits
+            gameplay
+    game over
+        change gamestate to:
+            high scores if applicable
+            credits?
+    gameplay
+        "paused" sub-state
+        change gamestate to:
+            game over
+    high scores
+        sub-states:
+            new high score
+            display high scores
+    credits
+
+= credits
+    in it's own CHR and PRG bank
+    vertically scrolling?
+        different palettes for tier 1/2/3 subs?
+        static header or footer
+
+= Map format
+    map column 10 meta tiles high
+    ground 2 MT high
+    map is 32 MT wide (two nametables)
