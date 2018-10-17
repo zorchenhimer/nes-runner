@@ -449,6 +449,11 @@ InitTitle:
 
     jsr LoadPalette
 
+    lda #$20
+    sta $2006
+    lda #$00
+    sta $2006
+
     ldx #0
     ldy #0
     lda #' '
