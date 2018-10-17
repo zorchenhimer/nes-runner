@@ -68,6 +68,7 @@ SkipNMI:        .res 1
 VertDraw:       .res 1
 
 PaletteAddr:    .res 2
+TmpCounter:     .res 1
 
 PPU_CTRL_VERT   = %10010100
 PPU_CTRL_HORIZ  = %10010000

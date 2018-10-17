@@ -96,11 +96,31 @@ Game_Init:
     cpx #32
     bne @statusBarRow2
 
+    lda StatusPlaceholder
+    sta TmpCounter
+    inc TmpCounter
+
+    lda #$22
+    sta $2006
+    lda #$EA
+    sta $2006
+
+    ldx #1
+@statusLoop:
+    lda StatusPlaceHolder, x
+    sta $2007
+    inx
+    dec TmpCounter
+    bne @statusLoop
+
     lda #PPU_MASK
     sta $2001
     lda #0
     sta SkipNMI
     rts
+
+StatusPlaceholder:
+    .byte $0F, "Score 5 210 431"
 
 ;; End of Game_Init
 
