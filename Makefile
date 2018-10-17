@@ -15,7 +15,7 @@ CHR = runner.chr credits.chr
 # List of all the sources files
 SOURCES = $(NAME).asm nes2header.inc game.asm \
 		  utils.asm utils_ram.asm \
-		  credits.asm credits_ram.asm
+		  credits.asm credits_ram.asm credits_data.i
 
 # misc
 RM = rm
@@ -34,14 +34,14 @@ cleanSym:
 bin/:
 	mkdir bin
 
-bin/$(NAME).o: bin/ $(SOURCES)
+bin/$(NAME).o: bin/ $(SOURCES) $(CHR)
 	$(CA) -g \
 		-t nes \
 		-o bin/$(NAME).o\
 		-l bin/$(NAME).lst \
 		$(NAME).asm
 
-bin/$(NAME).nes: bin/$(NAME).o $(CHR) $(NESCFG)
+bin/$(NAME).nes: bin/$(NAME).o $(NESCFG)
 	$(LD) -o bin/$(NAME).nes \
 		-C $(NESCFG) \
 		-m bin/$(NAME).nes.map -vm \
@@ -52,4 +52,8 @@ bin/$(NAME).nes: bin/$(NAME).o $(CHR) $(NESCFG)
 bin/$(NAME).mlb: bin/$(NAME).nes.db
 	#perl.exe ../nes-symbols.pl bin/$(NAME).labels
 	../tools/ld65-labels/ld65-labels.exe bin/$(NAME).nes.db
+
+credits_data.i: subscriber-list.csv
+	# TODO: improve this utility
+	go run ../credits/generate-credits.go
 

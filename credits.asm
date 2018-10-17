@@ -188,6 +188,7 @@ crDN_outer:
     ldy #0
     lda (cr_nameAddress), y
     sta cr_nameLength
+    inc cr_nameLength
     iny
 
 crDN_inner:
