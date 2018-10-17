@@ -27,9 +27,9 @@ all: bin/$(NAME).nes bin/$(NAME).mlb
 symbols: cleanSym bin/$(NAME).mlb
 
 clean:
-	$(RM) bin/*.*
+	-$(RM) bin/*.*
 cleanSym:
-	$(RM) bin/*.mlb
+	-$(RM) bin/*.mlb
 
 bin/:
 	mkdir bin
@@ -49,6 +49,7 @@ bin/$(NAME).nes: bin/$(NAME).o $(CHR) $(NESCFG)
 		--dbgfile bin/$(NAME).nes.db \
 		bin/$(NAME).o
 
-bin/$(NAME).mlb: bin/$(NAME).nes
-	perl.exe ../nes-symbols.pl bin/$(NAME).labels
+bin/$(NAME).mlb: bin/$(NAME).nes.db
+	#perl.exe ../nes-symbols.pl bin/$(NAME).labels
+	../tools/ld65-labels/ld65-labels.exe bin/$(NAME).nes.db
 
