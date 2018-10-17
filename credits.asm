@@ -6,15 +6,14 @@ Credits_Init:
     lda #PPU_CTRL_HORIZ
     sta $2000
 
+    lda #$00
+    sta $2001
 
     lda #<credits_palette
     sta PaletteAddr
     lda #>credits_palette
     sta PaletteAddr+1
     jsr LoadPalette
-
-    lda #$00
-    sta $2001
 
     lda #$20
     sta $2006

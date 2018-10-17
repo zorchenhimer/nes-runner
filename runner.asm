@@ -1,5 +1,18 @@
 .case -
 
+; TODO
+;   Title Screen
+;       start with "start", "high scores", and maybe "credits"
+;       make this menu easily extensible
+;   Player Sprite
+;       Simple jump physics (collision can come later)
+;   Better map generation
+;   Background art (mountains or some shit.  happy little trees?)
+;   Score display
+;       include distance/timer?
+;   High Scores table
+;   Sound engine
+
 .include "nes2header.inc"
 nes2mapper 1
 nes2prg 4 * 16 * 1024
@@ -80,7 +93,7 @@ rng_seed:       .res 2
     ; non-zeropage ram
 
 meta_columns:       .res 128
-tile_column_buffer: .res 40
+tile_column_buffer: .res 16
 PaletteRAM:         .res 32
 
 .segment "OAM"
@@ -163,6 +176,7 @@ DoFrame:
 
     ; less than (GS_GAME)
     jsr FrameStart
+    jmp WaitFrame
 
 @credits:
     lda #BUTTON_A
@@ -242,6 +256,7 @@ NMI:
     lda current_gamestate
     cmp #GS_GAME
     bne @ScreenA
+    jsr Draw_Column
     jsr update_scroll
 
     jmp @after_scroll
@@ -256,19 +271,6 @@ NMI:
     sta $2000
 
 @after_scroll:
-
-;    lda VertDraw
-;    beq @horiz
-;
-;    lda #PPU_CTRL_VERT
-;    sta $2000
-;    jmp @done_for_real
-;
-;@horiz:
-;    lda #PPU_CTRL_HORIZ
-;    sta $2000
-;
-;@done_for_real:
 @end:
     dec sleeping
     pla

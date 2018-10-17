@@ -69,6 +69,7 @@
         static header or footer
 
 = Map format
-    map column 10 meta tiles high
+    map column 4 meta tiles high (2 ground, 2 air/obstacles)
+        Sky is draw once and forgotten
     ground 2 MT high
     map is 32 MT wide (two nametables)

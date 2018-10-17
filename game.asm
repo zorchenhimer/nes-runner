@@ -3,11 +3,13 @@ Game_Init:
     lda #PPU_MASK_OFF
     sta $2001
 
-    ; TODO: load from ram
+    lda rng_seed
+    bne @skip_rng_init
     lda #'Z'  ;$21
     sta rng_seed
     lda #'o'  ;$AB
     sta rng_seed+1
+@skip_rng_init:
 
     ; prepare sprite zero
     lda #159
@@ -99,6 +101,8 @@ Game_Init:
     lda #0
     sta SkipNMI
     rts
+
+;; End of Game_Init
 
 DedInit:
     rts
@@ -273,114 +277,55 @@ generate_column:
     rts
 
 Load_column:
-    ; put the sky tiles in the buffer
-    ldx #19
-@skyLoop:
-    lda #$80
-    sta tile_column_buffer, x
-    dex
-    lda #$90
-    sta tile_column_buffer, x
-    dex
-    cpx #08
-    bmi @skyDone
-    jmp @skyLoop
 
-@skyDone:
+; load up a meta tile from map data with current meta_column_offset
+; write all four tiles to buffer in one loop
+
+    ; find the current meta column
     lda meta_column_offset
+    ; multiply by four.  each column is for meta tiles.
     asl a
     asl a
     sta map_meta_tmp
-    ;lda #0
-    ;sta map_meta_tmp
+    tax
 
-    ldy #7
-loadTile:
-    ; load the meta tile
-    ; meta tile ID = meta_columns * meta_column_offset
+    ldy #0
+@tileLoop:
+    ; Load meta tile index
     ldx map_meta_tmp
     lda meta_columns, x
     asl a
     tax
 
-    ; meta_tile_addr = MetaTiles + meta tile ID
+    ; load address of meta tile definition
     lda MetaTiles, x
     sta meta_tile_addr
     lda MetaTiles+1, x
     sta meta_tile_addr+1
 
+    ; transfer meta tile's tiles to buffer
     ldx #0
     lda (meta_tile_addr, x)
     sta tile_column_buffer, y
-    inc meta_tile_addr
-    dey
-    lda (meta_tile_addr, x)
-    sta tile_column_buffer, y
 
-    ; tile 00 = meta_tile_addr + 0
-    ; tile 01 = meta_tile_addr + 1
-    ; tile 02 = meta_tile_addr + 2
-    ; tile 03 = meta_tile_addr + 3
+    inc meta_tile_addr
+    lda (meta_tile_addr, x)
+    sta tile_column_buffer+1, y
+
+    inc meta_tile_addr
+    lda (meta_tile_addr, x)
+    sta tile_column_buffer+8, y
+
+    inc meta_tile_addr
+    lda (meta_tile_addr, x)
+    sta tile_column_buffer+9, y
 
     inc map_meta_tmp
-;loadNext:
-    dey
-    bmi @tileDone
-    jmp loadTile
-@tileDone:
+    iny
+    iny
+    cpy #8
+    bne @tileLoop
 
-    ;lda meta_tile_addr
-    ;clc
-    ;adc #20
-    ;sta meta_tile_addr
-
-    ldx #39
-@skyLoop2:
-    lda #$81
-    sta tile_column_buffer, x
-    dex
-    lda #$91
-    sta tile_column_buffer, x
-    dex
-    cpx #27
-    beq @skyDone2
-    jmp @skyLoop2
-
-@skyDone2:
-    lda meta_column_offset
-    asl a
-    asl a
-    sta map_meta_tmp
-
-    ldy #7
-loadTile2:
-    ldx map_meta_tmp
-    lda meta_columns, x
-    asl a
-    tax
-
-    ; meta_tile_addr = MetaTiles + meta tile ID
-    lda MetaTiles, x
-    sta meta_tile_addr
-    lda MetaTiles+1, x
-    sta meta_tile_addr+1
-
-    ldx #0
-    inc meta_tile_addr
-    inc meta_tile_addr
-    lda (meta_tile_addr, x)
-    sta tile_column_buffer+20, y
-    inc meta_tile_addr
-    dey
-    lda (meta_tile_addr, x)
-    sta tile_column_buffer+20, y
-
-    inc map_meta_tmp
-;loadNext2:
-    dey
-    bmi @tileDone2
-    jmp loadTile2
-@tileDone2:
     rts
 
 Draw_Column:
@@ -394,53 +339,59 @@ Draw_Column:
     bcs secondNametable
 
     ; Address for first nametable starting at $2000
-    lda #$20
+    lda #$21
     sta $2006
     lda meta_column_offset
     asl a
+    clc
+    adc #$80
     sta $2006
 
     jmp drawCol1
 
 secondNametable:
     ; Address for second nametable starting at $2400
-    lda #$24
+    lda #$25
     sta $2006
     lda meta_column_offset
     sec
     sbc #$10
     asl a
+    clc
+    adc #$80
     sta $2006
 
 drawCol1:
-    ldx #19
+    ldx #0
     ;ldy #0
 @loop:
     lda tile_column_buffer, x
     sta $2007
-    dex
-    bmi @loopNextCol
-    jmp @loop
+    inx
+    cpx #8
+    bne @loop
 
-@loopNextCol:
+;@loopNextCol:
     lda meta_column_offset
     cmp #16
     bcs secondNametable2
 
     ; Address for first nametable starting at $2000
-    lda #$20
+    lda #$21
     sta $2006
     lda meta_column_offset
     asl a
     clc
     adc #1
+    clc
+    adc #$80
     sta $2006
 
     jmp drawCol2
 
 secondNametable2:
     ; Address for second nametable starting at $2400
-    lda #$24
+    lda #$25
     sta $2006
     lda meta_column_offset
     sec
@@ -448,15 +399,17 @@ secondNametable2:
     asl a
     clc
     adc #1
+    clc
+    adc #$80
     sta $2006
 
 drawCol2:
-    ldx #39
+    ldx #8
 @loop2:
     lda tile_column_buffer, x
     sta $2007
-    dex
-    cpx #19
+    inx
+    cpx #16
     bne @loop2
 
 @done:
