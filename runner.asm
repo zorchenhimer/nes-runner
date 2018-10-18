@@ -70,6 +70,9 @@ VertDraw:       .res 1
 PaletteAddr:    .res 2
 TmpCounter:     .res 1
 
+TitleColor:         .res 1
+TitleColor:     .res 1  ; current color, lol
+
 PPU_CTRL_VERT   = %10010100
 PPU_CTRL_HORIZ  = %10010000
 
@@ -191,6 +194,25 @@ DoFrame:
     jmp WaitFrame
 
 @title:
+
+    inc TitleColor
+    lda TitleColor
+    cmp #$1D
+    bne @t_nocolorwrap
+    lda #$11
+    sta TitleColor
+
+@t_nocolorwrap:
+
+    ; load palette into ram
+    lda TitleColor
+    sta PaletteRAM+30
+    sta PaletteRAM+29
+    sta PaletteRAM+28
+
+    lda #$0F
+    sta PaletteRAM+31
+
     lda #BUTTON_START
     sta btnPressedMask
     jsr ButtonPressedP1
@@ -455,6 +477,27 @@ InitTitle:
 
     jsr LoadPalette
 
+    lda #$3F
+    sta $2006
+    lda #$00
+    sta $2006
+
+    ;lda #0F
+    ;sta TitleColor_0F
+    lda #$11
+    sta TitleColor
+    ;sta TitleColor+1
+    ;sta TitleColor+2
+
+    lda #$0F
+    sta $2007
+    lda #$11
+    sta $2007
+    lda #$11
+    sta $2007
+    lda #$11
+    sta $2007
+
     lda #$20
     sta $2006
     lda #$00
@@ -474,6 +517,22 @@ InitTitle:
     cpy #$1E
     bne @loop
 
+    lda #$20
+    sta $2006
+    lda #$CA
+    sta $2006
+
+    lda TitleText
+    sta TmpCounter
+    inc TmpCounter
+    ldx #1
+@loop2:
+    lda TitleText, x
+    sta $2007
+    inx
+    dec TmpCounter
+    bne @loop2
+
     lda #PPU_MASK
     sta $2001
 
@@ -485,6 +544,9 @@ InitTitle:
     lda #0
     sta SkipNMI
     rts
+
+TitleText:
+    .byte $07, $22, "runner", $22
 
 LoadPalette:
     ldx #31
@@ -517,7 +579,7 @@ UpdatePalette:
     rts
 
 TitlePalette:
-    .byte $0F,$34,$14,$0F, $0F,$15,$0F,$05, $0F,$15,$0F,$0F, $0F,$11,$11,$11
+    .byte $0F,$11,$14,$0F, $0F,$15,$0F,$05, $0F,$15,$0F,$0F, $0F,$11,$11,$11
     .byte $0F,$10,$00,$30, $0F,$05,$05,$05, $0F,$0A,$0A,$0A, $0F,$11,$11,$11
 
     .include "utils.asm"
