@@ -147,7 +147,6 @@ FrameStart:
     inc nmi_draw
 
 @waitFrame:
-    inc sleeping
 
 ; wait for vblank to end
 @loop_sprite:

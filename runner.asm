@@ -229,7 +229,9 @@ WaitFrame:
     jsr ChangeGameState
 
 @nochange:
-    inc sleeping
+    lda #1
+    sta sleeping
+    ;inc sleeping
 @loop:
     lda sleeping
     bne @loop
@@ -273,7 +275,8 @@ NMI:
 
 @after_scroll:
 @end:
-    dec sleeping
+    lda #0
+    sta sleeping
     pla
     tay
     pla
