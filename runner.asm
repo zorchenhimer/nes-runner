@@ -69,9 +69,10 @@ VertDraw:       .res 1
 
 PaletteAddr:    .res 2
 TmpCounter:     .res 1
+TmpPPUAddr:     .res 2
 
-TitleColor:         .res 1
 TitleColor:     .res 1  ; current color, lol
+TitleGameStates:.res 10 ; list of gamestates
 
 PPU_CTRL_VERT   = %10010100
 PPU_CTRL_HORIZ  = %10010000
@@ -533,6 +534,53 @@ InitTitle:
     dec TmpCounter
     bne @loop2
 
+    lda #$21
+    sta TmpPPUAddr
+    lda #$8C
+    sta TmpPPUAddr+1
+
+
+    ; Draw menu items
+    ldx #0
+    ldy #0
+@menuLoopTop:
+    lda TmpPPUAddr
+    sta $2006
+    lda TmpPPUAddr+1
+    sta $2006
+
+    ; next letter
+@menuLoopText:
+    lda TitleData, x
+    beq @textDone
+
+    sta $2007
+    inx
+    jmp @menuLoopText
+
+@textDone:
+    inx
+    lda TitleData, x
+    sta TitleGameStates, y
+    iny
+
+    inx
+    lda TitleData, x
+    beq @menuDone
+
+    ; go to the next line of text on screen
+    lda TmpPPUAddr+1
+    clc
+    adc #64
+    sta TmpPPUAddr+1
+
+    lda TmpPPUAddr
+    adc #0
+    sta TmpPPUAddr
+    jmp @menuLoopTop
+
+@menuDone:
+
     lda #PPU_MASK
     sta $2001
 
@@ -577,6 +625,11 @@ UpdatePalette:
     lda PaletteRAM
     sta $2007
     rts
+
+TitleData:
+    .byte "Start Game", $00, GS_GAME
+    .byte "Credits", $00, GS_CREDITS
+    .byte $00
 
 TitlePalette:
     .byte $0F,$11,$14,$0F, $0F,$15,$0F,$05, $0F,$15,$0F,$0F, $0F,$11,$11,$11
