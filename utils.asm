@@ -82,7 +82,8 @@ LoadPalette:
     rts
 
 UpdatePalette:
-    jsr DrawHoriz
+    lda #PPU_CTRL_HORIZ
+    sta $2000
 
     lda #$3F
     sta $2006

@@ -85,8 +85,6 @@ Game_Init:
 
     lda #PPU_CTRL_HORIZ
     sta $2000
-    lda #0
-    sta DrawVert
 
     lda #$02
     ldx #0
@@ -164,8 +162,6 @@ FrameStart:
     ; first nametable
     lda #PPU_CTRL_VERT
     sta $2000
-    lda #1
-    sta DrawVert
     rts
 
 ; Get the metacolumn from the current scroll
@@ -350,8 +346,6 @@ Load_column:
 Draw_Column:
     lda #PPU_CTRL_VERT
     sta $2000
-    lda #1
-    sta DrawVert
 
     lda meta_column_offset
     cmp #16
@@ -450,9 +444,6 @@ update_scroll:
     asl a
     adc coarse_scroll
     sta $2005
-
-    lda #1
-    sta DrawVert
 
     ; y is always 0
     lda #00

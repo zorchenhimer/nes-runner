@@ -63,7 +63,6 @@ GS_CREDITS      = 4
 PauseOn:        .res 1
 PauseOff:       .res 1
 SkipNMI:        .res 1
-VertDraw:       .res 1
 
 TmpCounter:     .res 1
 TmpPPUAddr:     .res 2
@@ -284,22 +283,6 @@ NMI:
 
 IRQ:
     rti
-
-DrawHoriz:
-    lda #0
-    sta VertDraw
-
-    lda #PPU_CTRL_HORIZ
-    sta $2000
-    rts
-
-DrawVert:
-    lda #1
-    sta VertDraw
-
-    lda #PPU_CTRL_VERT
-    sta $2000
-    rts
 
 MMC1_Setup:
     ;lda #80

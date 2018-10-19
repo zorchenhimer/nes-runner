@@ -26,7 +26,8 @@ InitTitle:
     sta SP_TITLETILE1
 
     ; set the draw orientation
-    jsr DrawHoriz
+    lda #PPU_CTRL_HORIZ
+    sta $2000
 
     lda #PPU_MASK_OFF
     sta $2001
