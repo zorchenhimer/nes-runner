@@ -1,9 +1,6 @@
 .case -
 
 ; TODO
-;   Title Screen
-;       start with "start", "high scores", and maybe "credits"
-;       make this menu easily extensible
 ;   Player Sprite
 ;       Simple jump physics (collision can come later)
 ;   Better map generation
@@ -297,7 +294,8 @@ DoFrame:
     jsr ButtonPressedP1
     beq @t_nostart
 
-    lda #GS_GAME
+    ldx TitleIndex
+    lda TitleGameStates, x
     sta current_gamestate
     inc gamestate_changed
     jmp WaitFrame
