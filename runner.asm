@@ -65,7 +65,6 @@ PauseOff:       .res 1
 SkipNMI:        .res 1
 VertDraw:       .res 1
 
-PaletteAddr:    .res 2
 TmpCounter:     .res 1
 TmpPPUAddr:     .res 2
 
@@ -444,36 +443,6 @@ ChangeGameState:
     jsr MMC1_Pattern0
     ;; Init title
     jmp InitTitle
-
-LoadPalette:
-    ldx #31
-    ldy #0
-@loop:
-    lda (PaletteAddr), y
-    sta PaletteRAM, x
-    dex
-    iny
-    cpy #32
-    bne @loop
-    rts
-
-UpdatePalette:
-    jsr DrawHoriz
-
-    lda #$3F
-    sta $2006
-    lda #$00
-    sta $2006
-    ldx #31
-@loop:
-    lda PaletteRAM, x
-    sta $2007
-    dex
-    bne @loop
-
-    lda PaletteRAM
-    sta $2007
-    rts
 
 ClearSprites:
     ldx #$00

@@ -6,6 +6,8 @@ controllerTmp:
 
 btnPressedMask:  .res 1
 
+PaletteAddr:    .res 2
+
 ; Button Constants
 BUTTON_A        = 1 << 7
 BUTTON_B        = 1 << 6
