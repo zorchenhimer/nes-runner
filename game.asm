@@ -13,16 +13,16 @@ Game_Init:
 
     ; prepare sprite zero
     lda #159
-    sta sprites
+    sta spritezero
 
     lda #$30
-    sta sprites+1
+    sta spritezero+1
 
     lda #0
-    sta sprites+2
+    sta spritezero+2
 
     lda #0
-    sta sprites+3
+    sta spritezero+3
 
     ;jsr MMC1_Setup
 

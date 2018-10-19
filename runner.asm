@@ -71,7 +71,9 @@ PaletteAddr:    .res 2
 TmpCounter:     .res 1
 TmpPPUAddr:     .res 2
 
+TitleIndex:     .res 1  ; curretly selected thing
 TitleColor:     .res 1  ; current color, lol
+TitleColor2:    .res 1
 TitleGameStates:.res 10 ; list of gamestates
 
 PPU_CTRL_VERT   = %10010100
@@ -103,7 +105,20 @@ PaletteRAM:         .res 32
 
 .segment "OAM"
     ; sprite stuff
-sprites:            .res 256
+spritezero:         .res 4
+sprites:            .res 252
+
+SP_TITLEY0      = sprites+0
+SP_TITLEY1      = sprites+4
+
+SP_TITLETILE0   = sprites+1
+SP_TITLETILE1   = sprites+5
+
+SP_TITLEATTR0   = sprites+2
+SP_TITLEATTR1   = sprites+6
+
+SP_TITLEX0      = sprites+3
+SP_TITLEX1      = sprites+7
 
 .segment "PAGE0"
     ; main game
@@ -197,11 +212,14 @@ DoFrame:
 @title:
 
     inc TitleColor
+    dec TitleColor2
     lda TitleColor
     cmp #$1D
     bne @t_nocolorwrap
     lda #$11
     sta TitleColor
+    lda #$1C
+    sta TitleColor2
 
 @t_nocolorwrap:
 
@@ -213,6 +231,12 @@ DoFrame:
 
     lda #$0F
     sta PaletteRAM+31
+    sta PaletteRAM+15
+
+    lda TitleColor2
+    sta PaletteRAM+14
+    sta PaletteRAM+13
+    sta PaletteRAM+12
 
     lda #BUTTON_START
     sta btnPressedMask
@@ -465,40 +489,59 @@ ChangeGameState:
     jmp InitTitle
 
 InitTitle:
+    ; Init the cursor sprite
+    ; Y coord
+    lda #$60
+    sta SP_TITLEY0
+    sta SP_TITLEY1
+
+    ; X coord
+    lda #$4E
+    sta SP_TITLEX0
+    lda #$56
+    sta SP_TITLEX1
+
+    ; no attributes
+    lda #$00
+    sta SP_TITLEATTR0
+    sta SP_TITLEATTR1
+
+    ; '->'
+    lda #$01        ; '-'
+    sta SP_TITLETILE0
+    lda #$02        ; '>'
+    sta SP_TITLETILE1
+
+    ; set the draw orientation
     jsr DrawHoriz
 
     lda #PPU_MASK_OFF
     sta $2001
     inc SkipNMI
 
+    ; Load the title palette's ROM addr
     lda #<TitlePalette
     sta PaletteAddr
     lda #>TitlePalette
     sta PaletteAddr+1
 
+    ; Then load ROM -> RAM
     jsr LoadPalette
 
+    ; RAINBOW
     lda #$3F
     sta $2006
     lda #$00
     sta $2006
 
-    ;lda #0F
-    ;sta TitleColor_0F
     lda #$11
     sta TitleColor
-    ;sta TitleColor+1
-    ;sta TitleColor+2
 
-    lda #$0F
-    sta $2007
-    lda #$11
-    sta $2007
-    lda #$11
-    sta $2007
-    lda #$11
-    sta $2007
+    lda #$1C
+    sta TitleColor2
+    ; /RAINBOW
 
+    ; clear screen
     lda #$20
     sta $2006
     lda #$00
@@ -518,6 +561,7 @@ InitTitle:
     cpy #$1E
     bne @loop
 
+    ; Draw Title
     lda #$20
     sta $2006
     lda #$CA
@@ -539,7 +583,6 @@ InitTitle:
     lda #$8C
     sta TmpPPUAddr+1
 
-
     ; Draw menu items
     ldx #0
     ldy #0
@@ -559,11 +602,13 @@ InitTitle:
     jmp @menuLoopText
 
 @textDone:
+    ; Load gamestate into array in RAM
     inx
     lda TitleData, x
     sta TitleGameStates, y
     iny
 
+    ; peek next byte for NUL byte
     inx
     lda TitleData, x
     beq @menuDone
