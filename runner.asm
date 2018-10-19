@@ -39,6 +39,7 @@ nes2end
 
 sleeping:       .res 1
 nmi_draw:       .res 1
+frame_odd:      .res 1
 
 map_column_addr:    .res 2  ; start address of the meta_columns
 meta_tile_addr:     .res 2  ; tiles that make up the meta tile (eg Meta_Sky, Meta_Ground, etc)
@@ -221,6 +222,10 @@ DoFrame:
 
 @title:
 
+    ; only update colors every other frame
+    lda frame_odd
+    beq @t_nocolorwrap
+
     inc TitleColor
     dec TitleColor2
     lda TitleColor
@@ -275,6 +280,18 @@ DoFrame:
     sta SP_TITLEY1
 
 @t_noselect:
+
+    lda frame_odd
+    bne @tf_setev
+
+    lda #1
+    sta frame_odd
+    jmp @tf_wot
+@tf_setev:
+    lda #0
+    sta frame_odd
+
+@tf_wot:
     lda #BUTTON_START
     sta btnPressedMask
     jsr ButtonPressedP1
