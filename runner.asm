@@ -487,6 +487,11 @@ ChangeGameState:
     lda #0
     sta gamestate_changed
 
+    lda #PPU_MASK_OFF
+    sta $2001
+
+    jsr ClearSprites
+
     lda current_gamestate
     beq @title
 
@@ -711,6 +716,15 @@ UpdatePalette:
 
     lda PaletteRAM
     sta $2007
+    rts
+
+ClearSprites:
+    ldx #$00
+@loop:
+    lda #$00
+    sta $0200, x
+    inx
+    bne @loop
     rts
 
 TitleData:
