@@ -15,7 +15,7 @@ Game_Init:
     lda #159
     sta spritezero
 
-    lda #$30
+    lda #$03
     sta spritezero+1
 
     lda #0
