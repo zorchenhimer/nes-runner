@@ -444,14 +444,5 @@ ChangeGameState:
     ;; Init title
     jmp InitTitle
 
-ClearSprites:
-    ldx #$00
-@loop:
-    lda #$00
-    sta $0200, x
-    inx
-    bne @loop
-    rts
-
     .include "title.asm"
     .include "utils.asm"

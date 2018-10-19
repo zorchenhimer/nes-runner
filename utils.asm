@@ -98,3 +98,13 @@ UpdatePalette:
     lda PaletteRAM
     sta $2007
     rts
+
+ClearSprites:
+    ldx #$00
+@loop:
+    lda #$00
+    sta $0200, x
+    inx
+    bne @loop
+    rts
+
