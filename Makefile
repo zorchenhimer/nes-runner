@@ -15,6 +15,7 @@ CHR = runner.chr credits.chr
 # List of all the sources files
 SOURCES = $(NAME).asm nes2header.inc game.asm \
 		  utils.asm utils_ram.asm \
+		  title.asm \
 		  credits.asm credits_ram.asm credits_data.i
 
 # misc
