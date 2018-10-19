@@ -72,6 +72,7 @@ TmpCounter:     .res 1
 TmpPPUAddr:     .res 2
 
 TitleIndex:     .res 1  ; curretly selected thing
+TitleLength:    .res 1  ; number of menu options
 TitleColor:     .res 1  ; current color, lol
 TitleColor2:    .res 1
 TitleGameStates:.res 10 ; list of gamestates
@@ -198,11 +199,20 @@ DoFrame:
     jsr FrameStart
     jmp WaitFrame
 
+@ded:
+    jmp @RealDed
+
+@highscore:
+    jmp @RealHS
+
+@wf:
+    jmp WaitFrame
+
 @credits:
     lda #BUTTON_A
     sta btnPressedMask
     jsr ButtonPressedP1
-    beq WaitFrame
+    beq @wf
 
     lda #GS_TITLE
     sta current_gamestate
@@ -238,6 +248,33 @@ DoFrame:
     sta PaletteRAM+13
     sta PaletteRAM+12
 
+    lda #BUTTON_SELECT
+    sta btnPressedMask
+    jsr ButtonPressedP1
+    beq @t_noselect
+
+    inc TitleIndex
+    lda TitleIndex
+    cmp TitleLength
+    bcc @t_sel_nowrap
+
+    ; wrap the index around to zero
+    lda #0
+    sta TitleIndex
+
+@t_sel_nowrap:
+    ; calculate Y for cursor
+    lda TitleIndex
+    asl a
+    asl a
+    asl a
+    asl a
+    clc
+    adc #$60
+    sta SP_TITLEY0
+    sta SP_TITLEY1
+
+@t_noselect:
     lda #BUTTON_START
     sta btnPressedMask
     jsr ButtonPressedP1
@@ -259,11 +296,11 @@ DoFrame:
     inc gamestate_changed
     jmp WaitFrame
 
-@ded:
+@RealDed:
     nop
     jmp WaitFrame
 
-@highscore:
+@RealHS:
     nop
     jmp WaitFrame
 
@@ -489,6 +526,9 @@ ChangeGameState:
     jmp InitTitle
 
 InitTitle:
+    lda #0
+    sta TitleIndex
+
     ; Init the cursor sprite
     ; Y coord
     lda #$60
@@ -625,6 +665,8 @@ InitTitle:
     jmp @menuLoopTop
 
 @menuDone:
+    tya
+    sta TitleLength
 
     lda #PPU_MASK
     sta $2001
@@ -674,6 +716,7 @@ UpdatePalette:
 TitleData:
     .byte "Start Game", $00, GS_GAME
     .byte "Credits", $00, GS_CREDITS
+    .byte "WOT", $00, GS_TITLE
     .byte $00
 
 TitlePalette:
