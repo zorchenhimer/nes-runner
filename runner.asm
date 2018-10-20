@@ -78,6 +78,17 @@ TitleColor:     .res 1  ; current color, lol
 TitleColor2:    .res 1
 TitleGameStates:.res 10 ; list of gamestates
 
+PlayerScore0:   .res 1
+PlayerScore1:   .res 1
+PlayerScore2:   .res 1
+
+PlayerText0: .res 1
+PlayerText1: .res 1
+PlayerText2: .res 1
+PlayerText3: .res 1
+PlayerText4: .res 1
+PlayerText5: .res 1
+
 PPU_CTRL_VERT   = %10010100
 PPU_CTRL_HORIZ  = %10010000
 
@@ -261,6 +272,7 @@ NMI:
 
     ; draw the next column if needed
     jsr Draw_Column
+    jsr Draw_Score
 
     ; scroll in the screen
     jsr update_scroll

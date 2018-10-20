@@ -176,7 +176,7 @@ Game_Init:
     rts
 
 StatusPlaceholder:
-    .byte $0F, "Score 5 210 431"
+    .byte $0F, "Score 000,000"
 
 ;; End of Game_Init
 
@@ -189,6 +189,66 @@ HSInit:
 Game_Frame:
     ; increment the screen position
     inc calc_scroll
+
+    ; player score is stored in three 100-base bytes
+    inc PlayerScore0
+    lda PlayerScore0
+    cmp #100
+    bcc @noPSWrap
+
+    sec
+    sbc #100
+    sta PlayerScore0
+
+    inc PlayerScore1
+    lda PlayerScore1
+    cmp #100
+    bcc @noPSWrap
+
+    sec
+    sbc #100
+    sta PlayerScore1
+
+    inc PlayerScore2
+@noPSWrap:
+    ; end of the calc
+
+    lda #$30
+    sta PlayerText0
+    sta PlayerText1
+    sta PlayerText2
+    sta PlayerText3
+
+    lda #0
+    sta PlayerText4
+
+    lda PlayerScore0
+    sta PlayerText5
+
+@ps_Text1_10:
+    lda PlayerText5
+    cmp #10
+    bcs @ps_Text1_sub10
+    jmp @ps_Text1_Ones
+
+@ps_Text1_sub10:
+    inc PlayerText4
+    lda PlayerText5
+    sec
+    sbc #10
+    sta PlayerText5
+    jmp @ps_Text1_10
+
+@ps_Text1_ones:
+    lda PlayerText5
+    clc
+    adc #$30
+    sta PlayerText5
+
+    lda PlayerText4
+    clc
+    adc #$30
+    sta PlayerText4
 
     jsr UpdatePlayer
 
@@ -223,6 +283,33 @@ Game_Frame:
     lda #PPU_CTRL_VERT
     sta $2000
     jmp WaitFrame
+
+Draw_Score:
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+
+    lda #$22
+    sta $2006
+    lda #$F0
+    sta $2006
+
+    lda PlayerText0
+    sta $2007
+    lda PlayerText1
+    sta $2007
+    lda PlayerText2
+    sta $2007
+    lda #','
+    sta $2007
+
+    lda PlayerText3
+    sta $2007
+    lda PlayerText4
+    sta $2007
+    lda PlayerText5
+    sta $2007
+
+    rts
 
 UpdatePlayer:
     lda controller1
