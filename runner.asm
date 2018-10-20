@@ -65,7 +65,10 @@ PauseOff:       .res 1
 SkipNMI:        .res 1
 
 TmpCounter:     .res 1
+TmpAttr:        .res 1
 TmpPPUAddr:     .res 2
+TmpY:           .res 1
+TmpX:           .res 1
 
 TitleIndex:     .res 1  ; curretly selected thing
 TitleLength:    .res 1  ; number of menu options

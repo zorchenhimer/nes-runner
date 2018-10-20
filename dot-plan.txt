@@ -73,3 +73,13 @@
         Sky is draw once and forgotten
     ground 2 MT high
     map is 32 MT wide (two nametables)
+
+= player sprite
+    keep track of one point for the jump math/physics (lower right corner?)
+    use this point to determine x/y of the sprites
+    load up the sprite ID's once
+    load up the X coords once for the sprites
+    only update Y each frame
+
+    do the jump thing
+    height dependent on button held length

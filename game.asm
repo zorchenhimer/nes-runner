@@ -24,7 +24,67 @@ Game_Init:
     lda #0
     sta spritezero+3
 
-    ;jsr MMC1_Setup
+    ; Setup the player sprite
+    ; Y, idx, attr, X
+    ; first sprite column
+    lda #$04    ; sprite tile index
+    sta TmpCounter
+
+    lda #$00
+    sta TmpAttr
+
+    lda #$5E
+    sta TmpY
+    lda #$10
+    sta TmpX
+    ldx #0
+@spLoop:
+    ; y
+    lda TmpY
+    sta sprites, x
+    inx
+    clc
+    adc #8
+    sta TmpY
+
+    ; idx
+    lda TmpCounter
+    sta sprites, x
+    inx
+    inc TmpCounter
+
+    ; attr
+    lda TmpAttr
+    sta sprites, x
+    inx
+
+    ; X
+    lda TmpX
+    sta sprites, x
+    inx
+
+    ; test for second column
+    lda TmpCounter
+    cmp #$08
+    bcc @noTmpWrap
+
+    lda #$04
+    sta TmpCounter
+
+    lda #%01000000
+    sta TmpAttr
+
+    lda #$5E
+    sta TmpY
+
+    lda TmpX
+    clc
+    adc #$08
+    sta TmpX
+
+@noTmpWrap:
+    cpx #32
+    bne @spLoop
 
     lda #0
     sta meta_column_offset
@@ -35,8 +95,6 @@ Game_Init:
     ; TODO: remove constant here
     lda #$03
     sta map_column_addr+1
-
-    ;jsr dbg_DrawBounds
 
     lda #<GamePalette
     sta PaletteAddr
@@ -132,6 +190,8 @@ FrameStart:
     ; increment the screen position
     inc calc_scroll
 
+    jsr UpdatePlayer
+
     ; store previous meta column offset
     lda meta_column_offset
     sta last_meta_offset
@@ -162,6 +222,64 @@ FrameStart:
     ; first nametable
     lda #PPU_CTRL_VERT
     sta $2000
+    rts
+
+UpdatePlayer:
+    lda controller1
+    and #BUTTON_A
+    beq @noJump
+
+    ; do calculations based on the lower right sprite
+    lda sprites+28
+    sec
+    sbc #4
+    sta sprites+28
+
+    ; Update the sprites
+    ;sta sprites+28
+    ;sta sprites+12
+    ;sbc #8
+    ;sta sprites+24
+    ;sta sprites+8
+    ;sbc #8
+    ;sta sprites+20
+    ;sta sprites+4
+    ;sbc #8
+    ;sta sprites+16
+    ;sta sprites+0
+    jmp @done
+
+    ; TODO: jump max height
+
+@noJump:
+    ; do calculations based on the lower right sprite
+    lda sprites+28
+    cmp #$76
+    beq @ground
+
+    clc
+    adc #4
+    sta sprites+28
+    jmp @done
+
+@ground:
+    lda #$76
+    sta sprites+28
+
+    ; Update the sprites
+    ;sta sprites+16
+    ;sta sprites+0
+    ;adc #8
+    ;sta sprites+20
+    ;sta sprites+4
+    ;adc #8
+    ;sta sprites+24
+    ;sta sprites+8
+    ;adc #8
+    ;sta sprites+28
+    ;sta sprites+12
+
+@done:
     rts
 
 ; Get the metacolumn from the current scroll
