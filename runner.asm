@@ -196,15 +196,7 @@ DoFrame:
     jmp WaitFrame
 
 @credits:
-    lda #BUTTON_A
-    sta btnPressedMask
-    jsr ButtonPressedP1
-    beq WaitFrame
-
-    lda #GS_TITLE
-    sta current_gamestate
-    inc gamestate_changed
-    jmp WaitFrame
+    jmp Credits_Frame
 
 @title:
     jmp Frame_Title

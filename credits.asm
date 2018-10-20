@@ -22,7 +22,7 @@ Credits_Init:
     jsr credits_ClearNametable
 
     jsr credits_Header
-    jsr credits_DrawNames
+    jsr Credits_DrawNames
 
     jsr credits_AttrTable
 
@@ -54,16 +54,16 @@ credits_ClearNametable:
     ldx #0
     ldy #0
     lda #' '
-crCN_loop2:
+@loop2:
     sta $2007
     inx
     cpx #$20
-    bne crCN_loop2
+    bne @loop2
 
     iny
     ldx #0
     cpy #$1E
-    bne crCN_loop2
+    bne @loop2
     rts
 
 credits_Header:
@@ -115,11 +115,11 @@ credits_Header:
 
     ldx #0
     ldy #$02
-crCH_loop1:
+@loop1:
     sty $2007
     iny
     cpy #$08
-    bne crCH_loop1
+    bne @loop1
 
     ; top half: "Zorchenhimer"
     lda #$20
@@ -129,11 +129,11 @@ crCH_loop1:
 
     ldx #0
     ldy #$80
-crCH_loop2:
+@loop2:
     sty $2007
     iny
     cpy #$8F
-    bne crCH_loop2
+    bne @loop2
 
     ; Bottom half: "Zorchenhimer"
     lda #$20
@@ -143,14 +143,14 @@ crCH_loop2:
 
     ldx #0
     ldy #$90
-crCH_loop3:
+@loop3:
     sty $2007
     iny
     cpy #$9F
-    bne crCH_loop3
+    bne @loop3
     rts
 
-credits_DrawNames:
+Credits_DrawNames:
     ; load up name metadata
     lda credits_metadata
     lsr a   ; divide by two
@@ -167,7 +167,7 @@ credits_DrawNames:
     sta cr_ppuAddr+1
 
 ; table loop
-crDN_outer:
+@outer:
     bit $2002
     lda cr_ppuAddr
     sta $2006
@@ -184,29 +184,29 @@ crDN_outer:
     lda credits_name_table+1, x
     sta cr_nameAddress+1
 
-; name loop
+    ; name loop
     ldy #0
     lda (cr_nameAddress), y
     sta cr_nameLength
     inc cr_nameLength
     iny
 
-crDN_inner:
+@inner:
     lda (cr_nameAddress), y
     sta $2007
     iny
     cpy cr_nameLength
-    beq crDN_nameDone
-    jmp crDN_inner
+    beq @nameDone
+    jmp @inner
 
-crDN_nameDone:
+@nameDone:
 
     ; move on to the next name
     dec cr_nameCount
-    bne crDN_next
+    bne @next
     rts
 
-crDN_next:
+@next:
     inc cr_nameCurrent
     lda cr_ppuAddr+1
     clc
@@ -216,7 +216,20 @@ crDN_next:
     lda cr_ppuAddr
     adc #0
     sta cr_ppuAddr
-    jmp crDN_outer
+    jmp @outer
+
+Credits_Frame:
+    lda #BUTTON_A
+    sta btnPressedMask
+    jsr ButtonPressedP1
+    beq @done
+
+    lda #GS_TITLE
+    sta current_gamestate
+    inc gamestate_changed
+
+@done:
+    jmp WaitFrame
 
 credits_Palette:
     .byte $0F,$30,$13,$0F, $0F,$05,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F
