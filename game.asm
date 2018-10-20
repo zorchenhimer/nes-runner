@@ -186,7 +186,7 @@ DedInit:
 HSInit:
     rts
 
-FrameStart:
+Game_Frame:
     ; increment the screen position
     inc calc_scroll
 
@@ -222,7 +222,7 @@ FrameStart:
     ; first nametable
     lda #PPU_CTRL_VERT
     sta $2000
-    rts
+    jmp WaitFrame
 
 UpdatePlayer:
     lda controller1

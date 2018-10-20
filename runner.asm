@@ -195,8 +195,7 @@ DoFrame:
     bcs @highscore
 
     ; less than (GS_GAME)
-    jsr FrameStart
-    jmp WaitFrame
+    jmp Game_Frame
 
 @credits:
     jmp Credits_Frame
