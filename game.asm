@@ -229,15 +229,21 @@ UpdatePlayer:
     and #BUTTON_A
     beq @noJump
 
+    lda JumpPeak
+    bne @noJump
+
     ; do calculations based on the lower right sprite
     lda sprites+28
+    cmp #$3F
+    bcc @setPeak
+
     sec
-    sbc #4
+    sbc #PLAYER_JMP_SPEED
     sta sprites+28
 
-    ; Update the sprites
+    ; Update the other sprites
     ;sta sprites+28
-    ;sta sprites+12
+    sta sprites+12
     ;sbc #8
     ;sta sprites+24
     ;sta sprites+8
@@ -249,20 +255,27 @@ UpdatePlayer:
     ;sta sprites+0
     jmp @done
 
-    ; TODO: jump max height
+@setPeak:
+    lda #1
+    sta JumpPeak
 
-@noJump:
+@noJump:    ; falling back to ground
     ; do calculations based on the lower right sprite
     lda sprites+28
     cmp #$76
     beq @ground
 
     clc
-    adc #4
+    adc #PLAYER_JMP_SPEED
     sta sprites+28
+    sta sprites+12
+
     jmp @done
 
 @ground:
+    lda #0
+    sta JumpPeak
+
     lda #$76
     sta sprites+28
 
@@ -277,7 +290,6 @@ UpdatePlayer:
     ;sta sprites+8
     ;adc #8
     ;sta sprites+28
-    ;sta sprites+12
 
 @done:
     rts

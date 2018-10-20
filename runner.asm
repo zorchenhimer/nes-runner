@@ -70,6 +70,8 @@ TmpPPUAddr:     .res 2
 TmpY:           .res 1
 TmpX:           .res 1
 
+JumpPeak:       .res 1
+
 TitleIndex:     .res 1  ; curretly selected thing
 TitleLength:    .res 1  ; number of menu options
 TitleColor:     .res 1  ; current color, lol
@@ -89,6 +91,8 @@ PPU_MASK_OFF    = %00000110
 PAGEID_GAME     = 0
 PAGEID_CREDITS  = 1
 PAGEID_IDK      = 2
+
+PLAYER_JMP_SPEED = 2
 
 .segment "SAVERAM"
     ; battery backed RAM
