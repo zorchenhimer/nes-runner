@@ -246,6 +246,9 @@ UpdatePlayer:
     sta JumpPeak
 
 @noJump:    ; falling back to ground
+    lda #1
+    sta JumpPeak
+
     lda sprites+28
     ; Did we hit the ground?
     cmp #$76
@@ -275,9 +278,6 @@ UpdatePlayer:
     sbc #8
     sta sprites+16
     sta sprites+0
-    rts
-
-sp_UpdateAllSprites:
     rts
 
 ; Get the metacolumn from the current scroll
