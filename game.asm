@@ -239,20 +239,6 @@ UpdatePlayer:
 
     sec
     sbc #PLAYER_JMP_SPEED
-    sta sprites+28
-
-    ; Update the other sprites
-    ;sta sprites+28
-    sta sprites+12
-    ;sbc #8
-    ;sta sprites+24
-    ;sta sprites+8
-    ;sbc #8
-    ;sta sprites+20
-    ;sta sprites+4
-    ;sbc #8
-    ;sta sprites+16
-    ;sta sprites+0
     jmp @done
 
 @setPeak:
@@ -260,16 +246,13 @@ UpdatePlayer:
     sta JumpPeak
 
 @noJump:    ; falling back to ground
-    ; do calculations based on the lower right sprite
     lda sprites+28
+    ; Did we hit the ground?
     cmp #$76
     beq @ground
 
     clc
     adc #PLAYER_JMP_SPEED
-    sta sprites+28
-    sta sprites+12
-
     jmp @done
 
 @ground:
@@ -277,21 +260,24 @@ UpdatePlayer:
     sta JumpPeak
 
     lda #$76
-    sta sprites+28
-
-    ; Update the sprites
-    ;sta sprites+16
-    ;sta sprites+0
-    ;adc #8
-    ;sta sprites+20
-    ;sta sprites+4
-    ;adc #8
-    ;sta sprites+24
-    ;sta sprites+8
-    ;adc #8
-    ;sta sprites+28
 
 @done:
+    sec
+    ; Update all the sprite positions
+    sta sprites+28
+    sta sprites+12
+    sbc #8
+    sta sprites+24
+    sta sprites+8
+    sbc #8
+    sta sprites+20
+    sta sprites+4
+    sbc #8
+    sta sprites+16
+    sta sprites+0
+    rts
+
+sp_UpdateAllSprites:
     rts
 
 ; Get the metacolumn from the current scroll
