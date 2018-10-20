@@ -3,6 +3,9 @@
 CA = c:/cc65/bin/ca65.exe
 LD = c:/cc65/bin/ld65.exe
 
+# Tool to generate credits data
+CR = ../credits/generate-credits.exe
+
 # Mapper configuration for linker
 NESCFG = nes_001.cfg
 
@@ -51,10 +54,8 @@ bin/$(NAME).nes: bin/$(NAME).o $(NESCFG)
 		bin/$(NAME).o
 
 bin/$(NAME).mlb: bin/$(NAME).nes.db
-	#perl.exe ../nes-symbols.pl bin/$(NAME).labels
 	../tools/ld65-labels/ld65-labels.exe bin/$(NAME).nes.db
 
 credits_data.i: subscriber-list.csv
-	# TODO: improve this utility
-	go run ../credits/generate-credits.go
+	$(CR) -x zorchenhimer -o credits_data.i -i subscriber-list.csv
 
