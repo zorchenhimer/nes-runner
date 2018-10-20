@@ -94,6 +94,8 @@ PAGEID_IDK      = 2
 
 PLAYER_JMP_SPEED = 2
 
+CURRENT_PAGE    = $8000
+
 .segment "SAVERAM"
     ; battery backed RAM
 
@@ -207,7 +209,7 @@ DoFrame:
 @title:
     jmp Frame_Title
 
-@ded:
+@ded:   ; sub-state of game?
     nop
     jmp WaitFrame
 
@@ -238,6 +240,8 @@ NMI:
     pha
     tya
     pha
+
+    ; Skip NMI if we're currently drawing the whole screen
     lda SkipNMI
     bne @end
 
@@ -254,11 +258,16 @@ NMI:
     lda current_gamestate
     cmp #GS_GAME
     bne @ScreenA
+
+    ; draw the next column if needed
     jsr Draw_Column
+
+    ; scroll in the screen
     jsr update_scroll
 
-    jmp @after_scroll
+    jmp @end
 
+; scroll for title
 @ScreenA:
     bit $2000
     lda #0
@@ -268,7 +277,6 @@ NMI:
     lda #PPU_CTRL_HORIZ
     sta $2000
 
-@after_scroll:
 @end:
     lda #0
     sta sleeping
@@ -283,8 +291,6 @@ IRQ:
     rti
 
 MMC1_Setup:
-    ;lda #80
-    ;sta $8000
     ; control stuff
     ; vertical mirroring, switchable $8000, fixed $C000, chr 8k
     ; %0000 1110
@@ -301,8 +307,6 @@ MMC1_Setup:
     rts
 
 MMC1_Page0:
-    ;lda #80
-    ;sta $8000
     ; select bank PRG 0, enable RAM
     lda #%00000000
     sta $E000
@@ -317,8 +321,6 @@ MMC1_Page0:
     rts
 
 MMC1_Page1:
-    ;lda #80
-    ;sta $8000
     ; select bank PRG 1, enable RAM
     lda #%00000001
     sta $E000
@@ -333,8 +335,6 @@ MMC1_Page1:
     rts
 
 MMC1_Page2:
-    ;lda #80
-    ;sta $8000
     ; select bank PRG 2, enable RAM
     lda #%00000010
     sta $E000
@@ -349,8 +349,7 @@ MMC1_Page2:
     rts
 
 MMC1_Pattern0:
-    ;lda #80
-    ;sta $8000
+    ; select CHR 0
     lda #%00000000
     sta $A000
     lsr a
@@ -364,8 +363,7 @@ MMC1_Pattern0:
     rts
 
 MMC1_Pattern1:
-    ;lda #80
-    ;sta $8000
+    ; select CHR 1
     lda #%00000010
     sta $A000
     lsr a
@@ -393,8 +391,7 @@ ChangeGameState:
     cmp #GS_CREDITS
     beq @credits
 
-    ;lda CurrentPage
-    lda $8000
+    lda CURRENT_PAGE
     cmp #PAGEID_GAME
     beq @noswap
     jsr MMC1_Page0
