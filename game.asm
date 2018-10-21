@@ -186,9 +186,20 @@ DedInit:
 HSInit:
     rts
 
+oddFrame:
+    lda #0
+    sta frame_odd
+    jmp game_frame_PostScore
+
 Game_Frame:
     ; increment the screen position
     inc calc_scroll
+
+    lda frame_odd
+    bne oddFrame
+
+    lda #1
+    sta frame_odd
 
     ; player score is stored in three 100-base bytes
     inc PlayerScore0
@@ -250,6 +261,7 @@ Game_Frame:
     adc #$30
     sta PlayerText4
 
+game_frame_PostScore:
     jsr UpdatePlayer
 
     ; store previous meta column offset
