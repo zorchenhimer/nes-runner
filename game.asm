@@ -186,82 +186,9 @@ DedInit:
 HSInit:
     rts
 
-oddFrame:
-    lda #0
-    sta frame_odd
-    jmp game_frame_PostScore
-
 Game_Frame:
     ; increment the screen position
     inc calc_scroll
-
-    lda frame_odd
-    bne oddFrame
-
-    lda #1
-    sta frame_odd
-
-    ; player score is stored in three 100-base bytes
-    inc PlayerScore0
-    lda PlayerScore0
-    cmp #100
-    bcc @noPSWrap
-
-    sec
-    sbc #100
-    sta PlayerScore0
-
-    inc PlayerScore1
-    lda PlayerScore1
-    cmp #100
-    bcc @noPSWrap
-
-    sec
-    sbc #100
-    sta PlayerScore1
-
-    inc PlayerScore2
-@noPSWrap:
-    ; end of the calc
-
-    lda #$30
-    sta PlayerText0
-    sta PlayerText1
-    sta PlayerText2
-    sta PlayerText3
-
-    lda #0
-    sta PlayerText4
-
-    lda PlayerScore0
-    sta PlayerText5
-
-@ps_Text1_10:
-    lda PlayerText5
-    cmp #10
-    bcs @ps_Text1_sub10
-    jmp @ps_Text1_Ones
-
-@ps_Text1_sub10:
-    inc PlayerText4
-    lda PlayerText5
-    sec
-    sbc #10
-    sta PlayerText5
-    jmp @ps_Text1_10
-
-@ps_Text1_ones:
-    lda PlayerText5
-    clc
-    adc #$30
-    sta PlayerText5
-
-    lda PlayerText4
-    clc
-    adc #$30
-    sta PlayerText4
-
-game_frame_PostScore:
     jsr UpdatePlayer
 
     ; store previous meta column offset
@@ -273,6 +200,9 @@ game_frame_PostScore:
     jsr meta_idx_from_scroll
     cmp last_meta_offset
     beq @waitFrame
+
+    lda #1
+    jsr IncScore
     jsr generate_column
     inc nmi_draw
 
@@ -296,6 +226,36 @@ game_frame_PostScore:
     sta $2000
     jmp WaitFrame
 
+; Adds register A to score.  Keep it under 100 at a time.
+IncScore:
+    clc
+    adc PlayerScore0
+    sta PlayerScore0
+    cmp #100
+    bcc @done
+
+    sec
+    sbc #100
+    sta PlayerScore0
+    inc PlayerScore1
+    lda PlayerScore1
+    cmp #100
+    bcc @done
+
+    sbc #100
+    sta PlayerScore1
+    inc PlayerScore2
+    lda PlayerScore2
+    cmp #100
+    bcc @done
+
+    sbc #100
+    sta PlayerScore2
+    inc PlayerScore3
+
+@done:
+    rts
+
 Draw_Score:
     lda #PPU_CTRL_HORIZ
     sta $2000
@@ -305,22 +265,21 @@ Draw_Score:
     lda #$F0
     sta $2006
 
-    lda PlayerText0
+    lda #$30
     sta $2007
-    lda PlayerText1
+    lda #$30
     sta $2007
-    lda PlayerText2
+    lda #$30
     sta $2007
     lda #','
     sta $2007
 
-    lda PlayerText3
+    lda #$30
     sta $2007
-    lda PlayerText4
+    lda #$30
     sta $2007
-    lda PlayerText5
+    lda #$30
     sta $2007
-
     rts
 
 UpdatePlayer:

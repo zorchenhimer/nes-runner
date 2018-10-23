@@ -1,12 +1,13 @@
 .case -
 
 ; TODO
+;   Score increment once per meta-column scroll
+;   Score display
+;       use base-100 numbers
 ;   Player Sprite
-;       Simple jump physics (collision can come later)
+;       improve jump physics (make it sine, instead of triangle)
 ;   Better map generation
 ;   Background art (mountains or some shit.  happy little trees?)
-;   Score display
-;       include distance/timer?
 ;   High Scores table
 ;   Sound engine
 
@@ -78,9 +79,12 @@ TitleColor:     .res 1  ; current color, lol
 TitleColor2:    .res 1
 TitleGameStates:.res 10 ; list of gamestates
 
-PlayerScore0:   .res 1
-PlayerScore1:   .res 1
-PlayerScore2:   .res 1
+; Base-100 numbers of the score
+PlayerScoreBase100: .res 0
+PlayerScore3:   .res 1  ; 12
+PlayerScore2:   .res 1  ; 34
+PlayerScore1:   .res 1  ; 56
+PlayerScore0:   .res 1  ; 78
 
 PlayerText0: .res 1
 PlayerText1: .res 1
