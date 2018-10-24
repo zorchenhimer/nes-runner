@@ -1,9 +1,6 @@
 .case -
 
 ; TODO
-;   Score increment once per meta-column scroll
-;   Score display
-;       use base-100 numbers
 ;   Player Sprite
 ;       improve jump physics (make it sine, instead of triangle)
 ;   Better map generation
@@ -52,6 +49,9 @@ meta_column_offset: .res 1  ; meta tile column wraps at 32
 last_meta_offset:   .res 1  ; used to determine if rng is needed
 map_meta_tmp:       .res 1
 rng_result:         .res 1
+
+; Pointer to the current frame routine
+DoFramePointer:     .res 2
 
 gamestate_changed:  .res 1
 current_gamestate:  .res 1
@@ -202,32 +202,7 @@ RESET:
 
 DoFrame:
     jsr ReadControllers
-    lda current_gamestate
-    beq @title
-
-    cmp #GS_CREDITS
-    beq @credits
-
-    cmp #GS_DED
-    beq @ded
-    bcs @highscore
-
-    ; less than (GS_GAME)
-    jmp Game_Frame
-
-@credits:
-    jmp Credits_Frame
-
-@title:
-    jmp Frame_Title
-
-@ded:   ; sub-state of game?
-    nop
-    jmp WaitFrame
-
-@highscore:
-    nop
-    jmp WaitFrame
+    jsr (DoFramePointer)
 
 WaitFrame:
     lda gamestate_changed
@@ -416,6 +391,12 @@ ChangeGameState:
 
     jsr MMC1_Pattern0
     ; GS_GAME
+
+    lda #<Game_Frame
+    sta DoFramePointer
+    lda #>Game_Frame
+    sta DoFramePointer+1
+
     jmp Game_Init
 
 @ded:
@@ -428,11 +409,23 @@ ChangeGameState:
 
     jsr MMC1_Page1
     jsr MMC1_Pattern1
+
+    lda #<Credits_Frame
+    sta DoFramePointer
+    lda #>Credits_Frame
+    sta DoFramePointer+1
+
     jmp Credits_Init
 
 @title:
     jsr MMC1_Pattern0
     ;; Init title
+
+    lda #<Frame_Title
+    sta DoFramePointer
+    lda #>Frame_Title
+    sta DoFramePointer+1
+
     jmp InitTitle
 
     .include "title.asm"
