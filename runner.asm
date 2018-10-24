@@ -86,12 +86,9 @@ PlayerScore2:   .res 1  ; 34
 PlayerScore1:   .res 1  ; 56
 PlayerScore0:   .res 1  ; 78
 
-PlayerText0: .res 1
-PlayerText1: .res 1
-PlayerText2: .res 1
-PlayerText3: .res 1
-PlayerText4: .res 1
-PlayerText5: .res 1
+; ASCII for the full score
+; 12,345,678
+PlayerScoreText:    .res 8
 
 PPU_CTRL_VERT   = %10010100
 PPU_CTRL_HORIZ  = %10010000

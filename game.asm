@@ -254,6 +254,53 @@ IncScore:
     inc PlayerScore3
 
 @done:
+;    rts
+;
+;BufferScoreDisplay:
+    ; clear text buffer and put the player score in the ones'
+    ; spot for now
+    ldx #0
+    ldy #0
+@updateLoop:
+    lda #0
+    sta PlayerScoreText, y
+    iny
+    lda PlayerScoreBase100, x
+    sta PlayerScoreText, y
+    iny
+    inx
+    cpx #4
+    bne @updateLoop
+
+;   separate the tens from the ones
+    ldx #0
+@splitBase100:
+    lda PlayerScoreText+1, x    ; load the ones var
+    cmp #10
+    bcc @nextNumber
+    sbc #10
+    sta PlayerScoreText+1, x
+
+    inc PlayerScoreText, x      ; inc tens place
+    jmp @splitBase100
+
+@nextNumber:
+    inx
+    inx
+    cpx #8
+    bne @splitBase100
+
+; Make the numbers ASCII
+@exitLoop:
+    clc
+    ldx #0
+@ascii:
+    lda PlayerScoreText, x
+    adc #$30
+    sta PlayerScoreText, x
+    inx
+    cpx #8
+    bne @ascii
     rts
 
 Draw_Score:
@@ -265,20 +312,27 @@ Draw_Score:
     lda #$F0
     sta $2006
 
-    lda #$30
+    lda PlayerScoreText+0
     sta $2007
-    lda #$30
-    sta $2007
-    lda #$30
+    lda PlayerScoreText+1
     sta $2007
     lda #','
     sta $2007
 
-    lda #$30
+    lda PlayerScoreText+2
     sta $2007
-    lda #$30
+    lda PlayerScoreText+3
     sta $2007
-    lda #$30
+    lda PlayerScoreText+4
+    sta $2007
+    lda #','
+    sta $2007
+
+    lda PlayerScoreText+5
+    sta $2007
+    lda PlayerScoreText+6
+    sta $2007
+    lda PlayerScoreText+7
     sta $2007
     rts
 
