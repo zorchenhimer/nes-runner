@@ -224,7 +224,7 @@ Game_Frame:
     ; first nametable
     lda #PPU_CTRL_VERT
     sta $2000
-    rts
+    jmp WaitFrame
 
 ; Adds register A to score.  Keep it under 100 at a time.
 IncScore:

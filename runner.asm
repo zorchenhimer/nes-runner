@@ -202,7 +202,7 @@ RESET:
 
 DoFrame:
     jsr ReadControllers
-    jsr (DoFramePointer)
+    jmp (DoFramePointer)
 
 WaitFrame:
     lda gamestate_changed

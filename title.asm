@@ -234,7 +234,7 @@ Frame_Title:
     lda TitleGameStates, x
     sta current_gamestate
     inc gamestate_changed
-    rts
+    jmp WaitFrame
 
 @t_nostart:
     lda #BUTTON_A
@@ -247,7 +247,7 @@ Frame_Title:
     inc gamestate_changed
 
 @t_end:
-    rts
+    jmp WaitFrame
 
 TitleText:
     .byte $07, $22, "runner", $22
