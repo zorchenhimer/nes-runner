@@ -211,7 +211,7 @@ Game_Frame:
     beq @loop_sprite
 
     ; TODO: die
-    brk
+    ;brk
 
 ; wait for vblank to end
 @loop_sprite:
@@ -232,14 +232,20 @@ Game_Frame:
     jmp WaitFrame
 
 CheckCollide:
-    lda #BUTTON_A
-    sta btnPressedMask
-    jsr ButtonPressedP2
+    lda controller2
+    and #BUTTON_A
+
     beq @done
+    lda #$05
+    sta $039F
+
     lda #1
     rts
 
 @done:
+    lda #$0F
+    sta $039F
+
     lda #0
     rts
 
