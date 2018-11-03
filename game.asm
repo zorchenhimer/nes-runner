@@ -232,8 +232,15 @@ Game_Frame:
     jmp WaitFrame
 
 CheckCollide:
-    lda controller2
-    and #BUTTON_A
+    lda meta_column_offset
+    clc
+    adc #2
+    and #$1F
+    asl a
+    asl a
+    tax
+    lda meta_columns, x
+    sta player_scroll
 
     beq @done
     lda #$05
@@ -690,14 +697,14 @@ drawCol2:
 
 ; update the PPU's scroll
 update_scroll:
-    ; mask off the coarse stuff
     bit $2002
+    ; mask off the fine scroll (left with coarse)
     lda calc_scroll
     and #$F8
     asl a   ; mult by 2
     sta coarse_scroll
 
-    ; fine scroll
+    ; load the fine scroll
     lda calc_scroll
     and #$07
     clc

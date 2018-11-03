@@ -42,7 +42,7 @@ obs_countdown:      .res 1  ; obstacle countdown
 
 calc_scroll:        .res 1
 coarse_scroll:      .res 1
-fine_scroll:        .res 1
+player_scroll:      .res 1
 
 meta_column_offset: .res 1  ; meta tile column wraps at 32
 last_meta_offset:   .res 1  ; used to determine if rng is needed
