@@ -685,6 +685,7 @@ drawCol2:
 ; update the PPU's scroll
 update_scroll:
     ; mask off the coarse stuff
+    bit $2002
     lda calc_scroll
     and #$F8
     asl a   ; mult by 2

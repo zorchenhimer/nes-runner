@@ -256,7 +256,7 @@ NMI:
 
 ; scroll for title
 @ScreenA:
-    bit $2000
+    bit $2002
     lda #0
     sta $2005
     sta $2005

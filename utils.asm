@@ -82,6 +82,8 @@ LoadPalette:
     rts
 
 UpdatePalette:
+    bit $2002
+
     lda #PPU_CTRL_HORIZ
     sta $2000
 
