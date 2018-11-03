@@ -232,6 +232,22 @@ Game_Frame:
     jmp WaitFrame
 
 CheckCollide:
+    lda sprites
+    cmp #$56
+    bcc @done
+
+    ; check the player's right meta column
+    lda meta_column_offset
+    clc
+    adc #3
+    and #$1F
+    asl a
+    asl a
+    tax
+    lda meta_columns, x
+    sta player_scroll
+    bne @collide
+
     lda meta_column_offset
     clc
     adc #2
@@ -241,8 +257,10 @@ CheckCollide:
     tax
     lda meta_columns, x
     sta player_scroll
+    bne @collide
+    jmp @done
 
-    beq @done
+@collide:
     lda #$05
     sta $039F
 
@@ -754,7 +772,7 @@ Meta_Powerup:
 
 ; peak is at $3F
 JumpFrameLength:
-    .byte JumpframeEnd - JumpFrames
+    .byte JumpframeEnd - JumpFrames - 1
 
 JumpFrames:
     ;.byte $76, $71, $6C, $67, $62, $5E, $5A, $56, $52, $4E, $4B, $48
