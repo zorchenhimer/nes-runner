@@ -152,23 +152,20 @@ Game_Init:
     cpx #32
     bne @statusBarRow2
 
-    lda StatusPlaceholder
-    sta TmpCounter
-    inc TmpCounter
-
     lda #$22
     sta $2006
     lda #$EA
     sta $2006
 
-    ldx #1
+    ldx #0
 @statusLoop:
     lda StatusPlaceHolder, x
+    beq @scoredone
     sta $2007
     inx
-    dec TmpCounter
-    bne @statusLoop
+    jmp @statusLoop
 
+@scoredone:
     lda #PPU_MASK
     sta $2001
     lda #0
@@ -176,7 +173,7 @@ Game_Init:
     rts
 
 StatusPlaceholder:
-    .byte $0F, "Score 000,000"
+    .byte "Score 00,000,000", $00
 
 ;; End of Game_Init
 
