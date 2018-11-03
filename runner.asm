@@ -2,7 +2,6 @@
 
 ; TODO
 ;   Player Sprite
-;       improve jump physics (make it sine, instead of triangle)
 ;   Better map generation
 ;   Background art (mountains or some shit.  happy little trees?)
 ;   High Scores table
@@ -90,6 +89,8 @@ PlayerScore0:   .res 1  ; 78
 ; 12,345,678
 PlayerScoreText:    .res 8
 
+PlayerJumpFrame:    .res 1  ; current frame of the jump
+
 PPU_CTRL_VERT   = %10010100
 PPU_CTRL_HORIZ  = %10010000
 
@@ -103,8 +104,6 @@ PPU_MASK_OFF    = %00000110
 PAGEID_GAME     = 0
 PAGEID_CREDITS  = 1
 PAGEID_IDK      = 2
-
-PLAYER_JMP_SPEED = 2
 
 CURRENT_PAGE    = $8000
 

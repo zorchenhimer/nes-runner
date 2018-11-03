@@ -344,13 +344,17 @@ UpdatePlayer:
     lda JumpPeak
     bne @noJump
 
-    ; do calculations based on the lower right sprite
-    lda sprites+28
-    cmp #$3F
-    bcc @setPeak
+    ; Has the player hit the peak of the jump? (have we run out of jump frames?)
+    lda PlayerJumpFrame
+    cmp JumpFrameLength
+    bcs @setPeak
 
-    sec
-    sbc #PLAYER_JMP_SPEED
+    ; Load the next jump frame
+    clc
+    adc #1
+    sta PlayerJumpFrame
+    tax
+    lda JumpFrames, x
     jmp @done
 
 @setPeak:
@@ -361,20 +365,24 @@ UpdatePlayer:
     lda #1
     sta JumpPeak
 
-    lda sprites+28
-    ; Did we hit the ground?
-    cmp #$76
+    ; Are we on the first jump frame?
+    lda PlayerJumpFrame
     beq @ground
 
-    clc
-    adc #PLAYER_JMP_SPEED
+    ; Load the previous jump frame (cuz we fallin')
+    sec
+    sbc #1
+    sta PlayerJumpFrame
+    tax
+    lda JumpFrames, x
     jmp @done
 
 @ground:
     lda #0
     sta JumpPeak
 
-    lda #$76
+    lda Jumpframes
+    ;lda #$76
 
 @done:
     sec
@@ -712,3 +720,25 @@ Meta_Obstacle:
     .byte $82, $92, $83, $93
 Meta_Powerup:
     .byte $A0, $B0, $A1, $B1
+
+; peak is at $3F
+JumpFrameLength:
+    .byte JumpframeEnd - JumpFrames
+
+JumpFrames:
+    ;.byte $76, $71, $6C, $67, $62, $5E, $5A, $56, $52, $4E, $4B, $48
+    ;.byte $45, $42, $3F, $3D, $3B, $39, $37, $35, $34, $33, $32, $31
+    ;.byte $30, $30, $30, $30, $30, $30, $30
+
+    .byte $76, $71, $6c, $67, $63, $5f, $5b, $57, $54, $51, $4e, $4b
+    .byte $49, $47, $45, $44, $43, $42, $41, $41, $41, $41, $41, $41
+    ;.byte $41, $41, $41, $41, $41, $41, $41
+
+    ;.byte $76, $71, $6C, $67, $62, $5E, $5A, $56, $52, $4F, $4C, $49
+    ;.byte $46, $44, $42, $40, $3E, $3D, $3C, $3B, $3A, $3A, $3A, $3A
+    ;.byte $3A, $3A, $3A, $3A, $3A, $3A, $3A
+
+    ;.byte $76, $71, $6E, $6C, $6A, $68, $66, $64, $62, $60
+    ;.byte $5E, $5C, $5A, $58, $56, $54, $52, $50, $4E, $4C, $4A, $48
+    ;.byte $46, $44, $42, $40, $3E
+JumpFrameEnd:
