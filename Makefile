@@ -4,7 +4,7 @@ CA = c:/cc65/bin/ca65.exe
 LD = c:/cc65/bin/ld65.exe
 
 # Tool to generate credits data
-CR = ../credits/generate-credits.exe
+CR = go run ../credits/generate-credits.go
 
 # Mapper configuration for linker
 NESCFG = nes_001.cfg

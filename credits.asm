@@ -3,9 +3,6 @@ Credits_Init:
     ; - Update palettes
     inc SkipNMI
 
-    lda #PPU_CTRL_HORIZ
-    sta $2000
-
     lda #$00
     sta $2001
 
@@ -31,9 +28,6 @@ Credits_Init:
     lda #$00
     sta $2005
     sta $2005
-
-    lda #PPU_CTRL_HORIZ
-    sta $2000
 
     lda #%00011110
     sta $2001
@@ -150,14 +144,14 @@ credits_Header:
     bne @loop3
     rts
 
+; Init code for the names
 Credits_DrawNames:
     ; load up name metadata
-    lda credits_metadata
+    lda Credits_Metadata
     lsr a   ; divide by two
     sta cr_nameCount
 
     lda #0
-    ;sta cr_nameIdx
     sta cr_nameCurrent
 
     lda #$20
@@ -186,24 +180,24 @@ Credits_DrawNames:
 
     ; name loop
     ldy #0
-    lda (cr_nameAddress), y
-    sta cr_nameLength
-    inc cr_nameLength
-    iny
 
 @inner:
     lda (cr_nameAddress), y
+    beq @nameDone
     sta $2007
     iny
-    cpy cr_nameLength
-    beq @nameDone
     jmp @inner
 
 @nameDone:
+    lda cr_nameCurrent
+    cmp #10
+    bcs @done
 
-    ; move on to the next name
-    dec cr_nameCount
-    bne @next
+    cmp cr_nameCount
+    ; move on to the next name if there's more
+    bcc @next
+
+@done:
     rts
 
 @next:
@@ -231,11 +225,15 @@ Credits_Frame:
 @done:
     jmp WaitFrame
 
-credits_Palette:
+; TODO: draw the next name once the screen scrolls far enough
+DrawNextName:
+    rts
+
+Credits_Palette:
     .byte $0F,$30,$13,$0F, $0F,$05,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F
     .byte $0F,$30,$13,$0F, $0F,$05,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F
 
-credits_metadata:
+Credits_Metadata:
     ; length of nametable
     .byte credits_nametable_end - credits_name_table
 
