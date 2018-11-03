@@ -207,6 +207,11 @@ Game_Frame:
     inc nmi_draw
 
 @waitFrame:
+    jsr CheckCollide
+    beq @loop_sprite
+
+    ; TODO: die
+    brk
 
 ; wait for vblank to end
 @loop_sprite:
@@ -225,6 +230,18 @@ Game_Frame:
     lda #PPU_CTRL_VERT
     sta $2000
     jmp WaitFrame
+
+CheckCollide:
+    lda #BUTTON_A
+    sta btnPressedMask
+    jsr ButtonPressedP2
+    beq @done
+    lda #1
+    rts
+
+@done:
+    lda #0
+    rts
 
 ; Adds register A to score.  Keep it under 100 at a time.
 IncScore:

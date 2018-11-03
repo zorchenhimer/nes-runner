@@ -56,7 +56,7 @@ gamestate_changed:  .res 1
 current_gamestate:  .res 1
 GS_TITLE        = 0
 GS_GAME         = 1
-GS_DED          = 2
+GS_DED          = 2     ; todo: make a substate of GS_GAME?
 GS_HIGHSCORE    = 3
 GS_CREDITS      = 4
 
