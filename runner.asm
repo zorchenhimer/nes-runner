@@ -90,6 +90,7 @@ PlayerScore0:   .res 1  ; 78
 PlayerScoreText:    .res 8
 
 PlayerJumpFrame:    .res 1  ; current frame of the jump
+;LevelSeed:          .res 2
 
 PPU_CTRL_VERT   = %10010100
 PPU_CTRL_HORIZ  = %10010000

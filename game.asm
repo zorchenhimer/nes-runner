@@ -166,6 +166,39 @@ Game_Init:
     jmp @statusLoop
 
 @scoredone:
+
+    lda #$23
+    sta $2006
+    lda #$2A
+    sta $2006
+
+    ; write the seed lable text to the screen
+    ldx #0
+@seedloop:
+    lda SeedText, x
+    beq @seeddone
+    sta $2007
+    inx
+    jmp @seedloop
+
+@seeddone:
+    ; Load the seed and convert it to HEX ASCII to draw to screen.
+    lda rng_seed
+    ;sta LevelSeed
+    jsr BinToHex
+    lda TmpY
+    sta $2007
+    lda TmpX
+    sta $2007
+
+    lda rng_seed+1
+    ;sta LevelSeed+1
+    jsr BinToHex
+    lda TmpY
+    sta $2007
+    lda TmpX
+    sta $2007
+
     lda #PPU_MASK
     sta $2001
     lda #0
@@ -174,6 +207,50 @@ Game_Init:
 
 StatusPlaceholder:
     .byte "Score 00,000,000", $00
+SeedText:
+    .byte "Level Seed  ", $00
+
+; Binary value in A, ASCII Hex values output in TmpX and TmpY
+BinToHex:
+    ; TmpX "rng_result"
+    ; TmpY "rng_text"
+    ;lda rng_seed
+    sta TmpX
+    lda #0
+    sta TmpY
+
+@tens:
+    lda TmpX
+    cmp #$10
+    bcs @addtens
+    jmp @ones
+
+@addtens:
+    inc TmpY
+    sec
+    sbc #$10
+    sta TmpX
+    jmp @tens
+
+@ones:
+    lda TmpY
+    clc
+    adc #$30
+    cmp #$3A
+    bcc @ynoletter
+    adc #$06
+@ynoletter:
+    sta TmpY
+
+    lda TmpX
+    clc
+    adc #$30
+    cmp #$3A
+    bcc @xnoletter
+    adc #$06
+@xnoletter:
+    sta TmpX
+    rts
 
 ;; End of Game_Init
 
