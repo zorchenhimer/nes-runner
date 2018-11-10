@@ -40,7 +40,7 @@ InitTitle:
     sta PaletteAddr+1
 
     ; Then load ROM -> RAM
-    jsr LoadPalette
+    jsr LoadPalettes
 
     ; RAINBOW
     lda #$3F

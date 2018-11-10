@@ -101,7 +101,7 @@ Game_Init:
     lda #>GamePalette
     sta PaletteAddr+1
 
-    jsr LoadPalette
+    jsr LoadPalettes
 
     lda #PPU_CTRL_VERT
     sta $2000
@@ -159,7 +159,7 @@ Game_Init:
 
     ldx #0
 @statusLoop:
-    lda StatusPlaceHolder, x
+    lda StatusPlaceholder, x
     beq @scoredone
     sta $2007
     inx
@@ -503,7 +503,7 @@ UpdatePlayer:
     lda #0
     sta JumpPeak
 
-    lda Jumpframes
+    lda JumpFrames
     ;lda #$76
 
 @done:
@@ -846,7 +846,7 @@ Meta_Powerup:
 
 ; peak is at $3F
 JumpFrameLength:
-    .byte JumpframeEnd - JumpFrames - 1
+    .byte JumpFrameEnd - JumpFrames - 1
 
 JumpFrames:
     ;.byte $76, $71, $6C, $67, $62, $5E, $5A, $56, $52, $4E, $4B, $48

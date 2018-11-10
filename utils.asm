@@ -69,7 +69,7 @@ ReadControllers:
     bne @player2
     rts
 
-LoadPalette:
+LoadPalettes:
     ldx #31
     ldy #0
 @loop:
@@ -81,7 +81,7 @@ LoadPalette:
     bne @loop
     rts
 
-UpdatePalette:
+UpdatePalettes:
     bit $2002
 
     lda #PPU_CTRL_HORIZ

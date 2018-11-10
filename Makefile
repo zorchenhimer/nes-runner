@@ -24,16 +24,19 @@ SOURCES = $(NAME).asm nes2header.inc game.asm \
 # misc
 RM = rm
 
-.PHONY: clean default cleanSym symbols
+.PHONY: clean default cleanSym symbols clrNames
 
 default: all
 all: bin/$(NAME).nes bin/$(NAME).mlb
 symbols: cleanSym bin/$(NAME).mlb
+names: clrNames credits_data.i
 
 clean:
 	-$(RM) bin/*.*
 cleanSym:
 	-$(RM) bin/*.mlb
+clrNames:
+	-$(RM) credits_data.i
 
 bin/:
 	mkdir bin

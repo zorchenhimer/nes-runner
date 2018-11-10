@@ -1,4 +1,3 @@
-.case -
 
 ; TODO
 ;   Player Sprite
@@ -120,6 +119,7 @@ rng_seed:       .res 2
 meta_columns:       .res 128
 tile_column_buffer: .res 16
 PaletteRAM:         .res 32
+TileBuffer:         .res 64
 
 .segment "OAM"
     ; sprite stuff
@@ -222,7 +222,7 @@ RESET:
 
     lda #0
     sta current_gamestate
-    jsr ChangeGamestate
+    jsr ChangeGameState
 
 DoFrame:
     jsr ReadControllers
@@ -284,7 +284,7 @@ NMI:
     lda SkipNMI
     bne @end
 
-    jsr UpdatePalette
+    jsr UpdatePalettes
 
     ; Write sprites to PPU
     bit $2002
@@ -309,6 +309,21 @@ NMI:
 
 ; scroll for title
 @ScreenA:
+    cmp #GS_CREDITS
+    bne @title
+
+    bit cr_UpdateReady
+    bpl @noUpdate
+    jsr Credits_WriteBuffer
+
+@noUpdate:
+    lda #0
+    sta cr_UpdateReady
+
+    jsr Credits_UpdateScroll
+    jmp @end
+
+@title:
     bit $2002
     lda #0
     sta $2005
@@ -335,6 +350,19 @@ MMC1_Setup:
     ; vertical mirroring, switchable $8000, fixed $C000, chr 8k
     ; %0000 1110
     lda #%00001110
+    sta $8000
+    lsr a
+    sta $8000
+    lsr a
+    sta $8000
+    lsr a
+    sta $8000
+    lsr a
+    sta $8000
+    rts
+
+MMC1_Setup_Horiz:
+    lda #%00001111
     sta $8000
     lsr a
     sta $8000
@@ -423,6 +451,7 @@ ChangeGameState:
     lda #PPU_MASK_OFF
     sta $2001
 
+    jsr MMC1_Setup
     jsr ClearSprites
 
     lda current_gamestate
@@ -459,6 +488,7 @@ ChangeGameState:
 
 @credits:
 
+    jsr MMC1_Setup_Horiz
     jsr MMC1_Page1
     jsr MMC1_Pattern1
 
