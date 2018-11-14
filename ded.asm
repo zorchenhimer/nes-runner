@@ -48,9 +48,42 @@ Ded_Frame:
     ;   wait for start pressed
     ;   goto enter new high score if applicable
 
-    lda #GS_TITLE
-    sta current_gamestate
-    inc gamestate_changed
+    inc SkipNMI
+    lda #PPU_MASK_OFF
+    sta $2001
+
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+
+    lda #$20
+    sta $2006
+    lda #$00
+    sta $2006
+    jsr ClearNametable
+
+    ; TODO: load up a palette
+    jsr ClearSprites
+
+    lda #0
+    sta SkipNMI
+
+    lda #PPU_MASK
+    sta $2001
+
+    ;lda #PPU_MASK
+    ;sta NewPPUMask
+    ;lda #PPU_UPDATE_MASK
+    ;sta PPUUpdates
+
+    lda #<GameOverWait
+    sta DoFramePointer
+    lda #>GameOverWait
+    sta DoFramePointer+1
+
+GameOverWait:
+    ;lda #GS_TITLE
+    ;sta current_gamestate
+    ;inc gamestate_changed
     jmp WaitFrame
 
 
