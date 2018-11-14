@@ -3,6 +3,9 @@ Game_Init:
     lda #PPU_MASK_OFF
     sta $2001
 
+    lda #10
+    sta obs_countdown
+
     lda rng_seed
     bne @skip_rng_init
     lda #'Z'  ;$21
@@ -106,6 +109,7 @@ Game_Init:
     lda #PPU_CTRL_VERT
     sta $2000
 
+    ldx #10
 ; Initialy generate and draw both nametables
 @drawWholeMap:
     jsr generate_column
@@ -199,6 +203,10 @@ Game_Init:
     lda TmpX
     sta $2007
 
+    ; reset scroll
+    lda #0
+    sta calc_scroll
+
     lda #PPU_MASK
     sta $2001
     lda #0
@@ -255,10 +263,79 @@ BinToHex:
 ;; End of Game_Init
 
 DedInit:
+    lda #1
+    sta Ded_Fading
+    lda #0
+    sta Ded_Pal
+    lda #DED_FADESPEED
+    sta Ded_FadeNext
     rts
 
 HSInit:
     rts
+
+Ded_Frame:
+    lda Ded_Fading
+    beq @fadeDone
+
+    dec Ded_FadeNext
+    beq @doFade
+    jmp @waitFrame
+
+@doFade:
+    lda #DED_FADESPEED
+    sta Ded_FadeNext
+
+    lda Ded_Pal
+    cmp #4
+    bcc @notDone
+
+    lda #0
+    sta Ded_Fading
+    jmp @waitFrame
+
+@notDone:
+    asl a
+    asl a
+    tax
+    ldy #31
+@fadeLoop:
+    lda DedFade, x
+    sta PaletteRAM, y
+    inx
+    dey
+    cpy #27
+    bne @fadeLoop
+    inc Ded_Pal
+    ;jmp WaitFrame
+
+@waitFrame:
+    bit $2002
+    bvs @waitFrame
+
+; wait for sprite zero hit
+@loop_sprite2:
+    bit $2002
+    bvc @loop_sprite2
+
+    ; update scroll for status bar (only X matters here)
+    lda #00
+    sta $2005
+    ; first nametable
+    lda #PPU_CTRL_VERT
+    sta $2000
+    jmp WaitFrame
+
+@fadeDone:
+    ; TODO:
+    ;   display "game over"
+    ;   wait for start pressed
+    ;   goto enter new high score if applicable
+
+    lda #GS_TITLE
+    sta current_gamestate
+    inc gamestate_changed
+    jmp WaitFrame
 
 Game_Frame:
     ; increment the screen position
@@ -285,7 +362,10 @@ Game_Frame:
     beq @loop_sprite
 
     ; TODO: die
-    ;brk
+    lda #GS_DED
+    sta current_gamestate
+    inc gamestate_changed
+    jmp WaitFrame
 
 ; wait for vblank to end
 @loop_sprite:
@@ -335,15 +415,15 @@ CheckCollide:
     jmp @done
 
 @collide:
-    lda #$05
-    sta $039F
+    ;lda #$05
+    ;sta $039F
 
     lda #1
     rts
 
 @done:
-    lda #$0F
-    sta $039F
+    ;lda #$0F
+    ;sta $039F
 
     lda #0
     rts
@@ -824,13 +904,16 @@ update_scroll:
 @done:
     rts
 
-NMI_GameScroll:
-
-    rts
-
 GamePalette:
     .byte $0F,$17,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39
     .byte $0F,$15,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39
+
+DedFade:
+    .byte $0F,$17,$2B,$39
+    .byte $0F,$07,$1B,$29
+    .byte $0F,$0D,$0B,$19
+    .byte $0F,$0D,$0D,$09
+    .byte $0F,$0D,$0D,$0D
 
 MetaTiles:  ; meta tile IDs -> meta tile tile addresses
     .word Meta_Sky, Meta_Ground, Meta_Obstacle, Meta_Powerup

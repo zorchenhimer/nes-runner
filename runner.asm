@@ -1,5 +1,12 @@
 
 ; TODO
+;   Game states and substates
+;       change gamestate in the NMI instead of mid-frame (should reduce flickering)
+;       game over
+;       menu stuff
+;           high scores
+;           new high score
+;           enter seed
 ;   Player Sprite
 ;   Better map generation
 ;   Background art (mountains or some shit.  happy little trees?)
@@ -50,14 +57,32 @@ rng_result:         .res 1
 
 ; Pointer to the current frame routine
 DoFramePointer:     .res 2
+Ded_Fading:         .res 1  ; are we fading?
+Ded_Pal:            .res 1  ; current fade palette
+Ded_FadeNext:       .res 1  ; frames until next palette
+DED_FADESPEED       = 10
 
 gamestate_changed:  .res 1
 current_gamestate:  .res 1
-GS_TITLE        = 0
-GS_GAME         = 1
-GS_DED          = 2     ; todo: make a substate of GS_GAME?
-GS_HIGHSCORE    = 3
-GS_CREDITS      = 4
+;GS_TITLE        = 0
+;GS_GAME         = 1
+;GS_DED          = 2
+;GS_HIGHSCORE    = 3
+;GS_NEWHIGH      = 4
+;GS_CREDITS      = 5
+;GS_SEED         = 6 ; enter in a seed
+
+; main state in is high bits
+; sub state is in low bits
+GS_CREDITS  = %00000000
+
+GS_GAME     = %10000000
+GS_DED      = %10000001
+
+GS_TITLE    = %01000000
+GS_HIGHSCORE= %01000001
+GS_NEWHIGH  = %01000010
+GS_SEED     = %01000011
 
 PauseOn:        .res 1
 PauseOff:       .res 1
@@ -220,7 +245,7 @@ RESET:
     sta $2006
     jsr ClearAttrTable
 
-    lda #0
+    lda #GS_TITLE
     sta current_gamestate
     jsr ChangeGameState
 
@@ -280,6 +305,8 @@ NMI:
     tya
     pha
 
+    ; TODO: change gamestate here instead of mid-frame
+
     ; Skip NMI if we're currently drawing the whole screen
     lda SkipNMI
     bne @end
@@ -293,11 +320,24 @@ NMI:
     lda #$02
     sta $4014
 
-    ; Scroll
-    lda current_gamestate
-    cmp #GS_GAME
-    bne @ScreenA
+    bit current_gamestate
+    bvs @title
+    bmi @game
 
+    ; credits
+    bit cr_UpdateReady
+    bpl @noUpdate
+    jsr Credits_WriteBuffer
+    ;jmp @end
+
+@noUpdate:
+    lda #0
+    sta cr_UpdateReady
+
+    jsr Credits_UpdateScroll
+    jmp @end
+
+@game:
     ; draw the next column if needed
     jsr Draw_Column
     jsr Draw_Score
@@ -305,22 +345,6 @@ NMI:
     ; scroll in the screen
     jsr update_scroll
 
-    jmp @end
-
-; scroll for title
-@ScreenA:
-    cmp #GS_CREDITS
-    bne @title
-
-    bit cr_UpdateReady
-    bpl @noUpdate
-    jsr Credits_WriteBuffer
-
-@noUpdate:
-    lda #0
-    sta cr_UpdateReady
-
-    jsr Credits_UpdateScroll
     jmp @end
 
 @title:
@@ -448,17 +472,13 @@ ChangeGameState:
     lda #0
     sta gamestate_changed
 
-    lda #PPU_MASK_OFF
-    sta $2001
-
     jsr MMC1_Setup
-    jsr ClearSprites
 
     lda current_gamestate
-    beq @title
-
-    cmp #GS_CREDITS
     beq @credits
+
+    bit current_gamestate
+    bpl @title
 
     lda CURRENT_PAGE
     cmp #PAGEID_GAME
@@ -466,10 +486,15 @@ ChangeGameState:
     jsr MMC1_Page0
 
 @noswap:
+    lda current_gamestate
     cmp #GS_DED
     beq @ded
     bcs @highscore
 
+    lda #PPU_MASK_OFF
+    sta $2001
+
+    jsr ClearSprites
     jsr MMC1_Pattern0
     ; GS_GAME
 
@@ -481,13 +506,27 @@ ChangeGameState:
     jmp Game_Init
 
 @ded:
+    lda #<Ded_Frame
+    sta DoFramePointer
+    lda #>Ded_Frame
+    sta DoFramePointer+1
+
     jmp DedInit
 
 @highscore:
+
+    lda #PPU_MASK_OFF
+    sta $2001
+
+    jsr ClearSprites
     jmp HSInit
 
 @credits:
 
+    lda #PPU_MASK_OFF
+    sta $2001
+
+    jsr ClearSprites
     jsr MMC1_Setup_Horiz
     jsr MMC1_Page1
     jsr MMC1_Pattern1
@@ -500,6 +539,10 @@ ChangeGameState:
     jmp Credits_Init
 
 @title:
+    lda #PPU_MASK_OFF
+    sta $2001
+
+    jsr ClearSprites
     jsr MMC1_Pattern0
     ;; Init title
 

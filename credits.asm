@@ -454,10 +454,6 @@ Credits_UpdateScroll:
     sta $2000
     rts
 
-; TODO: draw the next name once the screen scrolls far enough
-DrawNextName:
-    rts
-
 ; start of row addresses - 30 total rows
 PPU_RowStartLookup_High:
     .byte $20, $20, $20, $20, $21, $21, $21, $21
