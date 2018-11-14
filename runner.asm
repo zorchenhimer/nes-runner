@@ -167,6 +167,7 @@ SP_TITLEX1      = sprites+7
     ; main game
     .byte $00   ; current Page ID
     .include "game.asm"
+    .include "ded.asm"
 
 .segment "PAGE1"
     ; credits
@@ -253,12 +254,27 @@ DoFrame:
     jsr ReadControllers
     jmp (DoFramePointer)
 
+WaitSpriteZero:
+    ; wait for vblank to end
+    bit $2002
+    bvs WaitSpriteZero
+
+; wait for sprite zero hit
+@loop_sprite2:
+    bit $2002
+    bvc @loop_sprite2
+
+    ; update scroll for status bar (only X matters here)
+    lda #00
+    sta $2005
+    ; first nametable
+    lda #PPU_CTRL_VERT
+    sta $2000
+
 WaitFrame:
     lda gamestate_changed
     beq @nochange
 
-    lda #0
-    sta gamestate_changed
     jsr ChangeGameState
 
 @nochange:
