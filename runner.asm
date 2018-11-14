@@ -474,12 +474,27 @@ ChangeGameState:
 
     jsr MMC1_Setup
 
-    lda current_gamestate
-    beq @credits
-
     bit current_gamestate
-    bpl @title
+    bvs @title
+    bmi @game
 
+    ; Credits
+    lda #PPU_MASK_OFF
+    sta $2001
+
+    jsr ClearSprites
+    jsr MMC1_Setup_Horiz
+    jsr MMC1_Page1
+    jsr MMC1_Pattern1
+
+    lda #<Credits_Frame
+    sta DoFramePointer
+    lda #>Credits_Frame
+    sta DoFramePointer+1
+
+    jmp Credits_Init
+
+@game:
     lda CURRENT_PAGE
     cmp #PAGEID_GAME
     beq @noswap
@@ -520,23 +535,6 @@ ChangeGameState:
 
     jsr ClearSprites
     jmp HSInit
-
-@credits:
-
-    lda #PPU_MASK_OFF
-    sta $2001
-
-    jsr ClearSprites
-    jsr MMC1_Setup_Horiz
-    jsr MMC1_Page1
-    jsr MMC1_Pattern1
-
-    lda #<Credits_Frame
-    sta DoFramePointer
-    lda #>Credits_Frame
-    sta DoFramePointer+1
-
-    jmp Credits_Init
 
 @title:
     lda #PPU_MASK_OFF
