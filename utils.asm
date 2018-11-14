@@ -111,3 +111,30 @@ ClearSprites:
     bne @loop
     rts
 
+ClearNametable:
+    ldx #0
+    ldy #0
+    lda #' '
+@loop2:
+    sta $2007
+    inx
+    cpx #$20
+    bne @loop2
+
+    iny
+    ldx #0
+    cpy #$1E
+    bne @loop2
+    rts
+
+; for (int i = 64; i < 0; i--) {
+;   send_byte_to_PPU(0)
+; }
+ClearAttrTable:
+    ldx #64
+    lda #$00
+@loop:
+    sta $2007
+    dex
+    bne @loop
+    rts
