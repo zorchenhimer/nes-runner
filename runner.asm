@@ -119,6 +119,11 @@ PlayerJumpFrame:    .res 1  ; current frame of the jump
 PPU_CTRL_VERT   = %10010100
 PPU_CTRL_HORIZ  = %10010000
 
+PPUUpdates:     .res 1
+PPU_UPDATE_MASK = %10000000
+;PPU_UPDATE_CTRL = %10000000
+
+NewPPUMask:     .res 1
 ; no emphasize colors, show bg & sprites,
 ; show left 8px bg & sprite, no grayscale
 PPU_MASK        = %00011110
@@ -272,12 +277,6 @@ WaitSpriteZero:
     sta $2000
 
 WaitFrame:
-    lda gamestate_changed
-    beq @nochange
-
-    jsr ChangeGameState
-
-@nochange:
     lda #1
     sta sleeping
     ;inc sleeping
@@ -293,7 +292,19 @@ NMI:
     tya
     pha
 
+    lda gamestate_changed
+    beq @nochange
+
+    jsr ChangeGameState
+@nochange:
+
     ; TODO: change gamestate here instead of mid-frame
+    ;bit PPUUpdates
+    ;bpl @noPPUUpdate
+    ;lda NewPPUMask
+    ;sta $2001
+
+@noPPUUpdate:
 
     ; Skip NMI if we're currently drawing the whole screen
     lda SkipNMI
