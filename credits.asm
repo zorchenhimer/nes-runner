@@ -346,11 +346,11 @@ cr_op_ByteList:
     jmp @loop
 
 @done:
-    inc cr_tmpByte
     lda cr_tmpByte
     clc
     adc cr_tileBufferOffset
     sta cr_tileBufferOffset
+    inc cr_tmpByte
     lda cr_tmpByte
     jsr cr_Decode_Opcode_IncAddr
     jmp cr_Decode_Opcode
