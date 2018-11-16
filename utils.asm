@@ -1,5 +1,7 @@
 ; Was a button pressed this frame?
 ButtonPressedP1:
+    sta controllerTmp
+
     lda controller1
     and btnPressedMask
     sta controllerTmp
@@ -14,6 +16,8 @@ ButtonPressedP1:
     rts
 
 ButtonPressedP2:
+    sta controllerTmp
+
     lda controller2
     and btnPressedMask
     sta controllerTmp

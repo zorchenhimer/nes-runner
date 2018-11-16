@@ -95,7 +95,6 @@ GameOverWait:
     ;inc gamestate_changed
 
     lda #BUTTON_START
-    sta controllerTmp
     jsr ButtonPressedP1
     bne @gotoTitle
     jmp WaitFrame

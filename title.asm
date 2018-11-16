@@ -187,7 +187,6 @@ Frame_Title:
     sta PaletteRAM+12
 
     lda #BUTTON_SELECT
-    sta btnPressedMask
     jsr ButtonPressedP1
     beq @t_noselect
 
@@ -226,7 +225,6 @@ Frame_Title:
 
 @tf_wot:
     lda #BUTTON_START
-    sta btnPressedMask
     jsr ButtonPressedP1
     beq @t_nostart
 
@@ -238,7 +236,6 @@ Frame_Title:
 
 @t_nostart:
     lda #BUTTON_A
-    sta btnPressedMask
     jsr ButtonPressedP1
     beq @t_end
 
