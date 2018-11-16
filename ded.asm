@@ -93,8 +93,18 @@ GameOverWait:
     ;lda #GS_TITLE
     ;sta current_gamestate
     ;inc gamestate_changed
+
+    lda #BUTTON_START
+    sta controllerTmp
+    jsr ButtonPressedP1
+    bne @gotoTitle
     jmp WaitFrame
 
+@gotoTitle:
+    lda #GS_TITLE
+    sta current_gamestate
+    inc gamestate_changed
+    jmp WaitFrame
 
 DedFade:
     .byte $0F,$17,$2B,$39
