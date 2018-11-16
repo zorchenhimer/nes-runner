@@ -325,6 +325,10 @@ NMI:
     jmp @finished
 
 @game:
+    lda current_gamestate
+    cmp #GS_DED
+    beq @ded
+
     ; draw the next column if needed
     jsr Draw_Column
     jsr Draw_Score
@@ -332,6 +336,10 @@ NMI:
     ; scroll in the screen
     jsr update_scroll
 
+    jmp @finished
+
+@ded:
+    ; todo: ded things
     jmp @finished
 
 @title:
