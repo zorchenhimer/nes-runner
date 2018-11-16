@@ -5,6 +5,18 @@ DedInit:
     sta Ded_Pal
     lda #DED_FADESPEED
     sta Ded_FadeNext
+
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+
+    ; Clear out the tile column draw buffer
+    ldx #15
+    lda #0
+@loop:
+    sta tile_column_buffer, x
+    dex
+    bpl @loop
+
     rts
 
 Ded_Frame:

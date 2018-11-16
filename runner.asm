@@ -237,6 +237,12 @@ RESET:
     sta current_gamestate
     jsr ChangeGameState
 
+    lda #PPU_MASK
+    sta $2001
+
+    lda #0
+    sta SkipNMI
+
 DoFrame:
     jsr ReadControllers
     jmp (DoFramePointer)
@@ -274,6 +280,10 @@ NMI:
     tya
     pha
 
+    ; Skip NMI if we're currently drawing the whole screen
+    lda SkipNMI
+    bne @skip
+
     lda gamestate_changed
     beq @nochange
 
@@ -287,10 +297,6 @@ NMI:
     ;sta $2001
 
 @noPPUUpdate:
-
-    ; Skip NMI if we're currently drawing the whole screen
-    lda SkipNMI
-    bne @end
 
     jsr UpdatePalettes
 
@@ -316,7 +322,7 @@ NMI:
     sta cr_UpdateReady
 
     jsr Credits_UpdateScroll
-    jmp @end
+    jmp @finished
 
 @game:
     ; draw the next column if needed
@@ -326,7 +332,7 @@ NMI:
     ; scroll in the screen
     jsr update_scroll
 
-    jmp @end
+    jmp @finished
 
 @title:
     bit $2002
@@ -337,7 +343,14 @@ NMI:
     lda #PPU_CTRL_HORIZ
     sta $2000
 
-@end:
+@finished:
+    lda #PPU_MASK
+    sta $2001
+
+    lda #0
+    sta SkipNMI
+
+@skip:
     lda #0
     sta sleeping
     pla

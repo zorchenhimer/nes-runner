@@ -145,16 +145,13 @@ InitTitle:
     tya
     sta TitleLength
 
-    lda #PPU_MASK
-    sta $2001
+    ;lda #PPU_MASK
+    ;sta $2001
 
     bit $2002
     lda #$00
     sta $2005
     sta $2005
-
-    lda #0
-    sta SkipNMI
     rts
 
 Frame_Title:

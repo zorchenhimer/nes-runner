@@ -215,11 +215,6 @@ Game_Init:
     ; reset scroll
     lda #0
     sta calc_scroll
-
-    lda #PPU_MASK
-    sta $2001
-    lda #0
-    sta SkipNMI
     rts
 
 StatusPlaceholder:
