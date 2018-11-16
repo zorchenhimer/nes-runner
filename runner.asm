@@ -1,7 +1,6 @@
 
 ; TODO
 ;   Game states and substates
-;       change gamestate in the NMI instead of mid-frame (should reduce flickering)
 ;       game over
 ;       menu stuff
 ;           high scores
@@ -341,6 +340,10 @@ NMI:
 
 @ded:
     ; todo: ded things
+    lda Ded_Fading
+    beq @title
+
+    jsr update_scroll
     jmp @finished
 
 @title:

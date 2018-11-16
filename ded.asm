@@ -5,10 +5,6 @@ DedInit:
     sta Ded_Pal
     lda #DED_FADESPEED
     sta Ded_FadeNext
-
-    lda #PPU_CTRL_HORIZ
-    sta $2000
-
     rts
 
 Ded_Frame:
@@ -52,12 +48,12 @@ Ded_Frame:
     ;   wait for start pressed
     ;   goto enter new high score if applicable
 
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+
     inc SkipNMI
     lda #PPU_MASK_OFF
     sta $2001
-
-    lda #PPU_CTRL_HORIZ
-    sta $2000
 
     ; Clear out the tile column draw buffer
     ldx #15
@@ -70,8 +66,35 @@ Ded_Frame:
     jsr ClearNametable0
     jsr ClearNametable1
 
-    ; TODO: load up a palette
     jsr ClearSprites
+
+    ; update palettes. just reuse the title palettes
+    lda #<TitlePalette
+    sta PaletteAddr
+    lda #>TitlePalette
+    sta PaletteAddr+1
+    jsr LoadPalettes
+    jsr UpdatePalettes
+
+    lda #$21
+    sta $2006
+    lda #$8C
+    sta $2006
+
+    ldx #0
+@textLoop:
+    lda DedText, x
+    beq @txtEnd
+    sta $2007
+    inx
+    jmp @textLoop
+
+@txtEnd:
+    ; reset the frame pointer to avoid fading again
+    lda #<GameOverWait
+    sta DoFramePointer
+    lda #>GameOverWait
+    sta DoFramePointer+1
 
     lda #0
     sta SkipNMI
@@ -79,21 +102,7 @@ Ded_Frame:
     lda #PPU_MASK
     sta $2001
 
-    ;lda #PPU_MASK
-    ;sta NewPPUMask
-    ;lda #PPU_UPDATE_MASK
-    ;sta PPUUpdates
-
-    lda #<GameOverWait
-    sta DoFramePointer
-    lda #>GameOverWait
-    sta DoFramePointer+1
-
 GameOverWait:
-    ;lda #GS_TITLE
-    ;sta current_gamestate
-    ;inc gamestate_changed
-
     lda #BUTTON_START
     jsr ButtonPressedP1
     bne @gotoTitle
@@ -104,6 +113,9 @@ GameOverWait:
     sta current_gamestate
     inc gamestate_changed
     jmp WaitFrame
+
+DedText:
+    .byte "Game Over!", $00
 
 DedFade:
     .byte $0F,$17,$2B,$39
