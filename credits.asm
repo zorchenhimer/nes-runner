@@ -24,6 +24,8 @@ Credits_Init:
 
     lda #0
     sta cr_chunkCurrent
+    sta cr_currentPPULine
+    sta cr_currentAttrOffset
 
     ;lda #$80
     ;sta cr_AttributeByte
@@ -64,11 +66,12 @@ Credits_Init:
     lda #$00
     sta $2005
     sta $2005
+    sta cr_scroll
 
-    lda #%00011110
+    lda #PPU_MASK
     sta $2001
+
     lda #CR_TOP
-    ;sta $2000
     sta cr_scroll_table
     rts
 
