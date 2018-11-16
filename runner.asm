@@ -288,6 +288,7 @@ NMI:
     beq @nochange
 
     jsr ChangeGameState
+    jmp @finished
 @nochange:
 
     ; TODO: change gamestate here instead of mid-frame
