@@ -1,11 +1,19 @@
 InitTitle:
+    ; set the draw orientation
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+
+    lda #PPU_MASK_OFF
+    sta $2001
+    inc SkipNMI
+
     lda #0
     sta TitleIndex
 
     jsr ClearNametable0
     jsr ClearAttrTable0
 
-    ; Init the cursor sprite
+; Init the cursor sprite
     ; Y coord
     lda #$60
     sta SP_TITLEY0
@@ -28,15 +36,7 @@ InitTitle:
     lda #$02        ; '>'
     sta SP_TITLETILE1
 
-    ; set the draw orientation
-    lda #PPU_CTRL_HORIZ
-    sta $2000
-
-    lda #PPU_MASK_OFF
-    sta $2001
-    inc SkipNMI
-
-    ; Load the title palette's ROM addr
+; Load the title palette's ROM addr
     lda #<TitlePalette
     sta PaletteAddr
     lda #>TitlePalette
@@ -45,7 +45,7 @@ InitTitle:
     ; Then load ROM -> RAM
     jsr LoadPalettes
 
-    ; RAINBOW
+; RAINBOW start
     lda #$3F
     sta $2006
     lda #$00
@@ -56,27 +56,7 @@ InitTitle:
 
     lda #$1C
     sta TitleColor2
-    ; /RAINBOW
-
-    ; clear screen
-    lda #$20
-    sta $2006
-    lda #$00
-    sta $2006
-
-    ldx #0
-    ldy #0
-    lda #' '
-@loop:
-    sta $2007
-    inx
-    cpx #$20
-    bne @loop
-
-    iny
-    ldx #0
-    cpy #$1E
-    bne @loop
+; /RAINBOW
 
     ; Draw Title
     lda #$20
