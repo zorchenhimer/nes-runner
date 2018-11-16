@@ -3,6 +3,15 @@ Game_Init:
     lda #PPU_MASK_OFF
     sta $2001
 
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+
+    jsr ClearNametable0
+    jsr ClearNametable1
+
+    jsr ClearAttrTable0
+    jsr ClearAttrTable1
+
     lda #10
     sta obs_countdown
 

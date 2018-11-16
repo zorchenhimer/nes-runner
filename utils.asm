@@ -111,7 +111,30 @@ ClearSprites:
     bne @loop
     rts
 
-ClearNametable:
+ClearNametable0:
+    lda #$20
+    sta $2006
+    jmp utils_ClearNametable
+
+ClearNametable1:
+    lda #$24
+    sta $2006
+    jmp utils_ClearNametable
+
+ClearNametable2:
+    lda #$28
+    sta $2006
+    jmp utils_ClearNametable
+
+ClearNametable3:
+    lda #$2C
+    sta $2006
+    jmp utils_ClearNametable
+
+utils_ClearNametable:
+    lda #00
+    sta $2006
+
     ldx #0
     ldy #0
     lda #' '
@@ -127,10 +150,29 @@ ClearNametable:
     bne @loop2
     rts
 
-; for (int i = 64; i < 0; i--) {
-;   send_byte_to_PPU(0)
-; }
-ClearAttrTable:
+ClearAttrTable0:
+    lda #$23
+    sta $2006
+    jmp utils_ClearAttrTable
+
+ClearAttrTable1:
+    lda #$27
+    sta $2006
+    jmp utils_ClearAttrTable
+
+ClearAttrTable2:
+    lda #$2B
+    sta $2006
+    jmp utils_ClearAttrTable
+
+ClearAttrTable3:
+    lda #$2F
+    sta $2006
+    jmp utils_ClearAttrTable
+
+utils_ClearAttrTable:
+    lda #$C0
+    sta $2006
     ldx #64
     lda #$00
 @loop:

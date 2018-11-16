@@ -55,11 +55,8 @@ Ded_Frame:
     lda #PPU_CTRL_HORIZ
     sta $2000
 
-    lda #$20
-    sta $2006
-    lda #$00
-    sta $2006
-    jsr ClearNametable
+    jsr ClearNametable0
+    jsr ClearNametable1
 
     ; TODO: load up a palette
     jsr ClearSprites

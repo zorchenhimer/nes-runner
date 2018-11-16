@@ -16,29 +16,11 @@ Credits_Init:
     jsr LoadPalettes
     jsr UpdatePalettes
 
-    lda #$20
-    sta $2006
-    lda #$00
-    sta $2006
-    jsr credits_ClearNametable
+    jsr ClearNametable0
+    jsr ClearNametable2
 
-    lda #$28
-    sta $2006
-    lda #$00
-    sta $2006
-    jsr credits_ClearNametable
-
-    lda #$23
-    sta $2006
-    lda #$C0
-    sta $2006
-    jsr credits_ClearAttrTable
-
-    lda #$2B
-    sta $2006
-    lda #$C0
-    sta $2006
-    jsr credits_ClearAttrTable
+    jsr ClearAttrTable0
+    jsr ClearAttrTable2
 
     lda #0
     sta cr_chunkCurrent
@@ -88,33 +70,6 @@ Credits_Init:
     lda #CR_TOP
     ;sta $2000
     sta cr_scroll_table
-    lda #0
-    sta SkipNMI
-    rts
-
-credits_ClearAttrTable:
-    lda #00
-    ldx #64
-@loop:
-    sta $2007
-    dex
-    bne @loop
-    rts
-
-credits_ClearNametable:
-    ldx #0
-    ldy #0
-    lda #' '
-@loop2:
-    sta $2007
-    inx
-    cpx #$20
-    bne @loop2
-
-    iny
-    ldx #0
-    cpy #$1E
-    bne @loop2
     rts
 
 Credits_WriteAttr:

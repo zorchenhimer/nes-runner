@@ -2,6 +2,9 @@ InitTitle:
     lda #0
     sta TitleIndex
 
+    jsr ClearNametable0
+    jsr ClearAttrTable0
+
     ; Init the cursor sprite
     ; Y coord
     lda #$60
@@ -261,3 +264,4 @@ TitleData:
 TitlePalette:
     .byte $0F,$11,$14,$0F, $0F,$15,$0F,$05, $0F,$15,$0F,$0F, $0F,$11,$11,$11
     .byte $0F,$10,$00,$30, $0F,$05,$05,$05, $0F,$0A,$0A,$0A, $0F,$11,$11,$11
+    .byte $EA, $EA

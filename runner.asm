@@ -227,29 +227,11 @@ RESET:
     jsr MMC1_Setup
     jsr MMC1_Page0
 
-    lda #$20
-    sta $2006
-    lda #$00
-    sta $2006
-    jsr ClearNametable
+    jsr ClearNametable0
+    jsr ClearNametable1
 
-    lda #$24
-    sta $2006
-    lda #$00
-    sta $2006
-    jsr ClearNametable
-
-    lda #$23
-    sta $2006
-    lda #$C0
-    sta $2006
-    jsr ClearAttrTable
-
-    lda #$27
-    sta $2006
-    lda #$C0
-    sta $2006
-    jsr ClearAttrTable
+    jsr ClearAttrTable0
+    jsr ClearAttrTable1
 
     lda #GS_TITLE
     sta current_gamestate
