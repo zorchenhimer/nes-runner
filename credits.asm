@@ -355,6 +355,15 @@ cr_OPCodes:
     .byte $EA, $EA
 
 Credits_Frame:
+    lda #BUTTON_START
+    jsr ButtonPressedP1
+    beq @nobutton
+
+    lda #GS_TITLE
+    sta current_gamestate
+    inc gamestate_changed
+
+@nobutton:
     lda cr_scrollWait
     bne @notYet
 
