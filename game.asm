@@ -6,6 +6,8 @@ Game_Init:
     lda #PPU_CTRL_HORIZ
     sta $2000
 
+    jsr ClearSprites
+
     jsr ClearNametable0
     jsr ClearNametable1
 

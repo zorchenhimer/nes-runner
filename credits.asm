@@ -6,7 +6,7 @@ Credits_Init:
     ; - Update palettes
     inc SkipNMI
 
-    lda #$00
+    lda #PPU_MASK_OFF
     sta $2001
 
     lda #<Credits_Palette
@@ -15,6 +15,8 @@ Credits_Init:
     sta PaletteAddr+1
     jsr LoadPalettes
     jsr UpdatePalettes
+
+    jsr ClearSprites
 
     jsr ClearNametable0
     jsr ClearNametable2
@@ -68,11 +70,13 @@ Credits_Init:
     sta $2005
     sta cr_scroll
 
-    lda #PPU_MASK
-    sta $2001
+    ;lda #PPU_MASK
+    ;sta $2001
 
     lda #CR_TOP
     sta cr_scroll_table
+
+    dec TurnPPUOn
     rts
 
 Credits_WriteAttr:

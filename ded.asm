@@ -97,10 +97,9 @@ Ded_Frame:
     sta DoFramePointer+1
 
     lda #0
-    sta SkipNMI
 
-    lda #PPU_MASK
-    sta $2001
+
+    dec TurnPPUOn
 
 GameOverWait:
     lda #BUTTON_START

@@ -86,6 +86,7 @@ GS_SEED     = %01000011
 PauseOn:        .res 1
 PauseOff:       .res 1
 SkipNMI:        .res 1
+TurnPPUOn:      .res 1
 
 TmpCounter:     .res 1
 TmpAttr:        .res 1
@@ -150,9 +151,18 @@ tile_column_buffer: .res 16
 PaletteRAM:         .res 32
 TileBuffer:         .res 64
 
+DED_START_PAL   = $03AA
+DED_SPZ_PAL     = $039E
+DED_SPZ_BG_PAL  = $03A6 ; for the BG tile under sprite zero
+
 .segment "OAM"
     ; sprite stuff
 spritezero:         .res 4
+SPZ_Y   = spritezero+0
+SPZ_IDX = spritezero+1
+SPZ_ATT = spritezero+2
+SPZ_X   = spritezero+3
+
 sprites:            .res 252
 
 SP_TITLEY0      = sprites+0
@@ -236,8 +246,9 @@ RESET:
     sta current_gamestate
     jsr ChangeGameState
 
-    lda #PPU_MASK
-    sta $2001
+    dec TurnPPUOn
+    ;lda #PPU_MASK
+    ;sta $2001
 
     lda #0
     sta SkipNMI
@@ -283,6 +294,15 @@ NMI:
     lda SkipNMI
     bne @skip
 
+    bit TurnPPUOn
+    bvc @skipOn
+
+    lda #PPU_MASK
+    sta $2001
+    lda #0
+    sta TurnPPUOn
+
+@skipOn:
     lda gamestate_changed
     beq @nochange
 
@@ -356,8 +376,9 @@ NMI:
     sta $2000
 
 @finished:
-    lda #PPU_MASK
-    sta $2001
+    dec TurnPPUOn
+    ;lda #PPU_MASK
+    ;sta $2001
 
     lda #0
     sta SkipNMI
@@ -485,10 +506,9 @@ ChangeGameState:
     bmi @game
 
     ; Credits
-    lda #PPU_MASK_OFF
-    sta $2001
+    ;lda #PPU_MASK_OFF
+    ;sta $2001
 
-    jsr ClearSprites
     jsr MMC1_Setup_Horiz
     jsr MMC1_Page1
     jsr MMC1_Pattern1
@@ -515,7 +535,6 @@ ChangeGameState:
     lda #PPU_MASK_OFF
     sta $2001
 
-    jsr ClearSprites
     jsr MMC1_Pattern0
     ; GS_GAME
 
