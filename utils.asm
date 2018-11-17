@@ -114,21 +114,25 @@ ClearSprites:
     rts
 
 ClearNametable0:
+    bit $2002
     lda #$20
     sta $2006
     jmp utils_ClearNametable
 
 ClearNametable1:
+    bit $2002
     lda #$24
     sta $2006
     jmp utils_ClearNametable
 
 ClearNametable2:
+    bit $2002
     lda #$28
     sta $2006
     jmp utils_ClearNametable
 
 ClearNametable3:
+    bit $2002
     lda #$2C
     sta $2006
     jmp utils_ClearNametable
@@ -153,21 +157,25 @@ utils_ClearNametable:
     rts
 
 ClearAttrTable0:
+    bit $2002
     lda #$23
     sta $2006
     jmp utils_ClearAttrTable
 
 ClearAttrTable1:
+    bit $2002
     lda #$27
     sta $2006
     jmp utils_ClearAttrTable
 
 ClearAttrTable2:
+    bit $2002
     lda #$2B
     sta $2006
     jmp utils_ClearAttrTable
 
 ClearAttrTable3:
+    bit $2002
     lda #$2F
     sta $2006
     jmp utils_ClearAttrTable
