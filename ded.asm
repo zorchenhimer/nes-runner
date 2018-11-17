@@ -5,6 +5,7 @@ DedInit:
     sta Ded_Pal
     lda #DED_FADESPEED
     sta Ded_FadeNext
+    jsr update_scroll
     rts
 
 Ded_Frame:
