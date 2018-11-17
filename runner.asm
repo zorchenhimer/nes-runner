@@ -169,18 +169,18 @@ SP_TITLEX1      = sprites+7
 
 .segment "PAGE0"
     ; main game
-    .byte $00   ; current Page ID
+    .byte $00, $EA   ; current Page ID
     .include "game.asm"
     .include "ded.asm"
 
 .segment "PAGE1"
     ; credits
-    .byte $01   ; current Page ID
+    .byte $01, $EA   ; current Page ID
     .include "credits.asm"
 
 .segment "PAGE2"
     ; ???
-    .byte $02
+    .byte $02, $EA
 
 .segment "PAGE3"
     ; fixed bank
