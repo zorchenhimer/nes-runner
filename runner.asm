@@ -1,7 +1,6 @@
 
 ; TODO
 ;   Game states and substates
-;       game over
 ;       menu stuff
 ;           high scores
 ;           new high score
@@ -530,7 +529,7 @@ ChangeGameState:
     lda current_gamestate
     cmp #GS_DED
     beq @ded
-    bcs @highscore
+    ;bcs @highscore
 
     lda #PPU_MASK_OFF
     sta $2001
@@ -565,9 +564,12 @@ ChangeGameState:
     lda #PPU_MASK_OFF
     sta $2001
 
-    jsr ClearSprites
     jsr MMC1_Pattern0
     ;; Init title
+
+    lda current_gamestate
+    cmp #GS_SEED
+    beq @seed
 
     lda #<Frame_Title
     sta DoFramePointer
@@ -576,5 +578,9 @@ ChangeGameState:
 
     jmp InitTitle
 
+@seed:
+    jmp InitSeed
+
     .include "title.asm"
     .include "utils.asm"
+    .include "seed.asm"

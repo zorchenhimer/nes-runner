@@ -7,9 +7,20 @@ InitTitle:
     sta $2001
     inc SkipNMI
 
+; Load the title palette's ROM addr
+    lda #<TitlePalette
+    sta PaletteAddr
+    lda #>TitlePalette
+    sta PaletteAddr+1
+
+    ; Then load ROM -> RAM
+    jsr LoadPalettes
+    jsr UpdatePalettes
+
     lda #0
     sta TitleIndex
 
+    jsr ClearSprites
     jsr ClearNametable0
     jsr ClearAttrTable0
 
@@ -35,15 +46,6 @@ InitTitle:
     sta SP_TITLETILE0
     lda #$02        ; '>'
     sta SP_TITLETILE1
-
-; Load the title palette's ROM addr
-    lda #<TitlePalette
-    sta PaletteAddr
-    lda #>TitlePalette
-    sta PaletteAddr+1
-
-    ; Then load ROM -> RAM
-    jsr LoadPalettes
 
 ; RAINBOW start
     lda #$3F
@@ -231,8 +233,8 @@ TitleText:
 
 TitleData:
     .byte "Start Game", $00, GS_GAME
+    .byte "Enter Seed", $00, GS_SEED
     .byte "Credits", $00, GS_CREDITS
-    .byte "WOT", $00, GS_TITLE
     .byte $00
 
 TitlePalette:
