@@ -217,15 +217,6 @@ Frame_Title:
     jmp WaitFrame
 
 @t_nostart:
-    lda #BUTTON_A
-    jsr ButtonPressedP1
-    beq @t_end
-
-    lda #GS_CREDITS
-    sta current_gamestate
-    inc gamestate_changed
-
-@t_end:
     jmp WaitFrame
 
 TitleText:
