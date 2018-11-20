@@ -86,6 +86,7 @@ InitSeed:
 
     ; Attribute tables for selected
     jsr seed_SetAttr
+    jsr seed_LoadSprite
 
     ; Load up cursor sprites
     ;   character selecton sprites
@@ -202,6 +203,101 @@ SeedFrame:
     jsr seed_SetAttr
     jmp WaitFrame
 
+seed_LoadSprite:
+    lda #2  ; TODO: load elsewhere
+
+    ; multiply by 4 to get the correct index
+    asl a
+    asl a
+
+    ; add offset to start of tiles
+    clc
+    adc #$10
+    sta TmpCounter
+
+    lda #<sprites
+    sta TmpPPUAddr
+    lda #>sprites
+    sta TmpPPUAddr+1
+
+    ; load up tiles into sprites
+    ldy #1
+    ldx #4
+@loop:
+    ; tile
+    lda TmpCounter
+    sta (TmpPPUAddr), y
+    inc TmpCounter
+
+    lda TmpPPUAddr
+    adc #4
+    sta TmpPPUAddr
+    dex
+    bne @loop
+
+    sec
+    sbc #16
+    sta TmpPPUAddr
+    clc
+
+    ; load up first tile's x/y
+    ldy #0
+    lda #96
+    sta (TmpPPUAddr), y
+    sta TmpY
+    ldy #3
+    lda #72
+    sta (TmpPPUAddr), y
+    sta TmpX
+
+    nop
+    nop
+
+    ; loop through the rest to calculate x/y
+    lda TmpPPUAddr
+    adc #4
+    sta TmpPPUAddr
+
+    ; tile 01
+    lda TmpX
+    adc #8
+    sta TmpX
+    jsr seed_SetSpriteXY
+
+    ; tile 02
+    lda TmpX
+    sec
+    sbc #8
+    sta TmpX
+    lda TmpY
+    clc
+    adc #8
+    sta TmpY
+    jsr seed_SetSpriteXY
+
+    ; tile 03
+    lda TmpX
+    adc #8
+    sta TmpX
+    jsr seed_SetSpriteXY
+    rts
+
+seed_SetSpriteXY:
+    ldy #0
+    lda TmpY
+    sta (TmpPPUAddr), y
+    iny
+    iny
+    iny
+    lda TmpX
+    sta (TmpPPUAddr), y
+
+    lda TmpPPUAddr
+    clc
+    adc #4
+    sta TmpPPUAddr
+    rts
+
 BOX_TILE_START  = $03
 
 SeedAttrBoxes:
@@ -213,23 +309,18 @@ SeedAttrBoxes:
 
 sb01:
     .byte $55, $00, $00, $00
-    ;.byte $23,$DA, $55, $00
 sb02:
     .byte $00, $11, $00, $00
-    ;.byte $23,$DB, $11, $00
 sb03:
     .byte $00, $44, $11, $00
-    ;.byte $23,$DB, $44, $11, $00
 sb04:
     .byte $00, $00, $44, $00
-    ;.byte $23,$DC, $44, $00
 sbThumb:
     .byte $00, $00, $00, $55
-    ;.byte $23,$DD, $55, $00
 
 SeedPalette:
     ;      input box,       inputed val
-    .byte $0F,$10,$10,$10, $0F,$30,$30,$30, $0F,$15,$0F,$0F, $0F,$11,$11,$11
+    .byte $0F,$10,$2D,$0F, $0F,$30,$10,$0F, $0F,$15,$0F,$0F, $0F,$11,$11,$11
     ;       current char    prev/next
-    .byte $0F,$10,$00,$30, $0F,$05,$05,$05, $0F,$0A,$0A,$0A, $0F,$11,$11,$11
+    .byte $0F,$30,$30,$30, $0F,$00,$00,$00, $0F,$0A,$0A,$0A, $0F,$11,$11,$11
     .byte $EA, $EA
