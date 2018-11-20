@@ -127,14 +127,34 @@ InitTitle:
     tya
     sta TitleLength
 
-    ;lda #PPU_MASK
-    ;sta $2001
+    lda #<Frame_Title
+    sta DoFramePointer
+    lda #>Frame_Title
+    sta DoFramePointer+1
+
+    lda #<NMI_Title
+    sta DoNMIPointer
+    lda #>NMI_Title
+    sta DoNMIPointer+1
 
     bit $2002
     lda #$00
     sta $2005
     sta $2005
+
+    dec TurnPPUOn
     rts
+
+NMI_Title:
+    bit $2002
+    lda #0
+    sta $2005
+    sta $2005
+
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+
+    jmp NMI_Finished
 
 Frame_Title:
     ; only update colors every other frame

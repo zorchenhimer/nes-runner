@@ -214,10 +214,30 @@ Game_Init:
     lda TmpX
     sta $2007
 
+    lda #<Game_Frame
+    sta DoFramePointer
+    lda #>Game_Frame
+    sta DoFramePointer+1
+
+    lda #<Game_NMI
+    sta DoNMIPointer
+    lda #>Game_NMI
+    sta DoNMIPointer+1
+
     ; reset scroll
     lda #0
     sta calc_scroll
     rts
+
+Game_NMI:
+    ; draw the next column if needed
+    jsr Draw_Column
+    jsr Draw_Score
+
+    ; scroll in the screen
+    jsr update_scroll
+
+    jmp NMI_Finished
 
 StatusPlaceholder:
     .byte "Score 00,000,000", $00

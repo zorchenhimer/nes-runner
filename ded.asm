@@ -6,7 +6,36 @@ DedInit:
     lda #DED_FADESPEED
     sta Ded_FadeNext
     jsr update_scroll
+
+    lda #<Ded_Frame
+    sta DoFramePointer
+    lda #>Ded_Frame
+    sta DoFramePointer+1
+
+    lda #<Ded_NMI
+    sta DoNMIPointer
+    lda #>Ded_NMI
+    sta DoNMIPointer+1
     rts
+
+Ded_NMI:
+    lda Ded_Fading
+    beq @noscroll
+    ; only update the scroll (for the status bar thing) if fading
+    jsr update_scroll
+    jmp @end
+
+@noscroll:
+    bit $2002
+    lda #0
+    sta $2005
+    sta $2005
+
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+
+@end:
+    jmp NMI_Finished
 
 Ded_Frame:
     lda Ded_Fading

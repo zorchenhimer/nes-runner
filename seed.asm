@@ -1,3 +1,9 @@
+; TODO
+;   switch between boxes with left/right
+;   draw number metasprites on screen
+;   draw black, non-bg tiles to screen for sprites to go behind
+;       maybe some dithering effects later?
+
 InitSeed:
     inc SkipNMI
 
@@ -18,6 +24,11 @@ InitSeed:
     sta DoFramePointer
     lda #>SeedFrame
     sta DoFramePointer+1
+
+    lda #<Seed_NMI
+    sta DoNMIPointer
+    lda #>Seed_NMI
+    sta DoNMIPointer+1
 
     lda #PPU_CTRL_VERT
     sta $2000
@@ -83,6 +94,17 @@ InitSeed:
 
     dec TurnPPUOn
     rts
+
+Seed_NMI:
+    bit $2002
+    lda #0
+    sta $2005
+    sta $2005
+
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+
+    jmp NMI_Finished
 
 seed_SetAttr:
     ; Index in A

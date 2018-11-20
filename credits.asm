@@ -63,6 +63,16 @@ Credits_Init:
     ;lda #3
     ;sta cr_nextAttrWait
 
+    lda #<Credits_Frame
+    sta DoFramePointer
+    lda #>Credits_Frame
+    sta DoFramePointer+1
+
+    lda #<Credits_NMI
+    sta DoNMIPointer
+    lda #>Credits_NMI
+    sta DoNMIPointer+1
+
     ; reset scroll
     bit $2001
     lda #$00
@@ -70,14 +80,24 @@ Credits_Init:
     sta $2005
     sta cr_scroll
 
-    ;lda #PPU_MASK
-    ;sta $2001
-
     lda #CR_TOP
     sta cr_scroll_table
 
     dec TurnPPUOn
     rts
+
+Credits_NMI:
+    bit cr_UpdateReady
+    bpl @noUpdate
+    jsr Credits_WriteBuffer
+    ;jmp @end
+
+@noUpdate:
+    lda #0
+    sta cr_UpdateReady
+
+    jsr Credits_UpdateScroll
+    jmp NMI_Finished
 
 Credits_WriteAttr:
     lda cr_currentAttrOffset

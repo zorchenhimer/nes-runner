@@ -55,6 +55,7 @@ rng_result:         .res 1
 
 ; Pointer to the current frame routine
 DoFramePointer:     .res 2
+DoNMIPointer:       .res 2
 Ded_Fading:         .res 1  ; are we fading?
 Ded_Pal:            .res 1  ; current fade palette
 Ded_FadeNext:       .res 1  ; frames until next palette
@@ -245,10 +246,6 @@ RESET:
     sta current_gamestate
     jsr ChangeGameState
 
-    dec TurnPPUOn
-    ;lda #PPU_MASK
-    ;sta $2001
-
     lda #0
     sta SkipNMI
 
@@ -291,7 +288,7 @@ NMI:
 
     ; Skip NMI if we're currently drawing the whole screen
     lda SkipNMI
-    bne @skip
+    bne NMI_skip
 
     bit TurnPPUOn
     bvc @skipOn
@@ -306,16 +303,8 @@ NMI:
     beq @nochange
 
     jsr ChangeGameState
-    jmp @finished
+    jmp NMI_Finished
 @nochange:
-
-    ; TODO: change gamestate here instead of mid-frame
-    ;bit PPUUpdates
-    ;bpl @noPPUUpdate
-    ;lda NewPPUMask
-    ;sta $2001
-
-@noPPUUpdate:
 
     jsr UpdatePalettes
 
@@ -326,63 +315,15 @@ NMI:
     lda #$02
     sta $4014
 
-    bit current_gamestate
-    bvs @title
-    bmi @game
+    jmp (DoNMIPointer)
 
-    ; credits
-    bit cr_UpdateReady
-    bpl @noUpdate
-    jsr Credits_WriteBuffer
-    ;jmp @end
-
-@noUpdate:
-    lda #0
-    sta cr_UpdateReady
-
-    jsr Credits_UpdateScroll
-    jmp @finished
-
-@game:
-    lda current_gamestate
-    cmp #GS_DED
-    beq @ded
-
-    ; draw the next column if needed
-    jsr Draw_Column
-    jsr Draw_Score
-
-    ; scroll in the screen
-    jsr update_scroll
-
-    jmp @finished
-
-@ded:
-    ; todo: ded things
-    lda Ded_Fading
-    beq @title
-
-    jsr update_scroll
-    jmp @finished
-
-@title:
-    bit $2002
-    lda #0
-    sta $2005
-    sta $2005
-
-    lda #PPU_CTRL_HORIZ
-    sta $2000
-
-@finished:
+NMI_Finished:
     dec TurnPPUOn
-    ;lda #PPU_MASK
-    ;sta $2001
 
     lda #0
     sta SkipNMI
 
-@skip:
+NMI_skip:
     lda #0
     sta sleeping
     pla
@@ -504,18 +445,9 @@ ChangeGameState:
     bvs @title
     bmi @game
 
-    ; Credits
-    ;lda #PPU_MASK_OFF
-    ;sta $2001
-
     jsr MMC1_Setup_Horiz
     jsr MMC1_Page1
     jsr MMC1_Pattern1
-
-    lda #<Credits_Frame
-    sta DoFramePointer
-    lda #>Credits_Frame
-    sta DoFramePointer+1
 
     jmp Credits_Init
 
@@ -535,21 +467,9 @@ ChangeGameState:
     sta $2001
 
     jsr MMC1_Pattern0
-    ; GS_GAME
-
-    lda #<Game_Frame
-    sta DoFramePointer
-    lda #>Game_Frame
-    sta DoFramePointer+1
-
     jmp Game_Init
 
 @ded:
-    lda #<Ded_Frame
-    sta DoFramePointer
-    lda #>Ded_Frame
-    sta DoFramePointer+1
-
     jmp DedInit
 
 @highscore:
@@ -565,16 +485,10 @@ ChangeGameState:
     sta $2001
 
     jsr MMC1_Pattern0
-    ;; Init title
 
     lda current_gamestate
     cmp #GS_SEED
     beq @seed
-
-    lda #<Frame_Title
-    sta DoFramePointer
-    lda #>Frame_Title
-    sta DoFramePointer+1
 
     jmp InitTitle
 
