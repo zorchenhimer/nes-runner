@@ -81,9 +81,10 @@ InitSeed:
     inx
     stx $2007
 
-    ; Attribute tables for selected
-    jsr seed_ResetAttr
     lda #0
+    sta TitleIndex  ; reuse this index
+
+    ; Attribute tables for selected
     jsr seed_SetAttr
 
     ; Load up cursor sprites
@@ -97,6 +98,20 @@ InitSeed:
 
 Seed_NMI:
     bit $2002
+    lda #$23
+    sta $2006
+    lda #$DA
+    sta $2006
+
+    ; Transfer attribute buffer to PPU
+    ldx #4
+@loop:
+    lda Seed_Attr_Buffer, x
+    sta $2007
+    dex
+    bpl @loop
+
+    ; scroll stuff
     lda #0
     sta $2005
     sta $2005
@@ -107,10 +122,11 @@ Seed_NMI:
     jmp NMI_Finished
 
 seed_SetAttr:
-    ; Index in A
+    lda TitleIndex
     asl a
     tax
 
+    ; find the data chunk in the lookup table
     lda SeedAttrBoxes, x
     sta TmpPPUAddr
     inx
@@ -119,56 +135,20 @@ seed_SetAttr:
     sta TmpPPUAddr+1
     inx
 
-    bit $2002
+    ; Store the attribute stuff in the buffer
+    ldx #4
     ldy #0
-    lda (TmpPPUAddr), y
-    sta $2006
-    inc TmpPPUAddr
-
-    ; check for page cross
-    bvc @noOver01
-    inc TmpPPUAddr+1
-@noOver01:
-
-    lda (TmpPPUAddr), y
-    sta $2006
-    inc TmpPPUAddr
-
-    ; check for page cross
-    bvc @loop;@noOver02
-    inc TmpPPUAddr+1
-;@noOver02:
-
 @loop:
     lda (TmpPPUAddr), y
-    beq @done
-    sta $2007
-    inc TmpPPUAddr
-    ; check for page cross
-    bvc @noOverLp
-    inc TmpPPUAddr+1
-@noOverLp:
-    jmp @loop
+    sta Seed_Attr_Buffer, x
+    iny
+    dex
+    bpl @loop
 
 @done:
     rts
 
-seed_ResetAttr:
-    lda #$23
-    sta $2006
-    lda #$DA
-    sta $2006
-
-    ldx #5
-    lda #$00
-@loop:
-    sta $2007
-    dex
-    bne @loop
-    rts
-
 seed_DrawBox:
-
     lda map_column_addr
     sta $2006
     lda map_column_addr+1
@@ -198,6 +178,28 @@ seed_DrawBox:
     rts
 
 SeedFrame:
+    lda #BUTTON_RIGHT
+    jsr ButtonPressedP1
+    beq @noRight
+
+    inc TitleIndex
+    lda TitleIndex
+    cmp #5
+    bcc @noRight
+    dec TitleIndex  ; don't loop, just stop
+
+@noRight:
+
+    lda #BUTTON_LEFT
+    jsr ButtonPressedP1
+    beq @noLeft
+
+    dec TitleIndex
+    bpl @noLeft
+    inc TitleIndex  ; don't loop, just stop
+@noLeft:
+
+    jsr seed_SetAttr
     jmp WaitFrame
 
 BOX_TILE_START  = $03
@@ -210,15 +212,20 @@ SeedAttrBoxes:
     .word sbThumb
 
 sb01:
-    .byte $23,$DA, $55, $00
+    .byte $55, $00, $00, $00
+    ;.byte $23,$DA, $55, $00
 sb02:
-    .byte $23,$DB, $11, $00
+    .byte $00, $11, $00, $00
+    ;.byte $23,$DB, $11, $00
 sb03:
-    .byte $23,$DB, $44, $11, $00
+    .byte $00, $44, $11, $00
+    ;.byte $23,$DB, $44, $11, $00
 sb04:
-    .byte $23,$DC, $44, $00
+    .byte $00, $00, $44, $00
+    ;.byte $23,$DC, $44, $00
 sbThumb:
-    .byte $23,$DD, $55, $00
+    .byte $00, $00, $00, $55
+    ;.byte $23,$DD, $55, $00
 
 SeedPalette:
     ;      input box,       inputed val

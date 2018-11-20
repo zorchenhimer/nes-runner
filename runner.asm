@@ -137,6 +137,8 @@ PAGEID_IDK      = 2
 
 CURRENT_PAGE    = $8000
 
+Seed_Attr_Buffer:   .res 4
+
 .segment "SAVERAM"
     ; battery backed RAM
 
