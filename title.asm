@@ -66,16 +66,14 @@ InitTitle:
     lda #$CA
     sta $2006
 
-    lda TitleText
-    sta TmpCounter
-    inc TmpCounter
-    ldx #1
+    ldx #0
 @loop2:
     lda TitleText, x
+    beq @titleTextDone
     sta $2007
     inx
-    dec TmpCounter
-    bne @loop2
+    jmp @loop2
+@titleTextDone:
 
     lda #$21
     sta TmpPPUAddr
@@ -240,7 +238,7 @@ Frame_Title:
     jmp WaitFrame
 
 TitleText:
-    .byte $07, $22, "runner", $22
+    .byte '"', "runner", '"', $00
 
 TitleData:
     .byte "Start Game", $00, GS_GAME
