@@ -190,3 +190,45 @@ utils_ClearAttrTable:
     dex
     bne @loop
     rts
+
+; Binary value in A, ASCII Hex values output in TmpX and TmpY
+BinToHex:
+    ; TmpX "rng_result"
+    ; TmpY "rng_text"
+    ;lda rng_seed
+    sta TmpX
+    lda #0
+    sta TmpY
+
+@tens:
+    lda TmpX
+    cmp #$10
+    bcs @addtens
+    jmp @ones
+
+@addtens:
+    inc TmpY
+    sec
+    sbc #$10
+    sta TmpX
+    jmp @tens
+
+@ones:
+    lda TmpY
+    clc
+    adc #$30
+    cmp #$3A
+    bcc @ynoletter
+    adc #$06
+@ynoletter:
+    sta TmpY
+
+    lda TmpX
+    clc
+    adc #$30
+    cmp #$3A
+    bcc @xnoletter
+    adc #$06
+@xnoletter:
+    sta TmpX
+    rts
