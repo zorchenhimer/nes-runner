@@ -87,12 +87,26 @@ InitSeed:
     ; Attribute tables for selected
     jsr seed_SetAttr
 
-    ; TmpY and TmpX are indexes to lookup tables for actual pixel offsets
-
-    lda #0
+    lda rng_seed
+    and #$F0
+    lsr a
+    lsr a
+    lsr a
+    lsr a
     sta Seed_Input0
+    lda rng_seed
+    and #$0F
     sta Seed_Input1
+
+    lda rng_seed+1
+    and #$F0
+    lsr a
+    lsr a
+    lsr a
+    lsr a
     sta Seed_Input2
+    lda rng_seed+1
+    and #$0F
     sta Seed_Input3
 
     jsr seed_UpdateSprites
@@ -112,6 +126,7 @@ seed_UpdateSprites:
     lda #>sprites
     sta TmpPPUAddr+1
 
+; TmpY and TmpX are indexes to lookup tables for actual pixel offsets
 ; Middle (selected) row
     ldy #1
     ldx #0
