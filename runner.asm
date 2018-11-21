@@ -137,7 +137,11 @@ PAGEID_IDK      = 2
 
 CURRENT_PAGE    = $8000
 
-Seed_Attr_Buffer:   .res 4
+Seed_Attr_Buffer:   .res 5
+Seed_Input0:        .res 1
+Seed_Input1:        .res 1
+Seed_Input2:        .res 1
+Seed_Input3:        .res 1
 
 working_seed:       .res 2
 

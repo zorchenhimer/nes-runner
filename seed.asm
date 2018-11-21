@@ -87,76 +87,15 @@ InitSeed:
     ; Attribute tables for selected
     jsr seed_SetAttr
 
-    lda #<sprites
-    sta TmpPPUAddr
-    lda #>sprites
-    sta TmpPPUAddr+1
-
     ; TmpY and TmpX are indexes to lookup tables for actual pixel offsets
 
-; Middle (selected) row
-    ldy #1
-    ldx #0
-    lda #$00
-    jsr seed_LoadSprite
+    lda #0
+    sta Seed_Input0
+    sta Seed_Input1
+    sta Seed_Input2
+    sta Seed_Input3
 
-    ldy #1
-    ldx #1
-    lda #$01
-    jsr seed_LoadSprite
-
-    ldy #1
-    ldx #2
-    lda #$02
-    jsr seed_LoadSprite
-
-    ldy #1
-    ldx #3
-    lda #$03
-    jsr seed_LoadSprite
-
-; Top row
-    ldy #0
-    ldx #0
-    lda #$0F
-    jsr seed_LoadSprite
-
-    ldy #0
-    ldx #1
-    lda #$00
-    jsr seed_LoadSprite
-
-    ldy #0
-    ldx #2
-    lda #$01
-    jsr seed_LoadSprite
-
-    ldy #0
-    ldx #3
-    lda #$02
-    jsr seed_LoadSprite
-
-; Bottom row
-    ldy #2
-    ldx #0
-    lda #$01
-    jsr seed_LoadSprite
-
-    ldy #2
-    ldx #1
-    lda #$02
-    jsr seed_LoadSprite
-
-    ldy #2
-    ldx #2
-    lda #$03
-    jsr seed_LoadSprite
-
-    ldy #2
-    ldx #3
-    sta TmpX
-    lda #$04
-    jsr seed_LoadSprite
+    jsr seed_UpdateSprites
 
     ; Load up cursor sprites
     ;   character selecton sprites
@@ -165,6 +104,102 @@ InitSeed:
     ;   current values
 
     dec TurnPPUOn
+    rts
+
+seed_UpdateSprites:
+    lda #<sprites
+    sta TmpPPUAddr
+    lda #>sprites
+    sta TmpPPUAddr+1
+
+; Middle (selected) row
+    ldy #1
+    ldx #0
+    lda Seed_Input0
+    jsr seed_LoadSprite
+
+    ldy #1
+    ldx #1
+    lda Seed_Input1
+    jsr seed_LoadSprite
+
+    ldy #1
+    ldx #2
+    lda Seed_Input2
+    jsr seed_LoadSprite
+
+    ldy #1
+    ldx #3
+    lda Seed_Input3
+    jsr seed_LoadSprite
+
+; Top row
+    ldy #0
+    ldx #0
+
+    lda Seed_Input0
+    sec
+    sbc #1
+    and #$0F
+    jsr seed_LoadSprite
+
+    ldy #0
+    ldx #1
+    lda Seed_Input1
+    sec
+    sbc #1
+    and #$0F
+    jsr seed_LoadSprite
+
+    ldy #0
+    ldx #2
+    lda Seed_Input2
+    sec
+    sbc #1
+    and #$0F
+    jsr seed_LoadSprite
+
+    ldy #0
+    ldx #3
+    lda Seed_Input3
+    sec
+    sbc #1
+    and #$0F
+    jsr seed_LoadSprite
+
+; Bottom row
+    ldy #2
+    ldx #0
+    lda Seed_Input0
+    clc
+    adc #1
+    and #$0F
+    jsr seed_LoadSprite
+
+    ldy #2
+    ldx #1
+    lda Seed_Input1
+    clc
+    adc #1
+    and #$0F
+    jsr seed_LoadSprite
+
+    ldy #2
+    ldx #2
+    lda Seed_Input2
+    clc
+    adc #1
+    and #$0F
+    jsr seed_LoadSprite
+
+    ldy #2
+    ldx #3
+    sta TmpX
+    lda Seed_Input3
+    clc
+    adc #1
+    and #$0F
+    jsr seed_LoadSprite
     rts
 
 Seed_NMI:
@@ -270,6 +305,62 @@ SeedFrame:
     inc TitleIndex  ; don't loop, just stop
 @noLeft:
 
+    lda TitleIndex
+    cmp #4
+    bcs @onLast
+
+    lda #BUTTON_UP
+    jsr ButtonPressedP1
+    beq @noUp
+
+    ldx TitleIndex
+    lda Seed_Input0, x
+    clc
+    adc #1
+    and #$0F
+    sta Seed_Input0, x
+    jmp @end
+
+@noUp:
+    lda #BUTTON_DOWN
+    jsr ButtonPressedP1
+    beq @end
+    ldx TitleIndex
+    lda Seed_Input0, x
+    sec
+    sbc #1
+    and #$0F
+    sta Seed_Input0, x
+    jmp @end
+
+@onLast:
+    lda #BUTTON_A
+    jsr ButtonPressedP1
+    beq @end
+
+    ; save stuff
+    lda Seed_Input0
+    asl a
+    asl a
+    asl a
+    asl a
+    ora Seed_Input1
+    sta rng_seed
+
+    lda Seed_Input2
+    asl a
+    asl a
+    asl a
+    asl a
+    ora Seed_Input3
+    sta rng_seed+1
+
+    lda #GS_TITLE
+    sta current_gamestate
+    inc gamestate_changed
+
+@end:
+    jsr seed_UpdateSprites
     jsr seed_SetAttr
     jmp WaitFrame
 
