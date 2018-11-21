@@ -86,6 +86,76 @@ InitSeed:
 
     ; Attribute tables for selected
     jsr seed_SetAttr
+
+    lda #<sprites
+    sta TmpPPUAddr
+    lda #>sprites
+    sta TmpPPUAddr+1
+
+    ; TmpY and TmpX are indexes to lookup tables for actual pixel offsets
+
+; Middle (selected) row
+    ldy #1
+    ldx #0
+    lda #$00
+    jsr seed_LoadSprite
+
+    ldy #1
+    ldx #1
+    lda #$01
+    jsr seed_LoadSprite
+
+    ldy #1
+    ldx #2
+    lda #$02
+    jsr seed_LoadSprite
+
+    ldy #1
+    ldx #3
+    lda #$03
+    jsr seed_LoadSprite
+
+; Top row
+    ldy #0
+    ldx #0
+    lda #$0F
+    jsr seed_LoadSprite
+
+    ldy #0
+    ldx #1
+    lda #$00
+    jsr seed_LoadSprite
+
+    ldy #0
+    ldx #2
+    lda #$01
+    jsr seed_LoadSprite
+
+    ldy #0
+    ldx #3
+    lda #$02
+    jsr seed_LoadSprite
+
+; Bottom row
+    ldy #2
+    ldx #0
+    lda #$01
+    jsr seed_LoadSprite
+
+    ldy #2
+    ldx #1
+    lda #$02
+    jsr seed_LoadSprite
+
+    ldy #2
+    ldx #2
+    lda #$03
+    jsr seed_LoadSprite
+
+    ldy #2
+    ldx #3
+    sta TmpX
+    lda #$04
     jsr seed_LoadSprite
 
     ; Load up cursor sprites
@@ -203,9 +273,10 @@ SeedFrame:
     jsr seed_SetAttr
     jmp WaitFrame
 
+; A     number to draw
+; X  column index
+; Y  row index
 seed_LoadSprite:
-    lda #2  ; TODO: load elsewhere
-
     ; multiply by 4 to get the correct index
     asl a
     asl a
@@ -215,10 +286,11 @@ seed_LoadSprite:
     adc #$10
     sta TmpCounter
 
-    lda #<sprites
-    sta TmpPPUAddr
-    lda #>sprites
-    sta TmpPPUAddr+1
+    lda NumberYLookup, y
+    sta TmpY
+
+    lda NumberXLookup, x
+    sta TmpX
 
     ; load up tiles into sprites
     ldy #1
@@ -229,12 +301,22 @@ seed_LoadSprite:
     sta (TmpPPUAddr), y
     inc TmpCounter
 
-    lda TmpPPUAddr
-    adc #4
-    sta TmpPPUAddr
+    inc TmpPPUAddr
+    ; set the attr byte.  sprite behind background
+    lda #$20
+    sta (TmpPPUAddr), y
+    inc TmpPPUAddr
+    inc TmpPPUAddr
+    inc TmpPPUAddr
+
+    ;lda TmpPPUAddr
+    ;adc #4
+    ;sta TmpPPUAddr
     dex
     bne @loop
 
+    ; get back to the start sprite
+    lda TmpPPUAddr
     sec
     sbc #16
     sta TmpPPUAddr
@@ -242,16 +324,11 @@ seed_LoadSprite:
 
     ; load up first tile's x/y
     ldy #0
-    lda #96
+    lda TmpY
     sta (TmpPPUAddr), y
-    sta TmpY
     ldy #3
-    lda #72
+    lda TmpX
     sta (TmpPPUAddr), y
-    sta TmpX
-
-    nop
-    nop
 
     ; loop through the rest to calculate x/y
     lda TmpPPUAddr
@@ -317,6 +394,13 @@ sb04:
     .byte $00, $00, $44, $00
 sbThumb:
     .byte $00, $00, $00, $55
+
+NumberYLookup:
+    ; top, mid, bottom
+    .byte 76, 96, 116
+NumberXLookup:
+    ; 1st col, 2nd ...
+    .byte 72, 96, 120, 144
 
 SeedPalette:
     ;      input box,       inputed val
