@@ -125,6 +125,36 @@ InitTitle:
     tya
     sta TitleLength
 
+    bit $2002
+    lda #$22
+    sta $2006
+    lda #$C7
+    sta $2006
+
+    ldx #0
+@seedLabelLoop:
+    lda TitleSeedText, x
+    beq @seedLabelDone
+    sta $2007
+    inx
+    jmp @seedLabelLoop
+
+@seedLabelDone:
+
+    lda rng_seed
+    jsr BinToHex
+    lda TmpY
+    sta $2007
+    lda TmpX
+    sta $2007
+
+    lda rng_seed+1
+    jsr BinToHex
+    lda TmpY
+    sta $2007
+    lda TmpX
+    sta $2007
+
     lda #<Frame_Title
     sta DoFramePointer
     lda #>Frame_Title
@@ -239,6 +269,9 @@ Frame_Title:
 
 TitleText:
     .byte '"', "runner", '"', $00
+
+TitleSeedText:
+    .byte "Current seed: ", $00
 
 TitleData:
     .byte "Start Game", $00, GS_GAME
