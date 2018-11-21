@@ -139,6 +139,8 @@ CURRENT_PAGE    = $8000
 
 Seed_Attr_Buffer:   .res 4
 
+working_seed:       .res 2
+
 .segment "SAVERAM"
     ; battery backed RAM
 

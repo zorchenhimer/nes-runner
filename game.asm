@@ -25,6 +25,11 @@ Game_Init:
     sta rng_seed+1
 @skip_rng_init:
 
+    lda rng_seed
+    sta working_seed
+    lda rng_seed+1
+    sta working_seed+1
+
     ; prepare sprite zero
     lda #159
     sta spritezero
@@ -114,8 +119,39 @@ Game_Init:
     sta PaletteAddr
     lda #>GamePalette
     sta PaletteAddr+1
-
     jsr LoadPalettes
+
+    lda #$23
+    sta $2006
+    lda #$2A
+    sta $2006
+
+    ; write the seed lable text to the screen
+    ldx #0
+@seedloop:
+    lda SeedText, x
+    beq @seeddone
+    sta $2007
+    inx
+    jmp @seedloop
+
+@seeddone:
+    ; Load the seed and convert it to HEX ASCII to draw to screen.
+    lda working_seed
+    ;sta LevelSeed
+    jsr BinToHex
+    lda TmpY
+    sta $2007
+    lda TmpX
+    sta $2007
+
+    lda working_seed+1
+    ;sta LevelSeed+1
+    jsr BinToHex
+    lda TmpY
+    sta $2007
+    lda TmpX
+    sta $2007
 
     lda #PPU_CTRL_VERT
     sta $2000
@@ -181,38 +217,6 @@ Game_Init:
     jmp @statusLoop
 
 @scoredone:
-
-    lda #$23
-    sta $2006
-    lda #$2A
-    sta $2006
-
-    ; write the seed lable text to the screen
-    ldx #0
-@seedloop:
-    lda SeedText, x
-    beq @seeddone
-    sta $2007
-    inx
-    jmp @seedloop
-
-@seeddone:
-    ; Load the seed and convert it to HEX ASCII to draw to screen.
-    lda rng_seed
-    ;sta LevelSeed
-    jsr BinToHex
-    lda TmpY
-    sta $2007
-    lda TmpX
-    sta $2007
-
-    lda rng_seed+1
-    ;sta LevelSeed+1
-    jsr BinToHex
-    lda TmpY
-    sta $2007
-    lda TmpX
-    sta $2007
 
     lda #<Game_Frame
     sta DoFramePointer
@@ -520,13 +524,13 @@ meta_idx_from_scroll:
 
 prng:
     ldx #8  ; iteration count (generates 8 bits)
-    lda rng_seed
+    lda working_seed
     bne @one
     ;lda seed_ram
 
 @one:
     asl a    ; shift the register
-    rol rng_seed+1
+    rol working_seed+1
     bcc @two
     ; Apply XOR feedback whenever a 1 bit is shifted out
     eor #$2D
@@ -535,10 +539,10 @@ prng:
     dex
     bne @one    ; generate another bit
 
-    sta rng_seed
+    sta working_seed
     ;sta seed_ram
 
-    lda rng_seed+1
+    lda working_seed+1
     ;sta seed_ram+1
     cmp #0  ; reload flags
     sta rng_result

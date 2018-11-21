@@ -7,6 +7,11 @@ DedInit:
     sta Ded_FadeNext
     jsr update_scroll
 
+    lda working_seed
+    sta rng_seed
+    lda working_seed+1
+    sta rng_seed+1
+
     lda #<Ded_Frame
     sta DoFramePointer
     lda #>Ded_Frame
