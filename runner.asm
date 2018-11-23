@@ -4,7 +4,6 @@
 ;       menu stuff
 ;           high scores
 ;           new high score
-;           enter seed
 ;   Player Sprite
 ;   Better map generation
 ;   Background art (mountains or some shit.  happy little trees?)
@@ -147,9 +146,7 @@ working_seed:       .res 2
 
 .segment "SAVERAM"
     ; battery backed RAM
-
 rng_seed:       .res 2
-; eventually high scores too
 
 .segment "BSS"
     ; non-zeropage ram
@@ -190,6 +187,7 @@ SP_TITLEX1      = sprites+7
     .byte $00, $EA   ; current Page ID
     .include "game.asm"
     .include "ded.asm"
+    .include "scores.asm"
 
 .segment "PAGE1"
     ; credits
@@ -485,8 +483,7 @@ ChangeGameState:
     lda #PPU_MASK_OFF
     sta $2001
 
-    jsr ClearSprites
-    jmp HSInit
+    jmp Scores_Init
 
 @title:
     lda #PPU_MASK_OFF
