@@ -1,6 +1,4 @@
 ; TODO
-;   switch between boxes with left/right
-;   draw number metasprites on screen
 ;   draw black, non-bg tiles to screen for sprites to go behind
 ;       maybe some dithering effects later?
 
