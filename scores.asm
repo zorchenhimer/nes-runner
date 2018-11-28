@@ -23,11 +23,14 @@
 
 ; First two bytes = saved seed
 ; the rest is the index
-Score_IndexPage = $6000 ; ends at $607F.  list of 2-byte seeds
+;Score_IndexPage = $6000 ; ends at $607F.  list of 2-byte seeds
+Score_IndexPage:
+    .word sc_demo_index
 
-; each page is $80 in size (128 bytes); first table has rng_seed and the last 20 or so
-; runs, with only seeds and scores, no names.
+; each page is $80 in size (128 bytes); first table has rng_seed and the last 20
+; or so runs, with only seeds and scores, no names.
 Score_Tables:
+    .word sc_demo_data
     .word $6080
     .word $6100
     .word $6180
@@ -101,6 +104,8 @@ Scores_Init:
 
     jsr sc_DrawScrollThing
     jsr sc_DrawTwoBlankRows
+
+    jsr Scores_Draw_Page
 
     lda #$00
     sta $2005
@@ -197,6 +202,29 @@ sc_DrawScrollThing:
     sta $2007
     dex
     bne @lp4
+
+    rts
+
+Scores_Draw_Page:
+
+    ldy #7
+@outer:
+    lda sc_ppu_high_byte, y
+    sta $2006
+    lda sc_ppu_low_byte, y
+    sta $2006
+
+    ldx #0
+@inner:
+    lda sc_demo_data, x
+    sta $2007
+    inx
+    cpx #14
+    bne @inner
+
+    dey
+    bne @outer
+
     rts
 
 Scores_Frame:
@@ -236,3 +264,28 @@ Scores_BG_Row:
 Scores_Palette:
     .byte $37,$0F,$17,$07, $37,$05,$15,$13, $37,$0A,$1A,$13, $37,$11,$21,$13
     .byte $37,$30,$13,$13, $37,$05,$15,$13, $37,$0A,$1A,$13, $37,$11,$21,$13
+
+sc_demo_index:
+    ; first byte is current seed
+    .byte $FF, $FF
+
+    ; index data here
+    .byte $12, $34
+    .byte $00, $00
+
+; eight rows of data
+sc_demo_data:
+    .byte "some name ", $00, $00, $00, $00
+    .byte "some name1", $01, $00, $00, $00
+    .byte "some name2", $02, $00, $00, $00
+    .byte "some name3", $03, $00, $00, $00
+    .byte "some name4", $04, $00, $00, $00
+    .byte "some name5", $05, $00, $00, $00
+    .byte "some name6", $06, $00, $00, $00
+    .byte "some name7", $07, $00, $00, $00
+
+; TODO: figure out the correct PPU addresses for the rows for scores
+sc_ppu_high_byte:
+    .byte $00, $00, $00, $00, $21, $20, $20, $20
+sc_ppu_low_byte:
+    .byte $00, $00, $00, $00, $17, $E7, $C7, $A7
