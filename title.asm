@@ -276,6 +276,7 @@ TitleSeedText:
 TitleData:
     .byte "Start Game", $00, GS_GAME
     .byte "Enter Seed", $00, GS_SEED
+    .byte "High Scores", $00, GS_HIGHSCORE
     .byte "Credits", $00, GS_CREDITS
     .byte $00
 

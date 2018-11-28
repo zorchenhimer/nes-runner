@@ -62,13 +62,6 @@ DED_FADESPEED       = 10
 
 gamestate_changed:  .res 1
 current_gamestate:  .res 1
-;GS_TITLE        = 0
-;GS_GAME         = 1
-;GS_DED          = 2
-;GS_HIGHSCORE    = 3
-;GS_NEWHIGH      = 4
-;GS_CREDITS      = 5
-;GS_SEED         = 6 ; enter in a seed
 
 ; main state in is high bits
 ; sub state is in low bits
@@ -143,6 +136,8 @@ Seed_Input2:        .res 1
 Seed_Input3:        .res 1
 
 working_seed:       .res 2
+
+clear_nt_tile:      .res 1
 
 .segment "SAVERAM"
     ; battery backed RAM
@@ -324,6 +319,7 @@ NMI:
     jmp (DoNMIPointer)
 
 NMI_Finished:
+    ; Decrement this to write the PPU mask every NMI
     dec TurnPPUOn
 
     lda #0
@@ -451,6 +447,7 @@ ChangeGameState:
     bvs @title
     bmi @game
 
+    ; Credits stuff
     jsr MMC1_Setup_Horiz
     jsr MMC1_Page1
     jsr MMC1_Pattern1
@@ -479,6 +476,7 @@ ChangeGameState:
     jmp DedInit
 
 @highscore:
+    jsr MMC1_Setup_Horiz
 
     lda #PPU_MASK_OFF
     sta $2001
@@ -494,6 +492,9 @@ ChangeGameState:
     lda current_gamestate
     cmp #GS_SEED
     beq @seed
+
+    cmp #GS_HIGHSCORE
+    beq @highscore
 
     jmp InitTitle
 

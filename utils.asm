@@ -113,25 +113,69 @@ ClearSprites:
     bne @loop
     rts
 
+FillNametable0:
+    sta clear_nt_tile
+
+    bit $2002
+    lda #$20
+    sta $2006
+    jmp utils_ClearNametable
+
+FillNametable1:
+    sta clear_nt_tile
+
+    bit $2002
+    lda #$24
+    sta $2006
+    jmp utils_ClearNametable
+
+FillNametable2:
+    sta clear_nt_tile
+
+    bit $2002
+    lda #$28
+    sta $2006
+    jmp utils_ClearNametable
+
+FillNametable3:
+    sta clear_nt_tile
+
+    bit $2002
+    lda #$2C
+    sta $2006
+    jmp utils_ClearNametable
+
 ClearNametable0:
+    lda #' '
+    sta clear_nt_tile
+
     bit $2002
     lda #$20
     sta $2006
     jmp utils_ClearNametable
 
 ClearNametable1:
+    lda #' '
+    sta clear_nt_tile
+
     bit $2002
     lda #$24
     sta $2006
     jmp utils_ClearNametable
 
 ClearNametable2:
+    lda #' '
+    sta clear_nt_tile
+
     bit $2002
     lda #$28
     sta $2006
     jmp utils_ClearNametable
 
 ClearNametable3:
+    lda #' '
+    sta clear_nt_tile
+
     bit $2002
     lda #$2C
     sta $2006
@@ -143,7 +187,7 @@ utils_ClearNametable:
 
     ldx #0
     ldy #0
-    lda #' '
+    lda clear_nt_tile
 @loop2:
     sta $2007
     inx
