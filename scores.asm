@@ -84,12 +84,49 @@ Scores_Init:
     lda #$00
     sta $2006
 
-    ldx #67
-    lda #$01
-@lp1:
+    jsr sc_DrawTwoBlankRows
+    jsr sc_DrawScrollThing
+
+; Inner bits of the scroll graphic (actual background for text)
+    ldy #22
+@innerOuter:
+    ldx #31
+@innerInner:
+    lda Scores_BG_Row, x
     sta $2007
     dex
-    bne @lp1
+    bpl @innerInner
+    dey
+    bne @innerOuter
+
+    jsr sc_DrawScrollThing
+    jsr sc_DrawTwoBlankRows
+
+    lda #$00
+    sta $2005
+    sta $2005
+
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+    rts
+
+sc_DrawTwoBlankRows:
+    ldx #64
+    lda #$01
+@loop:
+    sta $2007
+    dex
+    bne @loop
+    rts
+
+; draw the top and bottom roll of the scroll
+sc_DrawScrollThing:
+    ldx #3
+    lda #$01
+@lp0:
+    sta $2007
+    dex
+    bne @lp0
 
 ; 1st header row
     ldx #0
@@ -127,10 +164,6 @@ Scores_Init:
     bne @lp2
 
 ; 2nd header row
-    ;lda #$20
-    ;sta $2006
-    ;lda #$63
-    ;sta $2006
     ldx #0
     lda Scores_HeaderKnobR2L, x
     sta $2007
@@ -164,103 +197,6 @@ Scores_Init:
     sta $2007
     dex
     bne @lp4
-
-; Inner bits of the scroll graphic (actual background for text)
-    ldy #22
-@innerOuter:
-    ldx #31
-@innerInner:
-    lda Scores_BG_Row, x
-    sta $2007
-    dex
-    bpl @innerInner
-    dey
-    bne @innerOuter
-
-; bottom roll thing
-    ldx #3
-    lda #$01
-@lp3:
-    sta $2007
-    dex
-    bne @lp3
-
-    ldx #0
-    lda Scores_HeaderKnobR1L, x
-    sta $2007
-    inx
-    lda Scores_HeaderKnobR1L, x
-    sta $2007
-    inx
-    lda Scores_HeaderKnobR1L, x
-    sta $2007
-
-    lda #$85
-    ldx #20
-@row3loop:
-    sta $2007
-    dex
-    bne @row3loop
-
-    ldx #0
-    lda Scores_HeaderKnobR1R, x
-    sta $2007
-    inx
-    lda Scores_HeaderKnobR1R, x
-    sta $2007
-    inx
-    lda Scores_HeaderKnobR1R, x
-    sta $2007
-
-    ldx #6
-    lda #$01
-@lp5:
-    sta $2007
-    dex
-    bne @lp5
-
-; 2nd header row
-    ldx #0
-    lda Scores_HeaderKnobR2L, x
-    sta $2007
-    inx
-    lda Scores_HeaderKnobR2L, x
-    sta $2007
-    inx
-    lda Scores_HeaderKnobR2L, x
-    sta $2007
-
-    lda #$95
-    ldx #20
-@row4loop:
-    sta $2007
-    dex
-    bne @row4loop
-
-    ldx #0
-    lda Scores_HeaderKnobR2R, x
-    sta $2007
-    inx
-    lda Scores_HeaderKnobR2R, x
-    sta $2007
-    inx
-    lda Scores_HeaderKnobR2R, x
-    sta $2007
-
-    ldx #67
-    lda #$01
-@lp6:
-    sta $2007
-    dex
-    bne @lp6
-
-
-    lda #$00
-    sta $2005
-    sta $2005
-
-    lda #PPU_CTRL_HORIZ
-    sta $2000
     rts
 
 Scores_Frame:
