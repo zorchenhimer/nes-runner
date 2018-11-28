@@ -14,6 +14,12 @@ Game_Init:
     jsr ClearAttrTable0
     jsr ClearAttrTable1
 
+    lda #0
+    sta PlayerScore0
+    sta PlayerScore1
+    sta PlayerScore2
+    sta PlayerScore3
+
     lda #10
     sta obs_countdown
 
