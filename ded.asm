@@ -36,7 +36,7 @@ Ded_NMI:
     sta $2005
     sta $2005
 
-    lda #PPU_CTRL_HORIZ
+    lda #PPU_CTRL_TITLE
     sta $2000
 
 @end:
@@ -83,7 +83,7 @@ Ded_Frame:
     ;   wait for start pressed
     ;   goto enter new high score if applicable
 
-    lda #PPU_CTRL_HORIZ
+    lda #PPU_CTRL_TITLE
     sta $2000
 
     inc SkipNMI
@@ -246,7 +246,7 @@ dedSpriteZero:
 
     lda #4
     sta $2005
-    lda #PPU_CTRL_HORIZ
+    lda #PPU_CTRL_TITLE
     sta $2000
     jmp WaitFrame
 

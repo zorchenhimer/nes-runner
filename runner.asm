@@ -110,6 +110,7 @@ PlayerJumpFrame:    .res 1  ; current frame of the jump
 
 PPU_CTRL_VERT   = %10010100
 PPU_CTRL_HORIZ  = %10010000
+PPU_CTRL_TITLE  = %10000000
 
 PPUUpdates:     .res 1
 PPU_UPDATE_MASK = %10000000
@@ -268,7 +269,7 @@ WaitSpriteZero:
     lda #00
     sta $2005
     ; first nametable
-    lda #PPU_CTRL_VERT
+    lda #PPU_CTRL_TITLE
     sta $2000
 
 WaitFrame:

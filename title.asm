@@ -1,6 +1,6 @@
 InitTitle:
     ; set the draw orientation
-    lda #PPU_CTRL_HORIZ
+    lda #PPU_CTRL_TITLE
     sta $2000
 
     lda #PPU_MASK_OFF
@@ -179,7 +179,7 @@ NMI_Title:
     sta $2005
     sta $2005
 
-    lda #PPU_CTRL_HORIZ
+    lda #PPU_CTRL_TITLE
     sta $2000
 
     jmp NMI_Finished

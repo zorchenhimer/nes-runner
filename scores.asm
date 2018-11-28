@@ -111,13 +111,13 @@ Scores_Init:
     sta $2005
     sta $2005
 
-    lda #PPU_CTRL_HORIZ
+    lda #PPU_CTRL_TITLE
     sta $2000
     rts
 
 sc_DrawTwoBlankRows:
     ldx #64
-    lda #$01
+    lda #$0F
 @loop:
     sta $2007
     dex
@@ -127,7 +127,7 @@ sc_DrawTwoBlankRows:
 ; draw the top and bottom roll of the scroll
 sc_DrawScrollThing:
     ldx #3
-    lda #$01
+    lda #$0F
 @lp0:
     sta $2007
     dex
@@ -144,7 +144,7 @@ sc_DrawScrollThing:
     lda Scores_HeaderKnobR1L, x
     sta $2007
 
-    lda #$85
+    lda #$11
     ldx #20
 @row1loop:
     sta $2007
@@ -162,7 +162,7 @@ sc_DrawScrollThing:
     sta $2007
 
     ldx #6
-    lda #$01
+    lda #$0F
 @lp2:
     sta $2007
     dex
@@ -179,7 +179,7 @@ sc_DrawScrollThing:
     lda Scores_HeaderKnobR2L, x
     sta $2007
 
-    lda #$95
+    lda #$16
     ldx #20
 @row2loop:
     sta $2007
@@ -197,7 +197,7 @@ sc_DrawScrollThing:
     sta $2007
 
     ldx #3
-    lda #$01
+    lda #$0F
 @lp4:
     sta $2007
     dex
@@ -237,7 +237,7 @@ Scores_NMI:
     sta $2005
     sta $2005
 
-    lda #PPU_CTRL_HORIZ
+    lda #PPU_CTRL_TITLE
     sta $2000
 
     jmp NMI_Finished
@@ -246,20 +246,20 @@ Scores_Header:
     .byte "High Scores Thing?", $00
 
 Scores_HeaderKnobR1L:
-    .byte $87, $88, $84
+    .byte $13, $14, $10
 Scores_HeaderKnobR1R:
-    .byte $86, $87, $88
+    .byte $12, $13, $14
 
 Scores_HeaderKnobR2L:
-    .byte $97, $98, $94
+    .byte $18, $19, $15
 Scores_HeaderKnobR2R:
-    .byte $96, $97, $98
+    .byte $17, $18, $19
 
 Scores_BG_Row:
-    .byte $01,$01,$01,$01,$01,$01
+    .byte $0F,$0F,$0F,$0F,$0F,$0F
     .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
     .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-    .byte $01,$01,$01,$01,$01,$01
+    .byte $0F,$0F,$0F,$0F,$0F,$0F
 
 Scores_Palette:
     .byte $37,$0F,$17,$07, $37,$05,$15,$13, $37,$0A,$1A,$13, $37,$11,$21,$13

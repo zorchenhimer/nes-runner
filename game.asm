@@ -185,7 +185,7 @@ Game_Init:
     lda #$80
     sta $2006
 
-    lda #$02
+    lda #$0F
     ldx #0
 @statusBarRow1:
     sta $2007

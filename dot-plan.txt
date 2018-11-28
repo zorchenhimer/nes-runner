@@ -83,3 +83,19 @@
 
     do the jump thing
     height dependent on button held length
+
+= art stuff
+    backgrounds
+        city skyline
+            could do some palette swap animations with this one
+        mountains
+        forrest w/ palette swappped waterfall animation
+        the duckhunt field
+
+    general themes
+        cyberpunk
+        forrest (trees and bugs?)
+        PCBs and chips?
+        mario (lel)
+        city streets (streets of rage, batman, etc)
+        alien ship? (organic structures or something?)

@@ -387,7 +387,7 @@ seed_LoadSprite:
 
     ; add offset to start of tiles
     clc
-    adc #$10
+    adc #SPRITE_TILE_START
     sta TmpCounter
 
     lda NumberYLookup, y
@@ -501,6 +501,9 @@ sb04:
     .byte $00, $00, $44, $00
 sbThumb:
     .byte $00, $00, $00, $55
+
+; offset of the first sprite tile in the sprite sheet
+SPRITE_TILE_START = $80
 
 NumberYLookup:
     ; top, mid, bottom
