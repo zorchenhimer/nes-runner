@@ -183,7 +183,6 @@ SP_TITLEX1      = sprites+7
     .byte $00, $EA   ; current Page ID
     .include "game.asm"
     .include "ded.asm"
-    .include "scores.asm"
 
 .segment "PAGE1"
     ; credits
@@ -488,6 +487,7 @@ ChangeGameState:
     lda #PPU_MASK_OFF
     sta $2001
 
+    jsr MMC1_Page0
     jsr MMC1_Pattern0
 
     lda current_gamestate
@@ -503,5 +503,6 @@ ChangeGameState:
     jmp InitSeed
 
     .include "title.asm"
+    .include "scores.asm"
     .include "utils.asm"
     .include "seed.asm"
