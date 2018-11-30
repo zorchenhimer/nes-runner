@@ -90,17 +90,28 @@ Scores_Init:
     jsr sc_DrawTwoBlankRows
     jsr sc_DrawScrollThing
 
+    jsr sc_DrawBGRow
+
+    lda #<Scores_BG_RowH1
+    sta TmpPPUAddr
+    lda #>Scores_BG_RowH1
+    sta TmpPPUAddr+1
+    jsr sc_DrawBGDataRow
+
+    jsr sc_DrawBGRow
+
+    lda #<Scores_BG_RowH2
+    sta TmpPPUAddr
+    lda #>Scores_BG_RowH2
+    sta TmpPPUAddr+1
+    jsr sc_DrawBGDataRow
+
 ; Inner bits of the scroll graphic (actual background for text)
-    ldy #22
-@innerOuter:
-    ldx #31
-@innerInner:
-    lda Scores_BG_Row, x
-    sta $2007
-    dex
-    bpl @innerInner
+    ldy #18
+@blankRowLoop:
+    jsr sc_DrawBGRow
     dey
-    bne @innerOuter
+    bne @blankRowLoop
 
     jsr sc_DrawScrollThing
     jsr sc_DrawTwoBlankRows
@@ -205,24 +216,69 @@ sc_DrawScrollThing:
 
     rts
 
-Scores_Draw_Page:
+sc_DrawBGRow:
+    ldx #31
+@loop:
+    lda Scores_BG_Row, x
+    sta $2007
+    dex
+    bpl @loop
+    rts
 
-    ldy #7
+sc_DrawBGDataRow:
+    ldy #0
+@loop:
+    lda (TmpPPUAddr), y
+    sta $2007
+    iny
+    cpy #32
+    bne @loop
+    rts
+
+Scores_Draw_Page:
+    ldy #0
 @outer:
     lda sc_ppu_high_byte, y
     sta $2006
     lda sc_ppu_low_byte, y
     sta $2006
 
-    ldx #0
+    tya
+    asl a
+    asl a
+    asl a
+    asl a
+    tax
+
+    adc #12
+    sta TmpX
+    adc #4
+    sta TmpY
+
+    ; name loop
+    ;ldx #0
 @inner:
     lda sc_demo_data, x
     sta $2007
     inx
-    cpx #14
+    cpx TmpX
     bne @inner
 
-    dey
+    lda #' '
+    sta $2007
+    sta $2007
+
+    ; score loop
+@scoreLoop:
+    lda sc_demo_data, x
+    adc #$30
+    sta $2007
+    inx
+    cpx TmpY
+    bne @scoreLoop
+
+    iny
+    cpy #8
     bne @outer
 
     rts
@@ -255,6 +311,19 @@ Scores_HeaderKnobR2L:
 Scores_HeaderKnobR2R:
     .byte $17, $18, $19
 
+Scores_BG_RowH1:
+    .byte $0F,$0F,$0F,$0F,$0F,$0F
+    .byte " High scores"; for seed"
+    .byte $00,$00,$00,$00,$00,$00,$00,$00 ;,$00 ;,$00
+    ;.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+    .byte $0F,$0F,$0F,$0F,$0F,$0F
+Scores_BG_RowH2:
+    .byte $0F,$0F,$0F,$0F,$0F,$0F
+    .byte "      for seed FFFF"
+    .byte $00 ;,$00,$00,$00,$00 ;,$00,$00 ;,$00,$00 ;,$00
+    ;.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+    .byte $0F,$0F,$0F,$0F,$0F,$0F
+
 Scores_BG_Row:
     .byte $0F,$0F,$0F,$0F,$0F,$0F
     .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
@@ -275,17 +344,17 @@ sc_demo_index:
 
 ; eight rows of data
 sc_demo_data:
-    .byte "some name ", $00, $00, $00, $00
-    .byte "some name1", $01, $00, $00, $00
-    .byte "some name2", $02, $00, $00, $00
-    .byte "some name3", $03, $00, $00, $00
-    .byte "some name4", $04, $00, $00, $00
-    .byte "some name5", $05, $00, $00, $00
-    .byte "some name6", $06, $00, $00, $00
-    .byte "some name7", $07, $00, $00, $00
+    .byte "some name   ", $00, $00, $00, $00
+    .byte "some name1  ", $01, $00, $00, $00
+    .byte "some name2  ", $02, $00, $00, $00
+    .byte "some name3  ", $03, $00, $00, $00
+    .byte "some name4  ", $04, $00, $00, $00
+    .byte "some name5  ", $05, $00, $00, $00
+    .byte "some name6  ", $06, $00, $00, $00
+    .byte "some name7  ", $07, $00, $00, $00
 
 ; TODO: figure out the correct PPU addresses for the rows for scores
 sc_ppu_high_byte:
-    .byte $00, $00, $00, $00, $21, $20, $20, $20
+    .byte $21, $21, $21, $22, $22, $22, $22, $23
 sc_ppu_low_byte:
-    .byte $00, $00, $00, $00, $17, $E7, $C7, $A7
+    .byte $47, $87, $C7, $07, $47, $87, $C7, $07
