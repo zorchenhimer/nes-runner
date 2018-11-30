@@ -23,15 +23,15 @@
 
 ; First two bytes = saved seed
 ; the rest is the index
-;Score_IndexPage = $6000 ; ends at $607F.  list of 2-byte seeds
-Score_IndexPage:
-    .word sc_demo_index
+Score_IndexPage = $6000 ; ends at $607F.  list of 2-byte seeds
+;Score_IndexPage:
+;    .word sc_demo_index
 
 ; each page is $80 in size (128 bytes); first table has rng_seed and the last 20
 ; or so runs, with only seeds and scores, no names.
 Score_Tables:
-    .word sc_demo_data
-    .word $6080
+    ;.word sc_demo_data
+    .word $6080     ; last 8 runs
     .word $6100
     .word $6180
     .word $6200
@@ -235,53 +235,122 @@ sc_DrawBGDataRow:
     bne @loop
     rts
 
+; Draw a page of scores
+; TODO: take the page index from somewhere (either A or a variable)
 Scores_Draw_Page:
-    ldy #0
+    ldx #0
 @outer:
-    lda sc_ppu_high_byte, y
+    lda sc_ppu_high_byte, x
     sta $2006
-    lda sc_ppu_low_byte, y
+    lda sc_ppu_low_byte, x
     sta $2006
 
-    tya
+    ; Transfer X (the index of the current name) to A and multiply it by 16
+    ; to get the correct byte offsets in the page for the current entry.
+    ; (entries are 16 bytes wide)
+    txa
     asl a
-    asl a
-    asl a
-    asl a
-    tax
 
+    ; Grab the pointer to the current score table and store it in TmpAddr.
+    ; The ASL A above multiples X by 2, so we can use it as the index to
+    ; this lookup table.
+    lda Score_Tables, x
+    sta TmpAddr
+    inx
+    lda Score_Tables, x
+    sta TmpAddr+1
+    dex
+
+    ; finish multiplying by 16
+    asl a
+    asl a
+    asl a
+    tay
+
+    ; Store the end condition for the name loop in TmpX
     adc #12
     sta TmpX
+
+    ; Store the end condition for the score loop in TmpY
     adc #4
     sta TmpY
 
     ; name loop
-    ;ldx #0
 @inner:
-    lda sc_demo_data, x
+    lda (TmpAddr), y
     sta $2007
-    inx
-    cpx TmpX
+    iny
+    cpy TmpX
     bne @inner
 
     lda #' '
     sta $2007
     sta $2007
 
-    ; score loop
-@scoreLoop:
-    lda sc_demo_data, x
-    adc #$30
-    sta $2007
-    inx
-    cpx TmpY
-    bne @scoreLoop
-
+    ; score "loop"
+    ; Read score into the player score variables
+    lda (TmpAddr), y
+    sta PlayerScore3
     iny
-    cpy #8
-    bne @outer
+    lda (TmpAddr), y
+    sta PlayerScore2
+    iny
+    lda (TmpAddr), y
+    sta PlayerScore1
+    iny
+    lda (TmpAddr), y
+    sta PlayerScore0
 
+    ; X and Y are clobbered in BufferScoreDisplay.  Back them up in the
+    ; stack so our loop isn't borked.
+    txa
+    pha
+    tya
+    pha
+
+    ; PlayerScoreBase100 -> PlayerScoreText
+    jsr BufferScoreDisplay
+
+    ; Restore the backups of Y and X from the stack.
+    pla
+    tay
+    pla
+    tax
+
+    ; TODO: use the sc_ppu_high_byte_odd sc_ppu_low_byte_odd lookup
+    ;       tables for the addresses for the following writes
+    ; Draw the score to screen
+    lda PlayerScoreText+0
+    sta $2007
+    lda PlayerScoreText+1
+    sta $2007
+    lda #','
+    sta $2007
+
+    lda PlayerScoreText+2
+    sta $2007
+    lda PlayerScoreText+3
+    sta $2007
+    lda PlayerScoreText+4
+    sta $2007
+    lda #','
+    sta $2007
+
+    lda PlayerScoreText+5
+    sta $2007
+    lda PlayerScoreText+6
+    sta $2007
+    lda PlayerScoreText+7
+    sta $2007
+
+    inx
+    cpx #8
+    bne @outer_jmp
     rts
+
+; branch here because @outer is out of range for BNE
+@outer_jmp:
+    jmp @outer
 
 Scores_Frame:
     lda #BUTTON_START
@@ -343,27 +412,33 @@ Scores_Palette:
     .byte $37,$0F,$17,$07, $37,$05,$15,$13, $37,$0A,$1A,$13, $37,$11,$21,$13
     .byte $37,$30,$13,$13, $37,$05,$15,$13, $37,$0A,$1A,$13, $37,$11,$21,$13
 
-sc_demo_index:
-    ; first byte is current seed
-    .byte $FF, $FF
-
-    ; index data here
-    .byte $12, $34
-    .byte $00, $00
+;sc_demo_index:
+;    ; first byte is current seed
+;    .byte $FF, $FF
+;
+;    ; index data here
+;    .byte $12, $34
+;    .byte $00, $00
 
 ; eight rows of data
-sc_demo_data:
-    .byte "some name   ", $00, $00, $00, $00
-    .byte "some name1  ", $01, $00, $00, $00
-    .byte "some name2  ", $02, $00, $00, $00
-    .byte "some name3  ", $03, $00, $00, $00
-    .byte "some name4  ", $04, $00, $00, $00
-    .byte "some name5  ", $05, $00, $00, $00
-    .byte "some name6  ", $06, $00, $00, $00
-    .byte "some name7  ", $07, $00, $00, $00
+;sc_demo_data:
+;    .byte "some name   ", $00, $00, $00, $00
+;    .byte "some name1  ", $01, $00, $00, $00
+;    .byte "some name2  ", $02, $00, $00, $00
+;    .byte "some name3  ", $03, $00, $00, $00
+;    .byte "some name4  ", $04, $00, $00, $00
+;    .byte "some name5  ", $05, $00, $00, $00
+;    .byte "some name6  ", $06, $00, $00, $00
+;    .byte "some name7  ", $07, $00, $00, $00
 
-; TODO: figure out the correct PPU addresses for the rows for scores
+; lookup for name rows
 sc_ppu_high_byte:
     .byte $21, $21, $21, $22, $22, $22, $22, $23
 sc_ppu_low_byte:
     .byte $47, $87, $C7, $07, $47, $87, $C7, $07
+
+; lookup for score rows
+sc_ppu_high_byte_odd:
+    .byte $21, $21, $21, $22, $22, $22, $22, $23
+sc_ppu_low_byte_odd:
+    .byte $67, $A7, $E7, $27, $67, $A7, $E7, $27

@@ -7,11 +7,6 @@ DedInit:
     sta Ded_FadeNext
     jsr update_scroll
 
-    lda working_seed
-    sta rng_seed
-    lda working_seed+1
-    sta rng_seed+1
-
     lda #<Ded_Frame
     sta DoFramePointer
     lda #>Ded_Frame
@@ -21,6 +16,50 @@ DedInit:
     sta DoNMIPointer
     lda #>Ded_NMI
     sta DoNMIPointer+1
+
+    lda Score_Tables
+    sta TmpAddr
+    lda Score_Tables+1
+    sta TmpAddr+1
+
+    lda rng_seed
+    ;sta Score_IndexPage
+    jsr BinToHex
+    lda TmpX
+
+    ldy #0
+    sta (TmpAddr), y
+    iny
+    lda TmpY
+    sta (TmpAddr), y
+
+    lda rng_seed+1
+    ;sta Score_IndexPage+1
+    jsr BinToHex
+    iny
+    lda TmpX
+    sta (TmpAddr), y
+    iny
+    lda TmpY
+    sta (TmpAddr), y
+
+    ldy #12
+    lda PlayerScore3
+    sta (TmpAddr), y
+    iny
+    lda PlayerScore2
+    sta (TmpAddr), y
+    iny
+    lda PlayerScore1
+    sta (TmpAddr), y
+    iny
+    lda PlayerScore0
+    sta (TmpAddr), y
+
+    lda working_seed
+    sta rng_seed
+    lda working_seed+1
+    sta rng_seed+1
     rts
 
 Ded_NMI:

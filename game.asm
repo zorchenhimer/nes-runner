@@ -363,7 +363,7 @@ IncScore:
 @done:
 ;    rts
 ;
-;BufferScoreDisplay:
+BufferScoreDisplay:
     ; clear text buffer and put the player score in the ones'
     ; spot for now
     ldx #0
@@ -846,3 +846,4 @@ JumpFrames:
     ;.byte $5E, $5C, $5A, $58, $56, $54, $52, $50, $4E, $4C, $4A, $48
     ;.byte $46, $44, $42, $40, $3E
 JumpFrameEnd:
+    nop ; to separate the JumpFrameEnd label from DedInit
