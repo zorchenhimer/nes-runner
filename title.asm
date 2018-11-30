@@ -76,17 +76,17 @@ InitTitle:
 @titleTextDone:
 
     lda #$21
-    sta TmpPPUAddr
+    sta TmpAddr
     lda #$8C
-    sta TmpPPUAddr+1
+    sta TmpAddr+1
 
     ; Draw menu items
     ldx #0
     ldy #0
 @menuLoopTop:
-    lda TmpPPUAddr
+    lda TmpAddr
     sta $2006
-    lda TmpPPUAddr+1
+    lda TmpAddr+1
     sta $2006
 
     ; next letter
@@ -111,14 +111,14 @@ InitTitle:
     beq @menuDone
 
     ; go to the next line of text on screen
-    lda TmpPPUAddr+1
+    lda TmpAddr+1
     clc
     adc #64
-    sta TmpPPUAddr+1
+    sta TmpAddr+1
 
-    lda TmpPPUAddr
+    lda TmpAddr
     adc #0
-    sta TmpPPUAddr
+    sta TmpAddr
     jmp @menuLoopTop
 
 @menuDone:

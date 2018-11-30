@@ -82,7 +82,7 @@ TurnPPUOn:      .res 1
 
 TmpCounter:     .res 1
 TmpAttr:        .res 1
-TmpPPUAddr:     .res 2
+TmpAddr:     .res 2
 TmpY:           .res 1
 TmpX:           .res 1
 

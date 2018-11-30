@@ -120,9 +120,9 @@ InitSeed:
 
 seed_UpdateSprites:
     lda #<sprites
-    sta TmpPPUAddr
+    sta TmpAddr
     lda #>sprites
-    sta TmpPPUAddr+1
+    sta TmpAddr+1
 
 ; TmpY and TmpX are indexes to lookup tables for actual pixel offsets
 ; Middle (selected) row
@@ -247,18 +247,18 @@ seed_SetAttr:
 
     ; find the data chunk in the lookup table
     lda SeedAttrBoxes, x
-    sta TmpPPUAddr
+    sta TmpAddr
     inx
 
     lda SeedAttrBoxes, x
-    sta TmpPPUAddr+1
+    sta TmpAddr+1
     inx
 
     ; Store the attribute stuff in the buffer
     ldx #4
     ldy #0
 @loop:
-    lda (TmpPPUAddr), y
+    lda (TmpAddr), y
     sta Seed_Attr_Buffer, x
     iny
     dex
@@ -405,42 +405,42 @@ seed_LoadSprite:
 @loop:
     ; tile
     lda TmpCounter
-    sta (TmpPPUAddr), y
+    sta (TmpAddr), y
     inc TmpCounter
 
-    inc TmpPPUAddr
+    inc TmpAddr
     ; set the attr byte.  sprite behind background
     lda TmpAttr
-    sta (TmpPPUAddr), y
-    inc TmpPPUAddr
-    inc TmpPPUAddr
-    inc TmpPPUAddr
+    sta (TmpAddr), y
+    inc TmpAddr
+    inc TmpAddr
+    inc TmpAddr
 
-    ;lda TmpPPUAddr
+    ;lda TmpAddr
     ;adc #4
-    ;sta TmpPPUAddr
+    ;sta TmpAddr
     dex
     bne @loop
 
     ; get back to the start sprite
-    lda TmpPPUAddr
+    lda TmpAddr
     sec
     sbc #16
-    sta TmpPPUAddr
+    sta TmpAddr
     clc
 
     ; load up first tile's x/y
     ldy #0
     lda TmpY
-    sta (TmpPPUAddr), y
+    sta (TmpAddr), y
     ldy #3
     lda TmpX
-    sta (TmpPPUAddr), y
+    sta (TmpAddr), y
 
     ; loop through the rest to calculate x/y
-    lda TmpPPUAddr
+    lda TmpAddr
     adc #4
-    sta TmpPPUAddr
+    sta TmpAddr
 
     ; tile 01
     lda TmpX
@@ -469,17 +469,17 @@ seed_LoadSprite:
 seed_SetSpriteXY:
     ldy #0
     lda TmpY
-    sta (TmpPPUAddr), y
+    sta (TmpAddr), y
     iny
     iny
     iny
     lda TmpX
-    sta (TmpPPUAddr), y
+    sta (TmpAddr), y
 
-    lda TmpPPUAddr
+    lda TmpAddr
     clc
     adc #4
-    sta TmpPPUAddr
+    sta TmpAddr
     rts
 
 BOX_TILE_START  = $03

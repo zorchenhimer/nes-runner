@@ -93,17 +93,17 @@ Scores_Init:
     jsr sc_DrawBGRow
 
     lda #<Scores_BG_RowH1
-    sta TmpPPUAddr
+    sta TmpAddr
     lda #>Scores_BG_RowH1
-    sta TmpPPUAddr+1
+    sta TmpAddr+1
     jsr sc_DrawBGDataRow
 
     jsr sc_DrawBGRow
 
     lda #<Scores_BG_RowH2
-    sta TmpPPUAddr
+    sta TmpAddr
     lda #>Scores_BG_RowH2
-    sta TmpPPUAddr+1
+    sta TmpAddr+1
     jsr sc_DrawBGDataRow
 
 ; Inner bits of the scroll graphic (actual background for text)
@@ -228,7 +228,7 @@ sc_DrawBGRow:
 sc_DrawBGDataRow:
     ldy #0
 @loop:
-    lda (TmpPPUAddr), y
+    lda (TmpAddr), y
     sta $2007
     iny
     cpy #32
