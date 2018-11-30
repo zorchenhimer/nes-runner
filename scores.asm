@@ -284,6 +284,15 @@ Scores_Draw_Page:
     rts
 
 Scores_Frame:
+    lda #BUTTON_START
+    jsr ButtonPressedP1
+    beq @nobutton
+
+    lda #GS_TITLE
+    sta current_gamestate
+    inc gamestate_changed
+
+@nobutton:
     jmp WaitFrame
 
 Scores_NMI:
