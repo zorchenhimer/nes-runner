@@ -135,6 +135,9 @@ Game_Init:
     cpx #24
     bne @pyloop
 
+    lda #$20
+    sta PAUSED_PAL
+
     lda #0
     sta meta_column_offset
     sta meta_tile_addr
@@ -297,6 +300,10 @@ Game_Frame:
     bvs @game_is_paused
 
     jsr g_PausedSprites_On
+    lda #0
+    sta TmpX
+    lda #2
+    sta TmpY
     dec game_paused
     jmp WaitSpriteZero
 
@@ -308,6 +315,25 @@ Game_Frame:
 @nostart:
     bit game_paused
     bvc @game_not_paused
+
+    ; "Paused" fade thing
+    dec TmpY
+    bne @noColor
+
+    lda #8
+    sta TmpY
+
+    ldx TmpX
+    lda DedStartPal, x
+    sta PAUSED_PAL
+    inx
+    cpx #6
+    bne @noWrap
+    ldx #0
+@noWrap:
+    stx TmpX
+
+@noColor:
     jmp WaitSpriteZero
 
 @game_not_paused:
@@ -894,7 +920,7 @@ update_scroll:
 
 GamePalette:
     .byte $0F,$17,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39
-    .byte $0F,$15,$2B,$39, $0F,$0F,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39
+    .byte $0F,$15,$2B,$39, $0F,$0F,$2B,$39, $0F,$20,$2B,$39, $0F,$1C,$2B,$39
 
 MetaTiles:  ; meta tile IDs -> meta tile tile addresses
     .word Meta_Sky, Meta_Ground, Meta_Obstacle, Meta_Powerup
@@ -911,8 +937,12 @@ Meta_Powerup:
 PAUSED_X    = 104
 PAUSED_Y    = 25
 PAUSED_ATTR = $02
+PAUSED_PAL  = PaletteRAM+6
 PausedSprites:
     .byte "Paused"
+
+PausedPalTable:
+    .byte $2D,$00,$10,$20,$10,$00
 
 ; peak is at $3F
 JumpFrameLength:
@@ -936,3 +966,4 @@ JumpFrames:
     ;.byte $46, $44, $42, $40, $3E
 JumpFrameEnd:
     nop ; to separate the JumpFrameEnd label from DedInit
+
