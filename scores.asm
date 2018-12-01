@@ -82,6 +82,15 @@ Scores_Init:
 
     jsr ClearSprites
 
+    ; Debug stuff.  Overwrites save RAM
+    ldx #0
+@dbgloop:
+    lda sc_demo_data, x
+    sta $6090, x
+    inx
+    cpx #112
+    bne @dbgloop
+
     lda #$20
     sta $2006
     lda #$00
@@ -116,6 +125,7 @@ Scores_Init:
     jsr sc_DrawScrollThing
     jsr sc_DrawTwoBlankRows
 
+    lda #0
     jsr Scores_Draw_Page
 
     lda #$00
@@ -128,7 +138,7 @@ Scores_Init:
 
 sc_DrawTwoBlankRows:
     ldx #64
-    lda #$0F
+    lda #SC_TILE_BACKGROUND
 @loop:
     sta $2007
     dex
@@ -138,77 +148,65 @@ sc_DrawTwoBlankRows:
 ; draw the top and bottom roll of the scroll
 sc_DrawScrollThing:
     ldx #3
-    lda #$0F
+    lda #SC_TILE_BACKGROUND
 @lp0:
     sta $2007
     dex
     bne @lp0
 
 ; 1st header row
-    ldx #0
-    lda Scores_HeaderKnobR1L, x
+    lda #SC_TILE_KNOB_R1L0
     sta $2007
-    inx
-    lda Scores_HeaderKnobR1L, x
+    lda #SC_TILE_KNOB_R1L1
     sta $2007
-    inx
-    lda Scores_HeaderKnobR1L, x
+    lda #SC_TILE_KNOB_R1L2
     sta $2007
 
-    lda #$11
+    lda #SC_TILE_ROLL_TOP
     ldx #20
 @row1loop:
     sta $2007
     dex
     bne @row1loop
 
-    ldx #0
-    lda Scores_HeaderKnobR1R, x
+    lda #SC_TILE_KNOB_R1R0
     sta $2007
-    inx
-    lda Scores_HeaderKnobR1R, x
+    lda #SC_TILE_KNOB_R1R1
     sta $2007
-    inx
-    lda Scores_HeaderKnobR1R, x
+    lda #SC_TILE_KNOB_R1R2
     sta $2007
 
     ldx #6
-    lda #$0F
+    lda #SC_TILE_BACKGROUND
 @lp2:
     sta $2007
     dex
     bne @lp2
 
 ; 2nd header row
-    ldx #0
-    lda Scores_HeaderKnobR2L, x
+    lda #SC_TILE_KNOB_R2L0
     sta $2007
-    inx
-    lda Scores_HeaderKnobR2L, x
+    lda #SC_TILE_KNOB_R2L1
     sta $2007
-    inx
-    lda Scores_HeaderKnobR2L, x
+    lda #SC_TILE_KNOB_R2L2
     sta $2007
 
-    lda #$16
+    lda #SC_TILE_ROLL_BOTTOM
     ldx #20
 @row2loop:
     sta $2007
     dex
     bne @row2loop
 
-    ldx #0
-    lda Scores_HeaderKnobR2R, x
+    lda #SC_TILE_KNOB_R2R0
     sta $2007
-    inx
-    lda Scores_HeaderKnobR2R, x
+    lda #SC_TILE_KNOB_R2R1
     sta $2007
-    inx
-    lda Scores_HeaderKnobR2R, x
+    lda #SC_TILE_KNOB_R2R2
     sta $2007
 
     ldx #3
-    lda #$0F
+    lda #SC_TILE_BACKGROUND
 @lp4:
     sta $2007
     dex
@@ -275,6 +273,11 @@ Scores_Draw_Page:
     adc #4
     sta TmpY
 
+    ; Check for empty name
+    lda (TmpAddr), y
+    bne @inner
+    rts
+
     ; name loop
 @inner:
     lda (TmpAddr), y
@@ -319,28 +322,43 @@ Scores_Draw_Page:
 
     ; TODO: use the sc_ppu_high_byte_odd sc_ppu_low_byte_odd lookup
     ;       tables for the addresses for the following writes
+    lda sc_ppu_high_byte_odd, x
+    sta $2006
+    lda sc_ppu_low_byte_odd, x
+    sta $2006
+
+    clc
+
     ; Draw the score to screen
     lda PlayerScoreText+0
+    adc #$90
     sta $2007
     lda PlayerScoreText+1
+    adc #$90
     sta $2007
-    lda #','
+    lda #$2D    ; altertate ','
     sta $2007
 
     lda PlayerScoreText+2
+    adc #$90
     sta $2007
     lda PlayerScoreText+3
+    adc #$90
     sta $2007
     lda PlayerScoreText+4
+    adc #$90
     sta $2007
-    lda #','
+    lda #$2D
     sta $2007
 
     lda PlayerScoreText+5
+    adc #$90
     sta $2007
     lda PlayerScoreText+6
+    adc #$90
     sta $2007
     lda PlayerScoreText+7
+    adc #$90
     sta $2007
 
     inx
@@ -376,18 +394,30 @@ Scores_NMI:
 
     jmp NMI_Finished
 
+; Tile constants
+SC_TILE_BACKGROUND  = $0F
+SC_TILE_ROLL_TOP    = $11
+SC_TILE_ROLL_BOTTOM = $16
+
+; Scroll roll header left and right (the knobs)
+SC_TILE_KNOB_R1L0   = $13
+SC_TILE_KNOB_R1L1   = $14
+SC_TILE_KNOB_R1L2   = $10
+
+SC_TILE_KNOB_R1R0   = $12
+SC_TILE_KNOB_R1R1   = $13
+SC_TILE_KNOB_R1R2   = $14
+
+SC_TILE_KNOB_R2L0   = $18
+SC_TILE_KNOB_R2L1   = $19
+SC_TILE_KNOB_R2L2   = $15
+
+SC_TILE_KNOB_R2R0   = $17
+SC_TILE_KNOB_R2R1   = $18
+SC_TILE_KNOB_R2R2   = $19
+
 Scores_Header:
     .byte "High Scores Thing?", $00
-
-Scores_HeaderKnobR1L:
-    .byte $13, $14, $10
-Scores_HeaderKnobR1R:
-    .byte $12, $13, $14
-
-Scores_HeaderKnobR2L:
-    .byte $18, $19, $15
-Scores_HeaderKnobR2R:
-    .byte $17, $18, $19
 
 Scores_BG_RowH1:
     .byte $0F,$0F,$0F,$0F,$0F,$0F
@@ -420,25 +450,25 @@ Scores_Palette:
 ;    .byte $12, $34
 ;    .byte $00, $00
 
-; eight rows of data
-;sc_demo_data:
-;    .byte "some name   ", $00, $00, $00, $00
-;    .byte "some name1  ", $01, $00, $00, $00
-;    .byte "some name2  ", $02, $00, $00, $00
-;    .byte "some name3  ", $03, $00, $00, $00
-;    .byte "some name4  ", $04, $00, $00, $00
-;    .byte "some name5  ", $05, $00, $00, $00
-;    .byte "some name6  ", $06, $00, $00, $00
-;    .byte "some name7  ", $07, $00, $00, $00
+; seven rows of data
+sc_demo_data:
+    .byte "some name1  ", $01, $00, $00, $00
+    .byte "some name2  ", $02, $00, $00, $00
+    .byte "some name3  ", $03, $00, $00, $00
+    .byte "some name4  ", $04, $00, $00, $00
+    .byte "some name5  ", $05, $00, $00, $00
+    .byte "some name6  ", $06, $00, $00, $00
+    .byte "some name7  ", $07, $00, $00, $00
 
 ; lookup for name rows
 sc_ppu_high_byte:
-    .byte $21, $21, $21, $22, $22, $22, $22, $23
+    .byte $21, $21, $21, $21, $22, $22, $22, $22
 sc_ppu_low_byte:
-    .byte $47, $87, $C7, $07, $47, $87, $C7, $07
+    .byte $27, $67, $A7, $E7, $27, $67, $A7, $E7
 
 ; lookup for score rows
 sc_ppu_high_byte_odd:
     .byte $21, $21, $21, $22, $22, $22, $22, $23
 sc_ppu_low_byte_odd:
-    .byte $67, $A7, $E7, $27, $67, $A7, $E7, $27
+    .byte $4F, $8F, $CF, $0F, $4F, $8F, $CF, $0F
+
