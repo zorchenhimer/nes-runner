@@ -311,8 +311,9 @@ Game_Frame:
     jmp WaitSpriteZero
 
 CheckCollide:
+    ; load up Y
     lda sprites
-    cmp #$56
+    cmp #$47    ; top of obstacle
     bcc @done
 
     ; check the player's right meta column
