@@ -583,6 +583,8 @@ prng:
 generate_column:
     ldy #0  ; actual tile offset?
 @loop:
+    ; top two tiles can be either air or an obstacle
+    ; bottom two can be either ground or a pitfall ("deadly" air)
     cpy #$02
     bcs @ground
 
@@ -601,7 +603,7 @@ generate_column:
     bcc @sky    ; no obstacle
 
     lda rng_result
-    and #%00011110
+    and #%00001110
     sta obs_countdown
 
     ; draw obstacle
@@ -619,6 +621,7 @@ generate_column:
     sta (map_column_addr), y
     jmp @next
 
+; TODO: Pitfalls
 @ground:
     cpy #$04
     beq @done
