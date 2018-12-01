@@ -55,11 +55,6 @@ DedInit:
     iny
     lda PlayerScore0
     sta (TmpAddr), y
-
-    lda working_seed
-    sta rng_seed
-    lda working_seed+1
-    sta rng_seed+1
     rts
 
 Ded_NMI:
@@ -264,12 +259,24 @@ GameOverWait:
     stx TmpX
 
 @noColor:
+    lda #BUTTON_SELECT
+    jsr ButtonPressedP1
+    beq @checkStart
+    jmp ReplayLastMap
+
+@checkStart:
     lda #BUTTON_START
     jsr ButtonPressedP1
     bne @gotoTitle
     jmp dedSpriteZero
 
 @gotoTitle:
+    ; save the last working seed
+    lda working_seed
+    sta rng_seed
+    lda working_seed+1
+    sta rng_seed+1
+
     lda #GS_TITLE
     sta current_gamestate
     inc gamestate_changed
@@ -288,6 +295,13 @@ dedSpriteZero:
     lda #PPU_CTRL_TITLE
     sta $2000
     jmp WaitFrame
+
+ReplayLastMap:
+    ; Do not save last working seed.  Jump right to a new game.
+    lda #GS_GAME
+    sta current_gamestate
+    inc gamestate_changed
+    jmp dedSpriteZero
 
 DedText:
     .byte "Game Over!", $00
