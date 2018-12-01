@@ -5,6 +5,8 @@ LD = c:/cc65/bin/ld65.exe
 
 # Tool to generate credits data
 CR = go run ../credits/generate-credits.go
+#CL = go run ../tools/ld65-labels/main.go
+CL = ../tools/ld65-labels/ld65-labels.exe
 
 # Mapper configuration for linker
 NESCFG = nes_001.cfg
@@ -57,7 +59,7 @@ bin/$(NAME).nes: bin/$(NAME).o $(NESCFG)
 		bin/$(NAME).o
 
 bin/$(NAME).mlb: bin/$(NAME).nes.db
-	../tools/ld65-labels/ld65-labels.exe bin/$(NAME).nes.db
+	$(CL) bin/$(NAME).nes.db
 
 credits_data.i: subscriber-list.csv
 	$(CR) -x zorchenhimer -o credits_data.i -i subscriber-list.csv
