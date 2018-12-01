@@ -25,22 +25,22 @@ DedInit:
     lda rng_seed
     ;sta Score_IndexPage
     jsr BinToHex
-    lda TmpX
 
     ldy #0
+    lda TmpY
     sta (TmpAddr), y
     iny
-    lda TmpY
+    lda TmpX
     sta (TmpAddr), y
 
     lda rng_seed+1
     ;sta Score_IndexPage+1
     jsr BinToHex
     iny
-    lda TmpX
+    lda TmpY
     sta (TmpAddr), y
     iny
-    lda TmpY
+    lda TmpX
     sta (TmpAddr), y
 
     ldy #12
