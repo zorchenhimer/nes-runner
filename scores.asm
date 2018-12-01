@@ -235,11 +235,21 @@ sc_DrawBGDataRow:
     bne @loop
     rts
 
-; Draw a page of scores
-; TODO: take the page index from somewhere (either A or a variable)
+; Draw a page of scores. Page index taken from A
 Scores_Draw_Page:
+    ; Grab the pointer to the current score table and store it in TmpAddr.
+    ; The ASL A above multiples X by 2, so we can use it as the index to
+    ; this lookup table.
+    tax
+    lda Score_Tables, x
+    sta TmpAddr
+    inx
+    lda Score_Tables, x
+    sta TmpAddr+1
+
     ldx #0
 @outer:
+    ; start address for name/seed
     lda sc_ppu_high_byte, x
     sta $2006
     lda sc_ppu_low_byte, x
@@ -250,16 +260,6 @@ Scores_Draw_Page:
     ; (entries are 16 bytes wide)
     txa
     asl a
-
-    ; Grab the pointer to the current score table and store it in TmpAddr.
-    ; The ASL A above multiples X by 2, so we can use it as the index to
-    ; this lookup table.
-    lda Score_Tables, x
-    sta TmpAddr
-    inx
-    lda Score_Tables, x
-    sta TmpAddr+1
-    dex
 
     ; finish multiplying by 16
     asl a
