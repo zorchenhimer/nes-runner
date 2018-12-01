@@ -40,10 +40,10 @@ Game_Init:
     lda #159
     sta spritezero
 
-    lda #$03
+    lda #$0F
     sta spritezero+1
 
-    lda #0
+    lda #%00100001
     sta spritezero+2
 
     lda #0
@@ -201,7 +201,7 @@ Game_Init:
     lda #PPU_CTRL_HORIZ
     sta $2000
 
-    lda #$02
+    lda #$0F
     ldx #0
 @statusBarRow2:
     sta $2007
@@ -811,7 +811,7 @@ update_scroll:
 
 GamePalette:
     .byte $0F,$17,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39
-    .byte $0F,$15,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39
+    .byte $0F,$15,$2B,$39, $0F,$0F,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39
 
 MetaTiles:  ; meta tile IDs -> meta tile tile addresses
     .word Meta_Sky, Meta_Ground, Meta_Obstacle, Meta_Powerup
