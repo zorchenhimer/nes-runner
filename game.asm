@@ -111,6 +111,27 @@ Game_Init:
     cpx #32
     bne @spLoop
 
+    ldx #0
+    ldy #0
+    lda #PAUSED_X
+@pyloop:
+    sta sprites+35, x
+    pha
+    lda #PAUSED_Y
+    sta sprites+32, x
+    lda #' '
+    sta sprites+33, x
+    pla
+
+    adc #8
+    inx
+    inx
+    inx
+    inx
+    iny
+    cpx #24
+    bne @pyloop
+
     lda #0
     sta meta_column_offset
     sta meta_tile_addr
@@ -272,12 +293,14 @@ Game_Frame:
     bit game_paused
     bvs @game_is_paused
 
+    jsr g_PausedSprites_On
     dec game_paused
     jmp WaitSpriteZero
 
 @game_is_paused:
     lda #0
     sta game_paused
+    jsr g_PausedSprites_Off
 
 @nostart:
     bit game_paused
@@ -715,6 +738,34 @@ Load_column:
 
     rts
 
+g_PausedSprites_On:
+    ldx #0
+    ldy #0
+@loop:
+    lda PausedSprites, y
+    sta sprites+33, x
+    inx
+    inx
+    inx
+    inx
+    iny
+    cpx #24
+    bne @loop
+    rts
+
+g_PausedSprites_Off:
+    ldx #0
+    lda #' '
+@loop:
+    sta sprites+33, x
+    inx
+    inx
+    inx
+    inx
+    cpx #24
+    bne @loop
+    rts
+
 Draw_Column:
     lda #PPU_CTRL_VERT
     sta $2000
@@ -853,6 +904,11 @@ Meta_Obstacle:
     .byte $82, $92, $83, $93
 Meta_Powerup:
     .byte $A0, $B0, $A1, $B1
+
+PAUSED_X    = 104
+PAUSED_Y    = 25
+PausedSprites:
+    .byte "Paused"
 
 ; peak is at $3F
 JumpFrameLength:
