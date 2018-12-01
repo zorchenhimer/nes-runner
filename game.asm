@@ -260,6 +260,26 @@ HSInit:
     rts
 
 Game_Frame:
+    lda #BUTTON_START
+    jsr ButtonPressedP1
+    beq @nostart
+
+    bit game_paused
+    bvs @game_is_paused
+
+    dec game_paused
+    jmp WaitSpriteZero
+
+@game_is_paused:
+    lda #0
+    sta game_paused
+
+@nostart:
+    bit game_paused
+    bvc @game_not_paused
+    jmp WaitSpriteZero
+
+@game_not_paused:
     ; increment the screen position
     inc calc_scroll
     jsr UpdatePlayer

@@ -139,6 +139,7 @@ Seed_Input3:        .res 1
 working_seed:       .res 2
 
 clear_nt_tile:      .res 1
+game_paused:        .res 1
 
 .segment "SAVERAM"
     ; battery backed RAM
