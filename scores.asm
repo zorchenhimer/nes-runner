@@ -83,13 +83,13 @@ Scores_Init:
     jsr ClearSprites
 
     ; Debug stuff.  Overwrites save RAM
-    ldx #0
-@dbgloop:
-    lda sc_demo_data, x
-    sta $6090, x
-    inx
-    cpx #112
-    bne @dbgloop
+;    ldx #0
+;@dbgloop:
+;    lda sc_demo_data, x
+;    sta $6090, x
+;    inx
+;    cpx #112
+;    bne @dbgloop
 
     lda #$20
     sta $2006
@@ -451,14 +451,14 @@ Scores_Palette:
 ;    .byte $00, $00
 
 ; seven rows of data
-sc_demo_data:
-    .byte "some name1  ", $01, $00, $00, $00
-    .byte "some name2  ", $02, $00, $00, $00
-    .byte "some name3  ", $03, $00, $00, $00
-    .byte "some name4  ", $04, $00, $00, $00
-    .byte "some name5  ", $05, $00, $00, $00
-    .byte "some name6  ", $06, $00, $00, $00
-    .byte "some name7  ", $07, $00, $00, $00
+;sc_demo_data:
+;    .byte "some name1  ", $01, $00, $00, $00
+;    .byte "some name2  ", $02, $00, $00, $00
+;    .byte "some name3  ", $03, $00, $00, $00
+;    .byte "some name4  ", $04, $00, $00, $00
+;    .byte "some name5  ", $05, $00, $00, $00
+;    .byte "some name6  ", $06, $00, $00, $00
+;    .byte "some name7  ", $07, $00, $00, $00
 
 ; lookup for name rows
 sc_ppu_high_byte:
