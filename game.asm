@@ -241,7 +241,12 @@ Game_Init:
 
 Game_NMI:
     ; draw the next column if needed
+    bit column_ready
+    bvc @noDraw
     jsr Draw_Column
+    lda #0
+    sta column_ready
+@noDraw:
     jsr Draw_Score
 
     ; scroll in the screen
@@ -296,6 +301,7 @@ Game_Frame:
 
     lda #1
     jsr IncScore
+    dec column_ready
     jsr generate_column
 
 @waitFrame:
