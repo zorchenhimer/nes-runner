@@ -115,10 +115,10 @@ Game_Init:
     sta meta_column_offset
     sta meta_tile_addr
     sta map_column_addr
-    sta nmi_draw
 
-    ; TODO: remove constant here
-    lda #$03
+    lda #<meta_columns
+    sta map_column_addr+0
+    lda #>meta_columns
     sta map_column_addr+1
 
     lda #<GamePalette
@@ -297,7 +297,6 @@ Game_Frame:
     lda #1
     jsr IncScore
     jsr generate_column
-    inc nmi_draw
 
 @waitFrame:
     jsr CheckCollide

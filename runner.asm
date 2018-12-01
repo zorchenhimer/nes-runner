@@ -35,7 +35,6 @@ nes2end
     .include "credits_ram.asm"
 
 sleeping:       .res 1
-nmi_draw:       .res 1
 frame_odd:      .res 1
 
 map_column_addr:    .res 2  ; start address of the meta_columns
