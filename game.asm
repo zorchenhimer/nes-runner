@@ -116,13 +116,16 @@ Game_Init:
     lda #PAUSED_X
 @pyloop:
     sta sprites+35, x
-    pha
+    pha     ; save A
+
+    lda #PAUSED_ATTR
+    sta sprites+34, x
     lda #PAUSED_Y
     sta sprites+32, x
     lda #' '
     sta sprites+33, x
-    pla
 
+    pla     ; load A
     adc #8
     inx
     inx
@@ -907,6 +910,7 @@ Meta_Powerup:
 
 PAUSED_X    = 104
 PAUSED_Y    = 25
+PAUSED_ATTR = $02
 PausedSprites:
     .byte "Paused"
 
