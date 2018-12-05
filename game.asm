@@ -632,90 +632,89 @@ prng:
     sta rng_result
     rts
 
-generate_column:
-    ldy #0  ; actual tile offset?
-@loop:
-    ; top two tiles can be either air or an obstacle
-    ; bottom two can be either ground or a pitfall ("deadly" air)
-    cpy #$02
-    bcs @ground
-
-    lda obs_countdown
-    bne @obsdec
-    jmp @obszero
-
-@obsdec:
-    dec obs_countdown
-    jmp @sky
-
-@obszero:
-    jsr prng
-    lda rng_result
-    lsr a       ; bit 0 -> carry
-    bcc @sky    ; no obstacle
-
-    lda rng_result
-    and #%00001110
-    sta obs_countdown
-
-    ; draw obstacle
-    lda #02
-    sta (map_column_addr), y
+gc_LoadMetaColumn:
+    ldy #0
+    ldx #0
+    stx TmpX    ; TmpX = 0
+    ;MetaColumn_XXX -> meta_columns buffer
+@loop:  ; once for each meta tile in the column (ie, 4 times)
+    lda (TmpAddr), y
+    sta (map_column_addr, x)
     iny
-    sta (map_column_addr), y
-    jmp @next
+    inc map_column_addr
 
-@sky:
-    ; add sky byte
-    lda #00
-    sta (map_column_addr), y
-    iny
-    sta (map_column_addr), y
-    jmp @next
+    inc TmpX
+    lda TmpX
+    cmp #4
+    bne @loop
 
-; TODO: Pitfalls
-@ground:
-    cpy #$04
-    beq @done
+    jsr Load_Column
 
-    ; draw ground
-    lda #01
-    sta (map_column_addr), y
-    jmp @next
-
-@next:
-    ;inx
-    iny
-    jmp @loop
-
-@done:
-    jsr Load_column
-
+    ;inc meta_column_offset
     lda meta_column_offset
     cmp #31
-    bcs @reset
+    bcc @noreset
 
-    ; increment map column ram address
-    lda map_column_addr
-    clc
-    adc #$04
+    lda #<meta_columns
     sta map_column_addr
-
-    lda map_column_addr+1
-    adc #0
-    sta map_column_addr+1
-    jmp @end
-
-@reset:
-    lda #$00
-    sta map_column_addr
-    lda #$03
+    lda #>meta_columns
     sta map_column_addr+1
 
-@end:
+@noreset:
     rts
 
-Load_column:
+; buffer no obstacles
+gc_GenerateNothin:
+    lda #<MetaColumn_Nothin
+    sta TmpAddr
+    lda #>MetaColumn_Nothin
+    sta TmpAddr+1
+    jmp gc_LoadMetaColumn
+
+; buffer a single column of obstacles
+gc_GenerateObsA:
+    lda #<MetaColumn_OBS_A
+    sta TmpAddr
+    lda #>MetaColumn_OBS_A
+    sta TmpAddr+1
+    jmp gc_LoadMetaColumn
+
+; buffer two columns of obstacles
+gc_GenerateObsB:
+    ; TODO
+    rts
+
+; buffer a single columns of air, no ground
+gc_GeneratePit:
+    lda #<MetaColumn_Pit
+    sta TmpAddr
+    lda #>MetaColumn_Pit
+    sta TmpAddr+1
+    jmp gc_LoadMetaColumn
+
+generate_column:
+    lda obs_countdown
+    beq @doRngThing
+
+    dec obs_countdown
+    jmp gc_GenerateNothin
+
+@doRngThing:
+    lda #5
+    sta obs_countdown
+    jsr prng
+    lda rng_result
+    and #%00000011
+    asl a
+    tax
+
+    lda MetaColumn_Subs+1, x
+    pha
+    lda MetaColumn_Subs, x
+    pha
+    rts
+
+Load_Column:
 
 ; load up a meta tile from map data with current meta_column_offset
 ; write all four tiles to buffer in one loop
@@ -924,6 +923,29 @@ GamePalette:
 
 MetaTiles:  ; meta tile IDs -> meta tile tile addresses
     .word Meta_Sky, Meta_Ground, Meta_Obstacle, Meta_Powerup
+
+; Game Meta Columns
+G_MC_NOTHIN = $00
+G_MC_OBS_A  = $01
+G_MC_OBS_B  = $02
+G_MC_PIT    = $03
+
+MetaColumn_Subs:
+    .word gc_GenerateNothin-1
+    ;.word gc_GenerateObsA-1
+    .word gc_GenerateObsA-1
+    .word gc_GenerateObsA-1
+    ;.word gc_GenerateObsB-1
+    .word gc_GeneratePit-1
+
+MetaColumn_Nothin:
+    .byte $00, $00, $01, $01
+MetaColumn_OBS_A:
+    .byte $02, $02, $01, $01
+MetaColumn_OBS_B:
+    .byte $02, $02, $01, $01
+MetaColumn_Pit:
+    .byte $00, $00, $00, $00    ; todo, spikes?
 
 Meta_Sky:
     .byte $80, $90, $81, $91
