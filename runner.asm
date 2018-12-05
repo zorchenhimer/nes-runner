@@ -8,6 +8,7 @@
 ;   Better map generation
 ;   Background art (mountains or some shit.  happy little trees?)
 ;   High Scores table
+;       needs to be finished/populated
 ;   Sound engine
 
 .include "nes2header.inc"
@@ -38,9 +39,8 @@ sleeping:       .res 1
 column_ready:   .res 1
 frame_odd:      .res 1
 
-map_column_addr:    .res 2  ; start address of the meta_columns
+map_column_addr:    .res 2  ; start address of the current meta_column
 meta_tile_addr:     .res 2  ; tiles that make up the meta tile (eg Meta_Sky, Meta_Ground, etc)
-meta_tile_id:       .res 1
 obs_countdown:      .res 1  ; obstacle countdown
 
 calc_scroll:        .res 1
