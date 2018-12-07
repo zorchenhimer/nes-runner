@@ -165,6 +165,55 @@ InitTitle:
     lda #>NMI_Title
     sta DoNMIPointer+1
 
+    lda #PPU_CTRL_VERT
+    sta $2000
+
+    bit $2002
+    lda #$22
+    sta $2006
+    lda #$40
+    sta $2006
+
+    ldx #0
+@building_a:
+    lda Title_BG1, x
+    sta $2007
+    inx
+    cpx #6
+    bne @building_a
+
+    lda #$22
+    sta $2006
+    lda #$21
+    sta $2006
+
+    ldx #0
+@building_b:
+    lda Title_BG2, x
+    sta $2007
+    inx
+    cpx #7
+    bne @building_b
+
+    ldx #$55
+    lda #$23
+    sta $2006
+    lda #$E0
+    sta $2006
+    stx $2007
+
+    lda #$23
+    sta $2006
+    lda #$E8
+    sta $2006
+    stx $2007
+
+    lda #$23
+    sta $2006
+    lda #$F0
+    sta $2006
+    stx $2007
+
     bit $2002
     lda #$00
     sta $2005
@@ -198,6 +247,18 @@ Frame_Title:
     sta TitleColor
     lda #$1C
     sta TitleColor2
+
+    lda $03A8
+    cmp #$24
+    beq @b24
+    lda #$24
+    sta $03A8
+
+    jmp @bb
+@b24:
+    lda #$30
+    sta $03A8
+@bb:
 
 @t_nocolorwrap:
 
@@ -280,7 +341,12 @@ TitleData:
     .byte "Credits", $00, GS_CREDITS
     .byte $00
 
+Title_BG1:
+    .byte $D0, $D4, $D0, $D4, $D0, $D4
+Title_BG2:
+    .byte $DF, $D1, $D5, $D1, $D5, $D1, $D5
+
 TitlePalette:
-    .byte $0F,$30,$30,$30, $0F,$15,$0F,$05, $0F,$15,$0F,$0F, $0F,$11,$11,$11
+    .byte $0F,$30,$30,$30, $0F,$04,$34,$24, $0F,$15,$0F,$0F, $0F,$11,$11,$11
     .byte $0F,$10,$00,$30, $0F,$05,$05,$05, $0F,$0A,$0A,$0A, $0F,$11,$11,$11
     .byte $EA, $EA
