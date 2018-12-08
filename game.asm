@@ -357,7 +357,8 @@ Game_Frame:
     jsr generate_column
 
 @waitFrame:
-    jsr CheckCollide
+    ;jsr CheckCollide
+    lda #0
     beq @jmptozero
 
     ; TODO: die
