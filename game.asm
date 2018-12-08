@@ -300,15 +300,6 @@ HSInit:
     rts
 
 Game_Frame:
-    ; if last drawn column is not the same as last generated
-    ; a buffer and draw are needed.  This will trigger if the last
-    ; generated thing is more than two columns wide.
-    lda meta_last_drawn
-    cmp meta_last_gen
-    beq @noBuffer
-    jsr Buffer_Column
-
-@noBuffer:
     lda #BUTTON_START
     jsr ButtonPressedP1
     beq @nostart
@@ -374,7 +365,6 @@ Game_Frame:
     lda #1
     jsr IncScore
     jsr generate_column
-    jsr Buffer_Column
     lda #8
     sta gen_countdown
 
@@ -387,7 +377,18 @@ Game_Frame:
     sta current_gamestate
     inc gamestate_changed
 @jmptozero:
-    jmp WaitSpriteZero
+
+    ; if last drawn column is not the same as last generated
+    ; a buffer and draw are needed.  This will trigger if the last
+    ; generated thing is more than two columns wide.
+    lda meta_last_gen
+    cmp meta_last_buffer
+    beq @noBuffer
+    jsr Buffer_Column
+
+@noBuffer:
+    ;jmp WaitSpriteZero
+    jmp WaitFrame
 
 CheckCollide:
     ; load up Y
