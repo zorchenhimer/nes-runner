@@ -19,6 +19,7 @@ Game_Init:
     sta PlayerScore1
     sta PlayerScore2
     sta PlayerScore3
+    sta screen_odd
 
     lda #10
     sta obs_countdown
@@ -669,6 +670,16 @@ gc_MetaColumnAddrFromOffset:
     lda #0
     sta meta_last_gen
 
+    lda screen_odd
+    beq @set
+    lda #$00
+    sta screen_odd
+    jmp @noWrap
+
+@set:
+    lda #$FF
+    sta screen_odd
+
 @noWrap:
     asl a
     asl a
@@ -724,6 +735,10 @@ gc_GeneratePit:
     jmp gc_LoadMetaColumn
 
 generate_column:
+    bit screen_odd
+    bvs gc_GenerateDBG_A
+    jmp gc_GenerateDBG_B
+
     lda obs_countdown
     beq @doRngThing
 
@@ -744,6 +759,20 @@ generate_column:
     lda MetaColumn_Subs, x
     pha
     rts
+
+gc_GenerateDBG_A:
+    lda #<MetaColumn_DBG_A
+    sta TmpAddr
+    lda #>MetaColumn_DBG_A
+    sta TmpAddr+1
+    jmp gc_LoadMetaColumn
+
+gc_GenerateDBG_B:
+    lda #<MetaColumn_DBG_B
+    sta TmpAddr
+    lda #>MetaColumn_DBG_B
+    sta TmpAddr+1
+    jmp gc_LoadMetaColumn
 
 Buffer_Column:
 
@@ -976,6 +1005,11 @@ MetaColumn_OBS_B:
     .byte $02, $02, $01, $01
 MetaColumn_Pit:
     .byte $00, $00, $04, $04
+
+MetaColumn_DBG_A:
+    .byte $01, $01, $01, $01
+MetaColumn_DBG_B:
+    .byte $02, $02, $02, $02
 
 ; Tile indicies
 Meta_Sky:

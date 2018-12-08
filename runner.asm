@@ -2,6 +2,10 @@
 ;   Buffer_Column is loading the wrong tiles for the pit metatile
 ;   Draw_Column doesn't draw at the correct coordinates for metacolumn 0 and probably 16 too.
 
+; TODO for debugging
+;   Alternate between drawing a screen of ground and obstacle (each for high).
+;   This will help determine if map drawing is happening correctly.
+
 ; TODO
 ;   Game states and substates
 ;       menu stuff
@@ -41,6 +45,7 @@ nes2end
 sleeping:       .res 1
 column_ready:   .res 1
 frame_odd:      .res 1
+screen_odd:     .res 1  ; for debugging screen drawing
 
 map_column_addr:    .res 2  ; start address of the current meta_column
 meta_tile_addr:     .res 2  ; tiles that make up the meta tile (eg Meta_Sky, Meta_Ground, etc)
@@ -282,7 +287,7 @@ WaitSpriteZero:
     lda #00
     sta $2005
     ; first nametable
-    lda #PPU_CTRL_TITLE
+    lda #PPU_CTRL_HORIZ
     sta $2000
 
 WaitFrame:
