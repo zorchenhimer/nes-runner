@@ -1,3 +1,6 @@
+; FIXME
+;   Buffer_Column is loading the wrong tiles for the pit metatile
+;   Draw_Column doesn't draw at the correct coordinates for metacolumn 0 and probably 16 too.
 
 ; TODO
 ;   Game states and substates
@@ -42,6 +45,10 @@ frame_odd:      .res 1
 map_column_addr:    .res 2  ; start address of the current meta_column
 meta_tile_addr:     .res 2  ; tiles that make up the meta tile (eg Meta_Sky, Meta_Ground, etc)
 obs_countdown:      .res 1  ; obstacle countdown
+
+; meta column offsets
+meta_last_drawn:    .res 1
+meta_last_gen:      .res 1
 
 calc_scroll:        .res 1
 coarse_scroll:      .res 1
@@ -108,6 +115,7 @@ PlayerScoreText:    .res 8
 PlayerJumpFrame:    .res 1  ; current frame of the jump
 ;LevelSeed:          .res 2
 
+; For address $2000
 PPU_CTRL_VERT   = %10010100
 PPU_CTRL_HORIZ  = %10010000
 PPU_CTRL_TITLE  = %10000000
@@ -152,6 +160,10 @@ meta_columns:       .res 128
 tile_column_buffer: .res 16
 PaletteRAM:         .res 32
 TileBuffer:         .res 64
+
+; Start address to draw the tile_column_buffer
+tile_column_addr_high:  .res 1
+tile_column_addr_low:   .res 1
 
 DED_START_PAL   = $03AA
 DED_SPZ_PAL     = $039E

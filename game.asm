@@ -57,6 +57,7 @@ Game_Init:
 
     lda #$00
     sta TmpAttr
+    sta meta_last_drawn
 
     lda #$5E
     sta TmpY
@@ -193,14 +194,15 @@ Game_Init:
 ; Initialy generate and draw both nametables
 @drawWholeMap:
     jsr generate_column
+    jsr Buffer_Column
     jsr Draw_Column
-    inc meta_column_offset
-    lda meta_column_offset
-    cmp #32
+    lda meta_last_drawn
+    cmp #17
     bne @drawWholeMap
 
     lda #0
     sta sleeping
+    sta column_ready
 
     jsr meta_idx_from_scroll
 
@@ -271,6 +273,7 @@ Game_NMI:
     bit column_ready
     bvc @noDraw
     jsr Draw_Column
+
     lda #0
     sta column_ready
 @noDraw:
@@ -292,6 +295,14 @@ HSInit:
     rts
 
 Game_Frame:
+    ; if last drawn column is not the same as last generated
+    ; a buffer and draw are needed
+    lda meta_last_drawn
+    cmp meta_last_gen
+    beq @noBuffer
+    jsr Buffer_Column
+
+@noBuffer:
     lda #BUTTON_START
     jsr ButtonPressedP1
     beq @nostart
@@ -355,13 +366,13 @@ Game_Frame:
     jsr IncScore
     dec column_ready
     jsr generate_column
+    jsr Buffer_Column
 
 @waitFrame:
     ;jsr CheckCollide
     lda #0
     beq @jmptozero
 
-    ; TODO: die
     lda #GS_DED
     sta current_gamestate
     inc gamestate_changed
@@ -594,14 +605,16 @@ meta_idx_from_scroll:
     lsr a
     sta meta_column_offset
 
-    ; generate the column to the left of the screen, not on the screen
-    dec meta_column_offset
+    ; generate the column to the right of the screen, not
+    ; on the screen
+    clc
+    adc #16
+    cmp #32 ; check for overflow
+    bcc @done
 
-    ; check for underflow
-    lda meta_column_offset
-    cmp #$FF
-    bne @done
-    lda #31
+    ; wrap, not reset
+    sec
+    sbc #32
     sta meta_column_offset
 
 @done:
@@ -633,35 +646,43 @@ prng:
     sta rng_result
     rts
 
-gc_LoadMetaColumn:
-    ldy #0
-    ldx #0
-    stx TmpX    ; TmpX = 0
-    ;MetaColumn_XXX -> meta_columns buffer
-@loop:  ; once for each meta tile in the column (ie, 4 times)
-    lda (TmpAddr), y
-    sta (map_column_addr, x)
-    iny
-    inc map_column_addr
-
-    inc TmpX
-    lda TmpX
-    cmp #4
-    bne @loop
-
-    jsr Load_Column
-
-    ;inc meta_column_offset
-    lda meta_column_offset
-    cmp #31
-    bcc @noreset
-
+gc_MetaColumnAddrFromOffset:
     lda #<meta_columns
     sta map_column_addr
     lda #>meta_columns
     sta map_column_addr+1
 
-@noreset:
+    lda meta_last_gen
+
+    cmp #32
+    bcc @noWrap
+
+    lda #0
+    sta meta_last_gen
+
+@noWrap:
+    asl a
+    asl a
+    clc
+    adc map_column_addr
+    sta map_column_addr
+
+    inc meta_last_gen
+    rts
+
+gc_LoadMetaColumn:
+    ldy #0
+    ; load map_column_addr with the correct offset
+    jsr gc_MetaColumnAddrFromOffset
+
+@loop:  ; once for each meta tile in the column (ie, 4 times)
+
+    ; TmpAddr is the metacolumn definition
+    lda (TmpAddr), y
+    sta (map_column_addr), y
+    iny
+    cpy #4
+    bne @loop
     rts
 
 ; buffer no obstacles
@@ -715,18 +736,44 @@ generate_column:
     pha
     rts
 
-Load_Column:
+Buffer_Column:
 
 ; load up a meta tile from map data with current meta_column_offset
 ; write all four tiles to buffer in one loop
+    dec column_ready
 
     ; find the current meta column
-    lda meta_column_offset
-    ; multiply by four.  each column is for meta tiles.
+    ;lda meta_column_offset
+    lda meta_last_drawn
+    ; multiply by four.  each column is four meta tiles.
     asl a
     asl a
-    sta map_meta_tmp
+    sta map_meta_tmp    ; meta tile offset in buffer
     tax
+
+    lda meta_last_drawn
+    cmp #16
+    bcs @secondNT
+
+    lda #$21
+    sta tile_column_addr_high
+    lda meta_last_drawn
+    jmp @addrLow
+
+@secondNT:
+    lda #$25
+    sta tile_column_addr_high
+    lda meta_last_drawn
+    ; Subtract 16 to get it back to the start of the nametable
+    sec
+    sbc #16
+
+@addrLow:
+    ; low byte = (meta_last_draw * 2) + $80
+    clc
+    asl a
+    adc #$80
+    sta tile_column_addr_low
 
     ldy #0
 @tileLoop:
@@ -764,7 +811,6 @@ Load_Column:
     iny
     cpy #8
     bne @tileLoop
-
     rts
 
 g_PausedSprites_On:
@@ -796,89 +842,57 @@ g_PausedSprites_Off:
     rts
 
 Draw_Column:
+    inc column_ready
     lda #PPU_CTRL_VERT
     sta $2000
 
-    lda meta_column_offset
-    cmp #16
-    bcs secondNametable
-
-    ; Address for first nametable starting at $2000
-    lda #$21
+    bit $2002
+    lda tile_column_addr_high
     sta $2006
-    lda meta_column_offset
-    asl a
-    clc
-    adc #$80
+    lda tile_column_addr_low
     sta $2006
 
-    jmp drawCol1
-
-secondNametable:
-    ; Address for second nametable starting at $2400
-    lda #$25
-    sta $2006
-    lda meta_column_offset
-    sec
-    sbc #$10
-    asl a
-    clc
-    adc #$80
-    sta $2006
-
-drawCol1:
+    ; First tile column
     ldx #0
-    ;ldy #0
 @loop:
+    lda tile_column_buffer, x
+    sta $2007
+    inx
     lda tile_column_buffer, x
     sta $2007
     inx
     cpx #8
     bne @loop
 
-;@loopNextCol:
-    lda meta_column_offset
-    cmp #16
-    bcs secondNametable2
+    ; Increment low byte for second tile column
+    inc tile_column_addr_low
 
-    ; Address for first nametable starting at $2000
-    lda #$21
+    lda tile_column_addr_high
     sta $2006
-    lda meta_column_offset
-    asl a
-    clc
-    adc #1
-    clc
-    adc #$80
+    lda tile_column_addr_low
     sta $2006
 
-    jmp drawCol2
-
-secondNametable2:
-    ; Address for second nametable starting at $2400
-    lda #$25
-    sta $2006
-    lda meta_column_offset
-    sec
-    sbc #$10
-    asl a
-    clc
-    adc #1
-    clc
-    adc #$80
-    sta $2006
-
-drawCol2:
+    ; Second tile column
     ldx #8
 @loop2:
+    lda tile_column_buffer, x
+    sta $2007
+    inx
     lda tile_column_buffer, x
     sta $2007
     inx
     cpx #16
     bne @loop2
 
-@done:
-    ;inc meta_column_offset
+    ; Wrap this just like meta_last_gen
+    inc meta_last_drawn
+    lda meta_last_drawn
+    cmp #32
+    bcc @noWrap
+
+    lda #0
+    sta meta_last_drawn
+@noWrap:
     rts
 
 ; update the PPU's scroll
@@ -922,8 +936,12 @@ GamePalette:
     .byte $0F,$17,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39
     .byte $0F,$15,$2B,$39, $0F,$0F,$2B,$39, $0F,$20,$2B,$39, $0F,$1C,$2B,$39
 
-MetaTiles:  ; meta tile IDs -> meta tile tile addresses
-    .word Meta_Sky, Meta_Ground, Meta_Obstacle, Meta_Powerup
+; Meta tile IDs -> meta tile tile addresses
+MetaTiles:
+    .word Meta_Sky
+    .word Meta_Ground
+    .word Meta_Obstacle
+    .word Meta_Pit
 
 ; Game Meta Columns
 G_MC_NOTHIN = $00
@@ -931,6 +949,7 @@ G_MC_OBS_A  = $01
 G_MC_OBS_B  = $02
 G_MC_PIT    = $03
 
+; used for RNG
 MetaColumn_Subs:
     .word gc_GenerateNothin-1
     ;.word gc_GenerateObsA-1
@@ -939,6 +958,7 @@ MetaColumn_Subs:
     ;.word gc_GenerateObsB-1
     .word gc_GeneratePit-1
 
+; Meta tile indicies
 MetaColumn_Nothin:
     .byte $00, $00, $01, $01
 MetaColumn_OBS_A:
@@ -946,16 +966,17 @@ MetaColumn_OBS_A:
 MetaColumn_OBS_B:
     .byte $02, $02, $01, $01
 MetaColumn_Pit:
-    .byte $00, $00, $00, $00    ; todo, spikes?
+    .byte $00, $00, $04, $04
 
+; Tile indicies
 Meta_Sky:
     .byte $80, $90, $81, $91
 Meta_Ground:
     .byte $A0, $B0, $A1, $B1
 Meta_Obstacle:
     .byte $82, $92, $83, $93
-Meta_Powerup:
-    .byte $A0, $B0, $A1, $B1
+Meta_Pit:
+    .byte $A2, $B2, $A3, $B3
 
 PAUSED_X    = 104
 PAUSED_Y    = 25
