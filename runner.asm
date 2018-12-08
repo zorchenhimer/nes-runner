@@ -308,7 +308,30 @@ NMI:
     jmp NMI_Finished
 @nochange:
 
-    jsr UpdatePalettes
+    ;jsr UpdatePalettes
+    bit $2002
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+
+    lda #$3F
+    sta $2006
+    lda #$00
+    sta $2006
+    ldx #31
+@loop:
+    lda PaletteRAM, x
+    sta $2007
+    dex
+    lda PaletteRAM, x
+    sta $2007
+    dex
+    lda PaletteRAM, x
+    sta $2007
+    dex
+    lda PaletteRAM, x
+    sta $2007
+    dex
+    bpl @loop
 
     ; Write sprites to PPU
     bit $2002
