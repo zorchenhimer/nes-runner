@@ -6,6 +6,7 @@ Game_Init:
     lda #PPU_CTRL_HORIZ
     sta $2000
 
+    ; Clear sprites and nametables
     jsr ClearSprites
 
     jsr ClearNametable0
@@ -14,16 +15,23 @@ Game_Init:
     jsr ClearAttrTable0
     jsr ClearAttrTable1
 
+    ; Initialize a bunch of variables
     lda #0
     sta PlayerScore0
     sta PlayerScore1
     sta PlayerScore2
     sta PlayerScore3
     sta screen_odd
+    sta meta_column_offset
+    sta meta_tile_addr
+    sta map_column_addr
+    sta column_ready
+    sta calc_scroll
 
     lda #10
     sta obs_countdown
 
+    ; Load the RNG seed form PRG RAM and re-seed if it doesn't exist
     lda rng_seed
     bne @skip_rng_init
     lda #'Z'  ;$21
@@ -113,7 +121,10 @@ Game_Init:
 @noTmpWrap:
     cpx #32
     bne @spLoop
+    ; end of player sprite
 
+    ; Prepare "Paused" sprites. Position them and give them attributes,
+    ; but set the tiles to a blank space.
     ldx #0
     ldy #0
     lda #PAUSED_X
@@ -138,18 +149,9 @@ Game_Init:
     cpx #24
     bne @pyloop
 
+    ; initial value for fading paused palette
     lda #$20
     sta PAUSED_PAL
-
-    lda #0
-    sta meta_column_offset
-    sta meta_tile_addr
-    sta map_column_addr
-
-    lda #<meta_columns
-    sta map_column_addr+0
-    lda #>meta_columns
-    sta map_column_addr+1
 
     lda #<GamePalette
     sta PaletteAddr
@@ -157,6 +159,7 @@ Game_Init:
     sta PaletteAddr+1
     jsr LoadPalettes
 
+; Status bar stuff
     lda #$23
     sta $2006
     lda #$2A
@@ -174,7 +177,6 @@ Game_Init:
 @seeddone:
     ; Load the seed and convert it to HEX ASCII to draw to screen.
     lda working_seed
-    ;sta LevelSeed
     jsr BinToHex
     lda TmpY
     sta $2007
@@ -182,18 +184,17 @@ Game_Init:
     sta $2007
 
     lda working_seed+1
-    ;sta LevelSeed+1
     jsr BinToHex
     lda TmpY
     sta $2007
     lda TmpX
     sta $2007
 
+; Generate and draw first screen of columns (plus a few)
     lda #PPU_CTRL_VERT
     sta $2000
 
     ldx #10
-; Initialy generate and draw both nametables
 @drawWholeMap:
     jsr generate_column
     jsr Buffer_Column
@@ -202,15 +203,7 @@ Game_Init:
     cmp #19
     bne @drawWholeMap
 
-    lda #0
-    sta sleeping
-    sta column_ready
-
-    lda #8
-    sta gen_countdown
-
-    jsr meta_idx_from_scroll
-
+; Draw status bar stuff
     lda #PPU_CTRL_HORIZ
     sta $2000
 
@@ -219,6 +212,7 @@ Game_Init:
     lda #$80
     sta $2006
 
+; Draw row for sprite zero to collide with
     lda #$0F
     ldx #0
 @statusBarRow1:
@@ -235,6 +229,7 @@ Game_Init:
     lda #PPU_CTRL_HORIZ
     sta $2000
 
+    ; Same as above, but for second nametable
     lda #$0F
     ldx #0
 @statusBarRow2:
@@ -250,7 +245,7 @@ Game_Init:
 
     ldx #0
 @statusLoop:
-    lda StatusPlaceholder, x
+    lda ScoreText, x
     beq @scoredone
     sta $2007
     inx
@@ -258,6 +253,10 @@ Game_Init:
 
 @scoredone:
 
+    ; Initialize score display
+    jsr Draw_Score
+
+    ; Set frame and NMI pointers
     lda #<Game_Frame
     sta DoFramePointer
     lda #>Game_Frame
@@ -267,14 +266,12 @@ Game_Init:
     sta DoNMIPointer
     lda #>Game_NMI
     sta DoNMIPointer+1
-
-    ; reset scroll
-    lda #0
-    sta calc_scroll
     rts
+;; End of Game_Init
 
 Game_NMI:
-    ; draw the next column if needed
+    ; Check to see if a column is buffered.  If so, draw it
+    ; to the screen.
     bit column_ready
     bvc @noDraw
     jsr Draw_Column
@@ -282,60 +279,58 @@ Game_NMI:
     lda #0
     sta column_ready
 @noDraw:
+
     jsr Draw_Score
-
-    ; scroll in the screen
     jsr update_scroll
-
     jmp NMI_Finished
 
-StatusPlaceholder:
-    .byte "Score 00,000,000", $00
-SeedText:
-    .byte "Level Seed  ", $00
-
-;; End of Game_Init
-
-HSInit:
-    rts
-
 Game_Frame:
+    ; Check for start button presse.  Pause if it has been.
     lda #BUTTON_START
     jsr ButtonPressedP1
     beq @nostart
 
+    ; If already paused, unpause
     bit game_paused
     bvs @game_is_paused
 
+    ; Pause game, display "Paused" sprites
     jsr g_PausedSprites_On
+    ; TmpX and TmpY are used for cycling the palette for the
+    ; "Paused" text.
     lda #0
-    sta TmpX
+    sta TmpX    ; Color index
     lda #2
-    sta TmpY
-    dec game_paused
+    sta TmpY    ; Frames until next update
+
+    dec game_paused  ; set pause state
     jmp WaitSpriteZero
 
+; Unpause the game, hide "Paused" sprites
 @game_is_paused:
     lda #0
     sta game_paused
     jsr g_PausedSprites_Off
 
+; Pause not pressed
 @nostart:
     bit game_paused
     bvc @game_not_paused
+    ; Game is paused
 
     ; "Paused" fade thing
-    dec TmpY
+    dec TmpY    ; Update palette when TmpY is zero.
     bne @noColor
 
     lda #8
-    sta TmpY
+    sta TmpY    ; Update platte once every eight frames.
 
     ldx TmpX
     lda DedStartPal, x
     sta PAUSED_PAL
     inx
     cpx #6
+    ; Wrap color index if needed
     bne @noWrap
     ldx #0
 @noWrap:
@@ -350,43 +345,47 @@ Game_Frame:
     jsr UpdatePlayer
 
     ; store previous meta column offset
-    ;lda meta_column_offset
-    ;sta last_meta_offset
+    lda meta_column_offset
+    sta last_meta_offset
 
     ; update meta column offset and generate
     ; next column if changed
-    ;jsr meta_idx_from_scroll
-    ;cmp last_meta_offset
-    ;beq @waitFrame
+    lda calc_scroll
+    lsr a
+    lsr a
+    lsr a
+    sta meta_column_offset
 
-    dec gen_countdown
-    bne @waitFrame
+    ; Increment the score and generate a new column when
+    ; a meta column boundary is crossed by the player.
+    cmp last_meta_offset
+    beq @waitFrame
 
     lda #1
     jsr IncScore
     jsr generate_column
-    lda #8
-    sta gen_countdown
 
 @waitFrame:
-    ;jsr CheckCollide
+    ;jsr CheckCollide   ; TODO: re-enable collision
     lda #0
     beq @jmptozero
 
+    ; Collision == ded
     lda #GS_DED
     sta current_gamestate
     inc gamestate_changed
 @jmptozero:
 
-    ; if last drawn column is not the same as last generated
-    ; a buffer and draw are needed.  This will trigger if the last
-    ; generated thing is more than two columns wide.
+    ; If last drawn column is not the same as last generated
+    ; a buffer and draw are needed.  This will trigger if the
+    ; last generated thing is more than two columns wide.
     lda meta_last_gen
     cmp meta_last_buffer
     beq @noBuffer
     jsr Buffer_Column
 
 @noBuffer:
+    ; Disable sprite zero hit for now
     ;jmp WaitSpriteZero
     jmp WaitFrame
 
@@ -440,7 +439,7 @@ IncScore:
     adc PlayerScore0
     sta PlayerScore0
     cmp #100
-    bcc @done
+    bcc BufferScoreDisplay
 
     sec
     sbc #100
@@ -448,24 +447,23 @@ IncScore:
     inc PlayerScore1
     lda PlayerScore1
     cmp #100
-    bcc @done
+    bcc BufferScoreDisplay
 
     sbc #100
     sta PlayerScore1
     inc PlayerScore2
     lda PlayerScore2
     cmp #100
-    bcc @done
+    bcc BufferScoreDisplay
 
     sbc #100
     sta PlayerScore2
     inc PlayerScore3
 
-@done:
-;    rts
-;
-BufferScoreDisplay:
-    ; clear text buffer and put the player score in the ones'
+    ; Buffer tile changes for score
+BufferScoreDisplay: ; this label is used in scores.asm
+
+    ; Clear text buffer and put the player score in the ones'
     ; spot for now
     ldx #0
     ldy #0
@@ -480,7 +478,7 @@ BufferScoreDisplay:
     cpx #4
     bne @updateLoop
 
-;   separate the tens from the ones
+    ; Separate the tens from the ones
     ldx #0
 @splitBase100:
     lda PlayerScoreText+1, x    ; load the ones var
@@ -511,6 +509,7 @@ BufferScoreDisplay:
     bne @ascii
     rts
 
+; Draw the score to the screen in the status bar thing.
 Draw_Score:
     lda #PPU_CTRL_HORIZ
     sta $2000
@@ -608,29 +607,6 @@ UpdatePlayer:
     sta sprites+0
     rts
 
-; Get the metacolumn from the current scroll
-meta_idx_from_scroll:
-    lda calc_scroll
-    lsr a
-    lsr a
-    lsr a
-    sta meta_column_offset
-
-    ; generate the column to the right of the screen, not
-    ; on the screen
-    clc
-    adc #16
-    cmp #32 ; check for overflow
-    bcc @done
-
-    ; wrap, not reset
-    sec
-    sbc #32
-    sta meta_column_offset
-
-@done:
-    rts
-
 prng:
     ldx #8  ; iteration count (generates 8 bits)
     lda working_seed
@@ -657,6 +633,8 @@ prng:
     sta rng_result
     rts
 
+; Get the meta_column_addr given the current
+; meta_last_gen value and increment meta_last_gen.
 gc_MetaColumnAddrFromOffset:
     lda #<meta_columns
     sta map_column_addr
@@ -665,6 +643,7 @@ gc_MetaColumnAddrFromOffset:
 
     lda meta_last_gen
 
+    ; Check overflow and wrap when needed.
     ;cmp #32
     cmp #31
     bcc @noWrap
@@ -672,6 +651,7 @@ gc_MetaColumnAddrFromOffset:
     lda #$FF
     sta meta_last_gen
 
+    ; For debugging.  Toggle this each time the screen wraps.
     lda screen_odd
     beq @set
     lda #$00
@@ -683,22 +663,28 @@ gc_MetaColumnAddrFromOffset:
     sta screen_odd
 
 @noWrap:
+    ; Multiply meta_last_gen by four and add it
+    ; to the map_column_address.
+    lda meta_last_gen   ; reload this because A is clobbered
     asl a
     asl a
     clc
     adc map_column_addr
     sta map_column_addr
 
+    ; Increment for next time.
+    ; Should this happen at the start? (and init to $FF?)
     inc meta_last_gen
     rts
 
+; Load the meta column that's pointed to in the TmpAddr
+; into the meta column buffer (not the tile draw buffer).
 gc_LoadMetaColumn:
     ldy #0
     ; load map_column_addr with the correct offset
     jsr gc_MetaColumnAddrFromOffset
 
 @loop:  ; once for each meta tile in the column (ie, 4 times)
-
     ; TmpAddr is the metacolumn definition
     lda (TmpAddr), y
     sta (map_column_addr), y
@@ -736,7 +722,10 @@ gc_GeneratePit:
     sta TmpAddr+1
     jmp gc_LoadMetaColumn
 
+; Entry point for generating columns
 generate_column:
+    ; Debug columns.  Remove the following three lines
+    ; to re-enable RNG generation.
     bit screen_odd
     bvs gc_GenerateDBG_A
     jmp gc_GenerateDBG_B
@@ -753,6 +742,7 @@ generate_column:
     jsr prng
     lda rng_result
     and #%00000011
+    ; RTS trick to load a meta column
     asl a
     tax
 
@@ -762,6 +752,7 @@ generate_column:
     pha
     rts
 
+; Debugging columns
 gc_GenerateDBG_A:
     lda #<MetaColumn_DBG_A
     sta TmpAddr
@@ -776,10 +767,10 @@ gc_GenerateDBG_B:
     sta TmpAddr+1
     jmp gc_LoadMetaColumn
 
+; Buffer a meta column's tiles to be drawn during the
+; next NMI.  This expands meta tiles to their individual
+; tiles spanning two tile columns.
 Buffer_Column:
-
-; load up a meta tile from map data with current meta_column_offset
-; write all four tiles to buffer in one loop
     ; Wrap this just like meta_last_gen
     lda meta_last_buffer
     ;cmp #32
@@ -790,12 +781,11 @@ Buffer_Column:
     sta meta_last_buffer
 @noWrap:
 
-    ;dec column_ready
+    ; Set this to trigger Draw_Column during next NMI
     lda #$FF
     sta column_ready
 
     ; find the current meta column
-    ;lda meta_column_offset
     lda meta_last_buffer
     ; multiply by four.  each column is four meta tiles.
     asl a
@@ -867,6 +857,7 @@ Buffer_Column:
     inc meta_last_buffer
     rts
 
+; Turn on "Paused" sprites
 g_PausedSprites_On:
     ldx #0
     ldy #0
@@ -882,6 +873,7 @@ g_PausedSprites_On:
     bne @loop
     rts
 
+; Turn off "Paused" sprites
 g_PausedSprites_Off:
     ldx #0
     lda #' '
@@ -895,6 +887,7 @@ g_PausedSprites_Off:
     bne @loop
     rts
 
+; Draw the column that is buffered in RAM.
 Draw_Column:
 
     lda #PPU_CTRL_VERT
@@ -975,6 +968,11 @@ update_scroll:
 
 @done:
     rts
+
+ScoreText:
+    .byte "Score ", $00
+SeedText:
+    .byte "Level Seed  ", $00
 
 GamePalette:
     .byte $0F,$17,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39
