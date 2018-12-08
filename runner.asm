@@ -53,7 +53,7 @@ obs_countdown:      .res 1  ; obstacle countdown
 gen_countdown:      .res 1
 
 ; meta column offsets
-meta_last_drawn:    .res 1
+meta_last_buffer:   .res 1
 meta_last_gen:      .res 1
 
 calc_scroll:        .res 1

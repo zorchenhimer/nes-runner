@@ -58,7 +58,7 @@ Game_Init:
 
     lda #$00
     sta TmpAttr
-    sta meta_last_drawn
+    sta meta_last_buffer
     sta meta_last_gen
 
     lda #$5E
@@ -198,7 +198,7 @@ Game_Init:
     jsr generate_column
     jsr Buffer_Column
     jsr Draw_Column
-    lda meta_last_drawn
+    lda meta_last_buffer
     cmp #19
     bne @drawWholeMap
 
@@ -665,7 +665,8 @@ gc_MetaColumnAddrFromOffset:
 
     lda meta_last_gen
 
-    cmp #32
+    ;cmp #32
+    cmp #31
     bcc @noWrap
 
     lda #$FF
@@ -779,30 +780,42 @@ Buffer_Column:
 
 ; load up a meta tile from map data with current meta_column_offset
 ; write all four tiles to buffer in one loop
-    dec column_ready
+    ; Wrap this just like meta_last_gen
+    lda meta_last_buffer
+    ;cmp #32
+    cmp #31
+    bcc @noWrap
+
+    lda #$00
+    sta meta_last_buffer
+@noWrap:
+
+    ;dec column_ready
+    lda #$FF
+    sta column_ready
 
     ; find the current meta column
     ;lda meta_column_offset
-    lda meta_last_drawn
+    lda meta_last_buffer
     ; multiply by four.  each column is four meta tiles.
     asl a
     asl a
     sta map_meta_tmp    ; meta tile offset in buffer
     tax
 
-    lda meta_last_drawn
+    lda meta_last_buffer
     cmp #16
     bcs @secondNT
 
     lda #$21
     sta tile_column_addr_high
-    lda meta_last_drawn
+    lda meta_last_buffer
     jmp @addrLow
 
 @secondNT:
     lda #$25
     sta tile_column_addr_high
-    lda meta_last_drawn
+    lda meta_last_buffer
     ; Subtract 16 to get it back to the start of the nametable
     sec
     sbc #16
@@ -850,6 +863,8 @@ Buffer_Column:
     iny
     cpy #8
     bne @tileLoop
+
+    inc meta_last_buffer
     rts
 
 g_PausedSprites_On:
@@ -881,6 +896,7 @@ g_PausedSprites_Off:
     rts
 
 Draw_Column:
+
     lda #PPU_CTRL_VERT
     sta $2000
 
@@ -921,16 +937,6 @@ Draw_Column:
     inx
     cpx #16
     bne @loop2
-
-    ; Wrap this just like meta_last_gen
-    inc meta_last_drawn
-    lda meta_last_drawn
-    cmp #32
-    bcc @noWrap
-
-    lda #0
-    sta meta_last_drawn
-@noWrap:
     rts
 
 ; update the PPU's scroll
