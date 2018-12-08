@@ -58,6 +58,7 @@ Game_Init:
     lda #$00
     sta TmpAttr
     sta meta_last_drawn
+    sta meta_last_gen
 
     lda #$5E
     sta TmpY
@@ -203,6 +204,9 @@ Game_Init:
     lda #0
     sta sleeping
     sta column_ready
+
+    lda #8
+    sta gen_countdown
 
     jsr meta_idx_from_scroll
 
@@ -353,20 +357,25 @@ Game_Frame:
     jsr UpdatePlayer
 
     ; store previous meta column offset
-    lda meta_column_offset
-    sta last_meta_offset
+    ;lda meta_column_offset
+    ;sta last_meta_offset
 
     ; update meta column offset and generate
     ; next column if changed
-    jsr meta_idx_from_scroll
-    cmp last_meta_offset
-    beq @waitFrame
+    ;jsr meta_idx_from_scroll
+    ;cmp last_meta_offset
+    ;beq @waitFrame
+
+    dec gen_countdown
+    bne @waitFrame
 
     lda #1
     jsr IncScore
     dec column_ready
     jsr generate_column
     jsr Buffer_Column
+    lda #8
+    sta gen_countdown
 
 @waitFrame:
     ;jsr CheckCollide

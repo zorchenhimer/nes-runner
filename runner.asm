@@ -45,6 +45,7 @@ frame_odd:      .res 1
 map_column_addr:    .res 2  ; start address of the current meta_column
 meta_tile_addr:     .res 2  ; tiles that make up the meta tile (eg Meta_Sky, Meta_Ground, etc)
 obs_countdown:      .res 1  ; obstacle countdown
+gen_countdown:      .res 1
 
 ; meta column offsets
 meta_last_drawn:    .res 1
