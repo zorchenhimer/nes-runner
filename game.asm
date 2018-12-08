@@ -199,7 +199,7 @@ Game_Init:
     jsr Buffer_Column
     jsr Draw_Column
     lda meta_last_drawn
-    cmp #17
+    cmp #19
     bne @drawWholeMap
 
     lda #0
@@ -301,7 +301,8 @@ HSInit:
 
 Game_Frame:
     ; if last drawn column is not the same as last generated
-    ; a buffer and draw are needed
+    ; a buffer and draw are needed.  This will trigger if the last
+    ; generated thing is more than two columns wide.
     lda meta_last_drawn
     cmp meta_last_gen
     beq @noBuffer
@@ -372,7 +373,6 @@ Game_Frame:
 
     lda #1
     jsr IncScore
-    dec column_ready
     jsr generate_column
     jsr Buffer_Column
     lda #8
@@ -667,7 +667,7 @@ gc_MetaColumnAddrFromOffset:
     cmp #32
     bcc @noWrap
 
-    lda #0
+    lda #$FF
     sta meta_last_gen
 
     lda screen_odd
@@ -880,7 +880,6 @@ g_PausedSprites_Off:
     rts
 
 Draw_Column:
-    inc column_ready
     lda #PPU_CTRL_VERT
     sta $2000
 
