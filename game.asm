@@ -1,3 +1,9 @@
+; TODO
+;   keep track of the number of columns to buffer instead of comparing indexes of generated and buffered.
+;       removes the need to update/wrap them the same way
+;       comparing indexes has an issue when zero due to the BNE
+;   if there's at least one column to buffer, don't generate any
+
 Game_Init:
     inc SkipNMI
     lda #PPU_MASK_OFF

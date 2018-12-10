@@ -2,10 +2,6 @@
 ;   Buffer_Column is loading the wrong tiles for the pit metatile
 ;   Draw_Column doesn't draw at the correct coordinates for metacolumn 0 and probably 16 too.
 
-; TODO for debugging
-;   Alternate between drawing a screen of ground and obstacle (each for high).
-;   This will help determine if map drawing is happening correctly.
-
 ; TODO
 ;   Game states and substates
 ;       menu stuff
