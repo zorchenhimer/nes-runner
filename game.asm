@@ -27,12 +27,14 @@ Game_Init:
     sta PlayerScore1
     sta PlayerScore2
     sta PlayerScore3
-    sta screen_odd
-    sta meta_column_offset
-    sta meta_tile_addr
-    sta map_column_addr
-    sta column_ready
     sta calc_scroll
+    sta column_ready
+    sta map_column_addr
+    sta meta_column_offset
+    sta meta_last_buffer
+    sta meta_tile_addr
+    sta screen_odd
+    sta TmpAttr
 
     lda #10
     sta obs_countdown
@@ -69,11 +71,6 @@ Game_Init:
     ; first sprite column
     lda #$04    ; sprite tile index
     sta TmpCounter
-
-    lda #$00
-    sta TmpAttr
-    sta meta_last_buffer
-    sta meta_last_gen
 
     lda #$5E
     sta TmpY
@@ -200,6 +197,9 @@ Game_Init:
     lda #PPU_CTRL_VERT
     sta $2000
 
+    lda #$FF
+    sta meta_last_gen
+
     ldx #10
 @drawWholeMap:
     jsr generate_column
@@ -281,9 +281,6 @@ Game_NMI:
     bit column_ready
     bvc @noDraw
     jsr Draw_Column
-
-    lda #0
-    sta column_ready
 @noDraw:
 
     jsr Draw_Score
@@ -350,6 +347,11 @@ Game_Frame:
     inc calc_scroll
     jsr UpdatePlayer
 
+    ; Chcek if there is something to buffer
+    ; if so, skip generation
+    lda meta_cols_to_buffer
+    bne @needBuffer
+
     ; store previous meta column offset
     lda meta_column_offset
     sta last_meta_offset
@@ -371,6 +373,12 @@ Game_Frame:
     jsr IncScore
     jsr generate_column
 
+@needBuffer:
+    ; If last drawn column is not the same as last generated
+    ; a buffer and draw are needed.  This will trigger if the
+    ; last generated thing is more than two columns wide.
+    jsr Buffer_Column
+
 @waitFrame:
     ;jsr CheckCollide   ; TODO: re-enable collision
     lda #0
@@ -381,16 +389,6 @@ Game_Frame:
     sta current_gamestate
     inc gamestate_changed
 @jmptozero:
-
-    ; If last drawn column is not the same as last generated
-    ; a buffer and draw are needed.  This will trigger if the
-    ; last generated thing is more than two columns wide.
-    lda meta_last_gen
-    cmp meta_last_buffer
-    beq @noBuffer
-    jsr Buffer_Column
-
-@noBuffer:
     ; Disable sprite zero hit for now
     ;jmp WaitSpriteZero
     jmp WaitFrame
@@ -647,17 +645,15 @@ gc_MetaColumnAddrFromOffset:
     lda #>meta_columns
     sta map_column_addr+1
 
-    lda meta_last_gen
-
-    ; Check overflow and wrap when needed.
-    ;cmp #32
-    cmp #31
-    bcc @noWrap
-
-    lda #$FF
-    sta meta_last_gen
+    ; Increment for next time.
+    ; Should this happen at the start? (and init to $FF?)
+    inc meta_last_gen
 
     ; For debugging.  Toggle this each time the screen wraps.
+    lda meta_last_gen
+    cmp #$1F
+    bne @noScreenWrapDBG
+
     lda screen_odd
     beq @set
     lda #$00
@@ -667,6 +663,16 @@ gc_MetaColumnAddrFromOffset:
 @set:
     lda #$FF
     sta screen_odd
+
+@noScreenWrapDBG:
+
+    lda meta_last_gen
+    ; Check overflow and wrap when needed.
+    cmp #$20
+    bcc @noWrap
+
+    lda #$00
+    sta meta_last_gen
 
 @noWrap:
     ; Multiply meta_last_gen by four and add it
@@ -678,18 +684,15 @@ gc_MetaColumnAddrFromOffset:
     adc map_column_addr
     sta map_column_addr
 
-    ; Increment for next time.
-    ; Should this happen at the start? (and init to $FF?)
-    inc meta_last_gen
     rts
 
 ; Load the meta column that's pointed to in the TmpAddr
 ; into the meta column buffer (not the tile draw buffer).
 gc_LoadMetaColumn:
-    ldy #0
     ; load map_column_addr with the correct offset
     jsr gc_MetaColumnAddrFromOffset
 
+    ldy #0
 @loop:  ; once for each meta tile in the column (ie, 4 times)
     ; TmpAddr is the metacolumn definition
     lda (TmpAddr), y
@@ -697,6 +700,10 @@ gc_LoadMetaColumn:
     iny
     cpy #4
     bne @loop
+
+    ; Load the width of the column thing
+    lda (TmpAddr), y
+    sta meta_cols_to_buffer
     rts
 
 ; buffer no obstacles
@@ -777,28 +784,21 @@ gc_GenerateDBG_B:
 ; next NMI.  This expands meta tiles to their individual
 ; tiles spanning two tile columns.
 Buffer_Column:
-    ; Wrap this just like meta_last_gen
-    lda meta_last_buffer
-    ;cmp #32
-    cmp #31
-    bcc @noWrap
-
-    lda #$00
-    sta meta_last_buffer
-@noWrap:
+    ; The number of columns that need to be drawn to screen.  most will be 1, some will be 2.
+    dec meta_cols_to_buffer
 
     ; Set this to trigger Draw_Column during next NMI
     lda #$FF
     sta column_ready
 
-    ; find the current meta column
+    ; Multiply by four.  Each column is four meta tiles.
     lda meta_last_buffer
-    ; multiply by four.  each column is four meta tiles.
     asl a
     asl a
     sta map_meta_tmp    ; meta tile offset in buffer
     tax
 
+    ; Figure out the PPU address to start drawing the meta column
     lda meta_last_buffer
     cmp #16
     bcs @secondNT
@@ -860,7 +860,17 @@ Buffer_Column:
     cpy #8
     bne @tileLoop
 
-    inc meta_last_buffer
+    ; find the current meta column
+    inc meta_last_buffer    ; probably wrong
+
+    ; Wrap this just like meta_last_gen
+    lda meta_last_buffer
+    cmp #$20    ; wrap value
+    bne @noWrap
+
+    lda #$00
+    sta meta_last_buffer
+@noWrap:
     rts
 
 ; Turn on "Paused" sprites
@@ -895,6 +905,9 @@ g_PausedSprites_Off:
 
 ; Draw the column that is buffered in RAM.
 Draw_Column:
+
+    lda #0
+    sta column_ready
 
     lda #PPU_CTRL_VERT
     sta $2000
@@ -1006,20 +1019,20 @@ MetaColumn_Subs:
     ;.word gc_GenerateObsB-1
     .word gc_GeneratePit-1
 
-; Meta tile indicies
+; Meta tile indicies.  First byte is number of columns.
 MetaColumn_Nothin:
-    .byte $00, $00, $01, $01
+    .byte $00, $00, $01, $01, $01
 MetaColumn_OBS_A:
-    .byte $02, $02, $01, $01
+    .byte $02, $02, $01, $01, $01
 MetaColumn_OBS_B:
-    .byte $02, $02, $01, $01
+    .byte $02, $02, $01, $01, $02
 MetaColumn_Pit:
-    .byte $00, $00, $04, $04
+    .byte $00, $00, $04, $04, $02
 
 MetaColumn_DBG_A:
-    .byte $01, $01, $01, $01
+    .byte $01, $01, $01, $01, $01
 MetaColumn_DBG_B:
-    .byte $02, $02, $02, $02
+    .byte $02, $02, $02, $02, $01
 
 ; Tile indicies
 Meta_Sky:

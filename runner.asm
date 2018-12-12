@@ -48,8 +48,9 @@ meta_tile_addr:     .res 2  ; tiles that make up the meta tile (eg Meta_Sky, Met
 obs_countdown:      .res 1  ; obstacle countdown
 
 ; meta column offsets
-meta_last_buffer:   .res 1
-meta_last_gen:      .res 1
+meta_last_buffer:       .res 1
+meta_last_gen:          .res 1
+meta_cols_to_buffer:    .res 1
 
 calc_scroll:        .res 1
 coarse_scroll:      .res 1
