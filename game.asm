@@ -29,7 +29,6 @@ Game_Init:
     sta PlayerScore3
     sta calc_scroll
     sta column_ready
-    sta map_column_addr
     sta meta_column_offset
     sta meta_last_buffer
     sta meta_tile_addr
@@ -200,13 +199,17 @@ Game_Init:
     lda #$FF
     sta meta_last_gen
 
-    ldx #10
+    lda #19
+    sta TmpZ
 @drawWholeMap:
+    lda meta_cols_to_buffer
+    bne @buffer
     jsr generate_column
+@buffer:
     jsr Buffer_Column
     jsr Draw_Column
-    lda meta_last_buffer
-    cmp #19
+
+    dec TmpZ
     bne @drawWholeMap
 
 ; Draw status bar stuff
@@ -347,11 +350,6 @@ Game_Frame:
     inc calc_scroll
     jsr UpdatePlayer
 
-    ; Chcek if there is something to buffer
-    ; if so, skip generation
-    lda meta_cols_to_buffer
-    bne @needBuffer
-
     ; store previous meta column offset
     lda meta_column_offset
     sta last_meta_offset
@@ -368,6 +366,11 @@ Game_Frame:
     ; a meta column boundary is crossed by the player.
     cmp last_meta_offset
     beq @waitFrame
+
+    ; Chcek if there is something to buffer
+    ; if so, skip generation
+    lda meta_cols_to_buffer
+    bne @needBuffer
 
     lda #1
     jsr IncScore
@@ -635,18 +638,7 @@ prng:
     sta rng_result
     rts
 
-; Get the meta_column_addr given the current
-; meta_last_gen value and increment meta_last_gen.
-gc_MetaColumnAddrFromOffset:
-    lda #<meta_columns
-    sta map_column_addr
-    lda #>meta_columns
-    sta map_column_addr+1
-
-    ; Increment for next time.
-    ; Should this happen at the start? (and init to $FF?)
-    inc meta_last_gen
-
+Debug_MetaTile_Swap:
     ; For debugging.  Toggle this each time the screen wraps.
     lda meta_last_gen
     cmp #$1F
@@ -656,13 +648,21 @@ gc_MetaColumnAddrFromOffset:
     beq @set
     lda #$00
     sta screen_odd
-    jmp @noWrap
+    jmp @noScreenWrapDBG
 
 @set:
     lda #$FF
     sta screen_odd
 
 @noScreenWrapDBG:
+    rts
+
+; Get the meta_column_addr given the current
+; meta_last_gen value and increment meta_last_gen.
+gc_MetaColumnAddrFromOffset:
+    ; Increment for next time.
+    ; Should this happen at the start? (and init to $FF?)
+    inc meta_last_gen
 
     lda meta_last_gen
     ; Check overflow and wrap when needed.
@@ -678,9 +678,7 @@ gc_MetaColumnAddrFromOffset:
     lda meta_last_gen   ; reload this because A is clobbered
     asl a
     asl a
-    clc
-    adc map_column_addr
-    sta map_column_addr
+    ;tax
 
     rts
 
@@ -689,20 +687,54 @@ gc_MetaColumnAddrFromOffset:
 gc_LoadMetaColumn:
     ; load map_column_addr with the correct offset
     jsr gc_MetaColumnAddrFromOffset
+    tax
 
     ldy #0
-@loop:  ; once for each meta tile in the column (ie, 4 times)
-    ; TmpAddr is the metacolumn definition
-    lda (TmpAddr), y
-    sta (map_column_addr), y
-    iny
-    cpy #4
-    bne @loop
 
     ; Load the width of the column thing
     lda (TmpAddr), y
     sta meta_cols_to_buffer
+    iny
+
+    ; This is needed to not break meta_cols_to_buffer
+    sta TmpY
+    asl TmpY
+    asl TmpY
+    inc TmpY
+
+    lda #4
+    sta TmpX
+
+@loop:  ; once for each meta tile in the column (ie, 4 times)
+    ; TmpAddr is the metacolumn definition
+    lda (TmpAddr), y
+    sta meta_columns, x
+    iny
+    inx
+    dec TmpX
+    beq @checkWrap
+
+@loopBottom:
+    cpy TmpY
+    bne @loop
     rts
+
+@checkWrap:
+    lda #4
+    sta TmpX
+
+    cpy TmpY
+    bne @notDone
+    rts
+@notDone:
+
+    jsr gc_MetaColumnAddrFromOffset
+    cpx #$80
+    bcc @loop
+
+    ldx #0
+    jmp @loop
+; End of gc_LoadMetaColumn
 
 ; buffer no obstacles
 gc_GenerateNothin:
@@ -735,6 +767,7 @@ gc_GeneratePit:
 
 ; Entry point for generating columns
 generate_column:
+    jsr Debug_MetaTile_Swap
     ; Debug columns.  Remove the following three lines
     ; to re-enable RNG generation.
     bit screen_odd
@@ -1019,18 +1052,18 @@ MetaColumn_Subs:
 
 ; Meta tile indicies.  First byte is number of columns.
 MetaColumn_Nothin:
-    .byte $00, $00, $01, $01, $01
+    .byte $01, $00, $00, $01, $01
 MetaColumn_OBS_A:
-    .byte $02, $02, $01, $01, $01
+    .byte $01, $02, $02, $01, $01
 MetaColumn_OBS_B:
-    .byte $02, $02, $01, $01, $02
+    .byte $02, $02, $02, $01, $01, $02, $02, $01, $01
 MetaColumn_Pit:
-    .byte $00, $00, $04, $04, $02
+    .byte $02, $00, $00, $04, $04, $00, $00, $04, $04
 
 MetaColumn_DBG_A:
-    .byte $01, $01, $01, $01, $01
+    .byte $01, $01, $01, $01, $01, $01, $01, $01, $01
 MetaColumn_DBG_B:
-    .byte $02, $02, $02, $02, $01
+    .byte $02, $02, $02, $02, $02, $02, $02, $02, $02
 
 ; Tile indicies
 Meta_Sky:
