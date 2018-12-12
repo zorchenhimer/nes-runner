@@ -32,7 +32,6 @@ Game_Init:
     sta meta_column_offset
     sta meta_last_buffer
     sta meta_tile_addr
-    sta screen_odd
     sta TmpAttr
 
     lda #10
@@ -638,25 +637,6 @@ prng:
     sta rng_result
     rts
 
-Debug_MetaTile_Swap:
-    ; For debugging.  Toggle this each time the screen wraps.
-    lda meta_last_gen
-    cmp #$1F
-    bne @noScreenWrapDBG
-
-    lda screen_odd
-    beq @set
-    lda #$00
-    sta screen_odd
-    jmp @noScreenWrapDBG
-
-@set:
-    lda #$FF
-    sta screen_odd
-
-@noScreenWrapDBG:
-    rts
-
 ; Get the meta_column_addr given the current
 ; meta_last_gen value and increment meta_last_gen.
 gc_MetaColumnAddrFromOffset:
@@ -767,13 +747,6 @@ gc_GeneratePit:
 
 ; Entry point for generating columns
 generate_column:
-    jsr Debug_MetaTile_Swap
-    ; Debug columns.  Remove the following three lines
-    ; to re-enable RNG generation.
-    bit screen_odd
-    bvs gc_GenerateDBG_A
-    jmp gc_GenerateDBG_B
-
     lda obs_countdown
     beq @doRngThing
 
@@ -795,21 +768,6 @@ generate_column:
     lda MetaColumn_Subs, x
     pha
     rts
-
-; Debugging columns
-gc_GenerateDBG_A:
-    lda #<MetaColumn_DBG_A
-    sta TmpAddr
-    lda #>MetaColumn_DBG_A
-    sta TmpAddr+1
-    jmp gc_LoadMetaColumn
-
-gc_GenerateDBG_B:
-    lda #<MetaColumn_DBG_B
-    sta TmpAddr
-    lda #>MetaColumn_DBG_B
-    sta TmpAddr+1
-    jmp gc_LoadMetaColumn
 
 ; Buffer a meta column's tiles to be drawn during the
 ; next NMI.  This expands meta tiles to their individual
@@ -1059,11 +1017,6 @@ MetaColumn_OBS_B:
     .byte $02, $02, $02, $01, $01, $02, $02, $01, $01
 MetaColumn_Pit:
     .byte $02, $00, $00, $04, $04, $00, $00, $04, $04
-
-MetaColumn_DBG_A:
-    .byte $01, $01, $01, $01, $01, $01, $01, $01, $01
-MetaColumn_DBG_B:
-    .byte $02, $02, $02, $02, $02, $02, $02, $02, $02
 
 ; Tile indicies
 Meta_Sky:

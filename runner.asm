@@ -41,7 +41,6 @@ nes2end
 sleeping:       .res 1
 column_ready:   .res 1
 frame_odd:      .res 1
-screen_odd:     .res 1  ; for debugging screen drawing
 
 meta_tile_addr:     .res 2  ; tiles that make up the meta tile (eg Meta_Sky, Meta_Ground, etc)
 obs_countdown:      .res 1  ; obstacle countdown
