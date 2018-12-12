@@ -283,7 +283,7 @@ WaitSpriteZero:
     lda #00
     sta $2005
     ; first nametable
-    lda #PPU_CTRL_HORIZ
+    lda #PPU_CTRL_TITLE
     sta $2000
 
 WaitFrame:

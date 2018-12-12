@@ -389,9 +389,7 @@ Game_Frame:
     sta current_gamestate
     inc gamestate_changed
 @jmptozero:
-    ; Disable sprite zero hit for now
-    ;jmp WaitSpriteZero
-    jmp WaitFrame
+    jmp WaitSpriteZero
 
 CheckCollide:
     ; load up Y
