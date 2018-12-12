@@ -32,27 +32,27 @@ InitSeed:
     sta $2000
 
     lda #$21
-    sta map_column_addr
+    sta TmpAddr
     lda #$89
-    sta map_column_addr+1
+    sta TmpAddr+1
     jsr seed_DrawBox
 
     lda #$21
-    sta map_column_addr
+    sta TmpAddr
     lda #$8C
-    sta map_column_addr+1
+    sta TmpAddr+1
     jsr seed_DrawBox
 
     lda #$21
-    sta map_column_addr
+    sta TmpAddr
     lda #$8F
-    sta map_column_addr+1
+    sta TmpAddr+1
     jsr seed_DrawBox
 
     lda #$21
-    sta map_column_addr
+    sta TmpAddr
     lda #$92
-    sta map_column_addr+1
+    sta TmpAddr+1
     jsr seed_DrawBox
 
     ; Draw the thumbs up
@@ -268,9 +268,9 @@ seed_SetAttr:
     rts
 
 seed_DrawBox:
-    lda map_column_addr
+    lda TmpAddr
     sta $2006
-    lda map_column_addr+1
+    lda TmpAddr+1
     sta $2006
     ldx #BOX_TILE_START
 @BoxA:
@@ -279,11 +279,11 @@ seed_DrawBox:
     cpx #$06
     bne @BoxA
 
-    inc map_column_addr+1
+    inc TmpAddr+1
 
-    lda map_column_addr
+    lda TmpAddr
     sta $2006
-    lda map_column_addr+1
+    lda TmpAddr+1
     sta $2006
 @BoxB:
     stx $2007
