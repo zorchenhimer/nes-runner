@@ -995,8 +995,8 @@ MetaTiles:
 
 ; Game Meta Columns
 G_MC_NOTHIN = $00
-G_MC_OBS_A  = $01
-G_MC_OBS_B  = $02
+G_MC_GROUND = $01
+G_MC_OBS    = $02
 G_MC_PIT    = $03
 
 ; used for RNG
@@ -1010,13 +1010,19 @@ MetaColumn_Subs:
 
 ; Meta tile indicies.  First byte is number of columns.
 MetaColumn_Nothin:
-    .byte $01, $00, $00, $01, $01
+    .byte $01
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_GROUND, G_MC_GROUND
 MetaColumn_OBS_A:
-    .byte $01, $02, $02, $01, $01
+    .byte $01
+    .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
 MetaColumn_OBS_B:
-    .byte $02, $02, $02, $01, $01, $02, $02, $01, $01
+    .byte $02
+    .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
+    .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
 MetaColumn_Pit:
-    .byte $02, $00, $00, $04, $04, $00, $00, $04, $04
+    .byte $02
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT, G_MC_PIT
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT, G_MC_PIT
 
 ; Tile indicies
 Meta_Sky:
