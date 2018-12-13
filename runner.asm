@@ -1,14 +1,10 @@
-; FIXME
-;   Buffer_Column is loading the wrong tiles for the pit metatile
-;   Draw_Column doesn't draw at the correct coordinates for metacolumn 0 and probably 16 too.
-
 ; TODO
+;   Better map generation
 ;   Game states and substates
 ;       menu stuff
 ;           high scores
 ;           new high score
 ;   Player Sprite
-;   Better map generation
 ;   Background art (mountains or some shit.  happy little trees?)
 ;   High Scores table
 ;       needs to be finished/populated
