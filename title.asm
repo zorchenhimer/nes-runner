@@ -195,6 +195,59 @@ InitTitle:
     cpx #7
     bne @building_b
 
+    lda #$21
+    sta $2006
+    lda #$E2
+    sta $2006
+
+    ldx #0
+@building_c:
+    lda Title_BG3, x
+    sta $2007
+    inx
+    cpx #9
+    bne @building_c
+
+    lda #$21
+    sta $2006
+    lda #$E3
+    sta $2006
+
+    ldx #0
+@building_d:
+    lda Title_BG4, x
+    sta $2007
+    inx
+    cpx #9
+    bne @building_d
+
+    lda #$21
+    sta $2006
+    lda #$E4
+    sta $2006
+
+    ldx #0
+@building_e:
+    lda Title_BG5, x
+    sta $2007
+    inx
+    cpx #9
+    bne @building_e
+
+    lda #$21
+    sta $2006
+    lda #$E5
+    sta $2006
+
+    ldx #0
+@building_f:
+    lda Title_BG6, x
+    sta $2007
+    inx
+    cpx #9
+    bne @building_f
+
+    ; setup attribute stuff for buildings
     ldx #$55
     lda #$23
     sta $2006
@@ -214,6 +267,32 @@ InitTitle:
     sta $2006
     stx $2007
 
+    lda #$23
+    sta $2006
+    lda #$D8
+    sta $2006
+    stx $2007
+
+    lda #$23
+    sta $2006
+    lda #$D9
+    sta $2006
+    stx $2007
+
+    lda #$23
+    sta $2006
+    lda #$E1
+    sta $2006
+    stx $2007
+
+    ldx #$11
+    lda #$23
+    sta $2006
+    lda #$E9
+    sta $2006
+    stx $2007
+
+    ; reset scroll
     bit $2002
     lda #$00
     sta $2005
@@ -345,6 +424,15 @@ Title_BG1:
     .byte $D0, $D4, $D0, $D4, $D0, $D4
 Title_BG2:
     .byte $DF, $D1, $D5, $D1, $D5, $D1, $D5
+Title_BG3:
+    .byte $D7, $D6, $DA, $D6, $DA, $D6, $DA, $D6, $DA
+Title_BG4:
+    .byte $DD, $DB, $D8, $D9, $D8, $D9, $D8, $D9, $03
+
+Title_BG5:
+    .byte $D2, $D0, $D4, $D0, $D4, $D0, $D4, $D0, $D4
+Title_BG6:
+    .byte $D3, $D1, $D5, $D1, $D5, $D1, $D5, $D1, $D5
 
 TitlePalette:
     .byte $0F,$30,$30,$30, $0F,$04,$34,$24, $0F,$15,$0F,$0F, $0F,$11,$11,$11
