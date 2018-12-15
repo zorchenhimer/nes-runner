@@ -145,6 +145,7 @@ working_seed:       .res 2
 
 clear_nt_tile:      .res 1
 game_paused:        .res 1
+luaDebug:           .res 1
 
 .segment "SAVERAM"
     ; battery backed RAM
