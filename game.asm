@@ -979,7 +979,7 @@ G_MC_PIT    = $03
 MetaColumn_Definitions:
     .word MetaColumn_Nothin
     .word MetaColumn_Wall
-    .word MetaColumn_Pit
+    .word MetaColumn_PitWide
     .word MetaColumn_DoubleWall
     .word MetaColumn_PitWall
     .word MetaColumn_DoubleWall
@@ -1005,6 +1005,11 @@ MetaColumn_PitWall:
     .byte $02
     .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT, G_MC_PIT
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
+MetaColumn_PitWide:
+    .byte $03
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT, G_MC_PIT
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT, G_MC_PIT
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT, G_MC_PIT
 
 ; Tile indicies
 Meta_Sky:
