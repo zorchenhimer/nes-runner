@@ -1,3 +1,7 @@
+; TODO:
+;   Fall into pitfall.
+;   Add some more obstacle types (pit/wall combo, etc)
+
 Game_Init:
     inc SkipNMI
     lda #PPU_MASK_OFF
@@ -656,9 +660,35 @@ gc_MetaColumnAddrFromOffset:
 
     rts
 
+; Entry point for generating columns
+generate_column:
+    lda obs_countdown
+    beq @doRngThing
+
+    dec obs_countdown
+    lda #<MetaColumn_Nothin
+    sta TmpAddr
+    lda #>MetaColumn_Nothin
+    sta TmpAddr+1
+    jmp @gc_LoadMetaColumn
+
+@doRngThing:
+    lda #5
+    sta obs_countdown
+    jsr prng
+    lda rng_result
+    and #%00000111
+    asl a
+    tax
+
+    lda MetaColumn_Definitions, x
+    sta TmpAddr
+    lda MetaColumn_Definitions+1, x
+    sta TmpAddr+1
+
 ; Load the meta column that's pointed to in the TmpAddr
 ; into the meta column buffer (not the tile draw buffer).
-gc_LoadMetaColumn:
+@gc_LoadMetaColumn:
     ; load map_column_addr with the correct offset
     jsr gc_MetaColumnAddrFromOffset
     tax
@@ -710,58 +740,6 @@ gc_LoadMetaColumn:
     jmp @loop
 ; End of gc_LoadMetaColumn
 
-; buffer no obstacles
-gc_GenerateNothin:
-    lda #<MetaColumn_Nothin
-    sta TmpAddr
-    lda #>MetaColumn_Nothin
-    sta TmpAddr+1
-    jmp gc_LoadMetaColumn
-
-; buffer a single column of obstacles
-gc_GenerateObsA:
-    lda #<MetaColumn_OBS_A
-    sta TmpAddr
-    lda #>MetaColumn_OBS_A
-    sta TmpAddr+1
-    jmp gc_LoadMetaColumn
-
-; buffer two columns of obstacles
-gc_GenerateObsB:
-    ; TODO
-    rts
-
-; buffer a single columns of air, no ground
-gc_GeneratePit:
-    lda #<MetaColumn_Pit
-    sta TmpAddr
-    lda #>MetaColumn_Pit
-    sta TmpAddr+1
-    jmp gc_LoadMetaColumn
-
-; Entry point for generating columns
-generate_column:
-    lda obs_countdown
-    beq @doRngThing
-
-    dec obs_countdown
-    jmp gc_GenerateNothin
-
-@doRngThing:
-    lda #5
-    sta obs_countdown
-    jsr prng
-    lda rng_result
-    and #%00000011
-    ; RTS trick to load a meta column
-    asl a
-    tax
-
-    lda MetaColumn_Subs+1, x
-    pha
-    lda MetaColumn_Subs, x
-    pha
-    rts
 
 ; Buffer a meta column's tiles to be drawn during the
 ; next NMI.  This expands meta tiles to their individual
@@ -994,22 +972,26 @@ G_MC_OBS    = $02
 G_MC_PIT    = $03
 
 ; used for RNG
-MetaColumn_Subs:
-    .word gc_GenerateNothin-1
-    ;.word gc_GenerateObsA-1
-    .word gc_GenerateObsA-1
-    .word gc_GenerateObsA-1
-    ;.word gc_GenerateObsB-1
-    .word gc_GeneratePit-1
+; TODO: Make this list 16 entries long. Use both bytes of RNG for
+;       index (update RNG every four generates).
+MetaColumn_Definitions:
+    .word MetaColumn_Nothin
+    .word MetaColumn_Wall
+    .word MetaColumn_Pit
+    .word MetaColumn_DoubleWall
+    .word MetaColumn_PitWall
+    .word MetaColumn_DoubleWall
+    .word MetaColumn_Pit
+    .word MetaColumn_Nothin
 
 ; Meta tile indicies.  First byte is number of columns.
 MetaColumn_Nothin:
     .byte $01
     .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_GROUND, G_MC_GROUND
-MetaColumn_OBS_A:
+MetaColumn_Wall:
     .byte $01
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
-MetaColumn_OBS_B:
+MetaColumn_DoubleWall:
     .byte $02
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
@@ -1017,6 +999,10 @@ MetaColumn_Pit:
     .byte $02
     .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT, G_MC_PIT
     .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT, G_MC_PIT
+MetaColumn_PitWall:
+    .byte $02
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT, G_MC_PIT
+    .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
 
 ; Tile indicies
 Meta_Sky:
