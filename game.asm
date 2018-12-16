@@ -36,11 +36,11 @@ Game_Init:
     sta obs_countdown
 
     ; Load the RNG seed form PRG RAM and re-seed if it doesn't exist
-    lda rng_seed
-    bne @skip_rng_init
-    lda #'Z'  ;$21
+    ;lda rng_seed
+    ;bne @skip_rng_init
+    lda #'Z'  ; $5A
     sta rng_seed
-    lda #'o'  ;$AB
+    lda #'o'  ; $6F
     sta rng_seed+1
 @skip_rng_init:
 
@@ -400,7 +400,7 @@ CheckCollide:
     ; check the player's right meta column
     lda meta_column_offset
     clc
-    adc #3
+    adc #2  ; offeset from left side of screen to check for collide
     and #$1F
     asl a
     asl a
