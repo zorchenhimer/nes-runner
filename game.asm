@@ -381,8 +381,8 @@ Game_Frame:
     jsr Buffer_Column
 
 @waitFrame:
-    ;jsr CheckCollide   ; TODO: re-enable collision
-    lda #0
+    jsr CheckCollide   ; TODO: re-enable collision
+    ;lda #0
     beq @jmptozero
 
     ; Collision == ded
@@ -410,9 +410,10 @@ CheckCollide:
     sta player_scroll
     bne @collide
 
+    ; check the player's left meta column
     lda meta_column_offset
     clc
-    adc #2
+    adc #1
     and #$1F
     asl a
     asl a
