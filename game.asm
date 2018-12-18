@@ -29,6 +29,7 @@ Game_Init:
     sta column_ready
     sta meta_column_offset
     sta meta_last_buffer
+    sta meta_last_gen
     sta meta_tile_addr
     sta TmpAttr
 
