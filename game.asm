@@ -834,8 +834,6 @@ Buffer_Column:
     lda #$00
     sta meta_last_buffer
 @noWrap:
-
-    sta luaDebug
     rts
 
 ; Turn on "Paused" sprites
