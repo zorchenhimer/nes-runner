@@ -677,10 +677,23 @@ generate_column:
 @doRngThing:
     lda #5
     sta obs_countdown
+    lda rngFlipFlop
+    bne @odd
+
+    dec rngFlipFlop
     jsr prng
     lda rng_result
-    and #%00000111
+    and #$0F
     asl a
+    jmp @idx
+@odd:
+    inc rngFlipFlop
+    lda rng_result
+    and #$F0
+    lsr a
+    lsr a
+    lsr a
+@idx:
     tax
 
     lda MetaColumn_Definitions, x
@@ -986,6 +999,15 @@ MetaColumn_Definitions:
     .word MetaColumn_Pit
     .word MetaColumn_Nothin
 
+    .word MetaColumn_Nothin
+    .word MetaColumn_Wall
+    .word MetaColumn_PitWide
+    .word MetaColumn_DoubleWall
+    .word MetaColumn_PitWallWide
+    .word MetaColumn_DoubleWall
+    .word MetaColumn_Pit
+    .word MetaColumn_Nothin
+
 ; Meta tile indicies.  First byte is number of columns.
 MetaColumn_Nothin:
     .byte $01
@@ -999,17 +1021,22 @@ MetaColumn_DoubleWall:
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
 MetaColumn_Pit:
     .byte $02
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT, G_MC_PIT
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT, G_MC_PIT
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
 MetaColumn_PitWall:
     .byte $02
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT, G_MC_PIT
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
 MetaColumn_PitWide:
     .byte $03
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT, G_MC_PIT
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT, G_MC_PIT
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT, G_MC_PIT
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
+MetaColumn_PitWallWide:
+    .byte $03
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
 
 ; Tile indicies
 Meta_Sky:
