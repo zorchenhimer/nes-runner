@@ -381,9 +381,8 @@ Game_Frame:
     jsr Buffer_Column
 
 @waitFrame:
-    jsr CheckCollide   ; TODO: re-enable collision
-    ;lda #0
     beq @jmptozero
+    jsr CheckCollide
 
     ; Collision == ded
     lda #GS_DED
@@ -424,16 +423,10 @@ CheckCollide:
     jmp @done
 
 @collide:
-    ;lda #$05
-    ;sta $039F
-
     lda #1
     rts
 
 @done:
-    ;lda #$0F
-    ;sta $039F
-
     lda #0
     rts
 
@@ -1063,21 +1056,10 @@ JumpFrameLength:
     .byte JumpFrameEnd - JumpFrames - 1
 
 JumpFrames:
-    ;.byte $76, $71, $6C, $67, $62, $5E, $5A, $56, $52, $4E, $4B, $48
-    ;.byte $45, $42, $3F, $3D, $3B, $39, $37, $35, $34, $33, $32, $31
-    ;.byte $30, $30, $30, $30, $30, $30, $30
-
-    .byte $76, $71, $6c, $67, $63, $5f, $5b, $57, $54, $51, $4e, $4b
+    .byte $77, $71, $6c, $67, $63, $5f, $5b, $57, $54, $51, $4e, $4b
     .byte $49, $47, $45, $44, $43, $42, $41, $41, $41, $41, $41, $41
-    ;.byte $41, $41, $41, $41, $41, $41, $41
-
-    ;.byte $76, $71, $6C, $67, $62, $5E, $5A, $56, $52, $4F, $4C, $49
-    ;.byte $46, $44, $42, $40, $3E, $3D, $3C, $3B, $3A, $3A, $3A, $3A
-    ;.byte $3A, $3A, $3A, $3A, $3A, $3A, $3A
-
-    ;.byte $76, $71, $6E, $6C, $6A, $68, $66, $64, $62, $60
-    ;.byte $5E, $5C, $5A, $58, $56, $54, $52, $50, $4E, $4C, $4A, $48
-    ;.byte $46, $44, $42, $40, $3E
 JumpFrameEnd:
-    nop ; to separate the JumpFrameEnd label from DedInit
+
+
+    nop ; to separate the data label from DedInit
 
