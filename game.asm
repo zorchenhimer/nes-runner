@@ -381,14 +381,19 @@ Game_Frame:
     jsr Buffer_Column
 
 @waitFrame:
-    beq @jmptozero
     jsr CheckCollide
+    beq @pit
 
     ; Collision == ded
     lda #GS_DED
     sta current_gamestate
     inc gamestate_changed
-@jmptozero:
+@pit:
+    jsr CheckPit
+    beq @safe
+    ; TODO: fall in pit
+
+@safe:
     jmp WaitSpriteZero
 
 CheckCollide:
@@ -428,6 +433,9 @@ CheckCollide:
 
 @done:
     lda #0
+    rts
+
+CheckPit:
     rts
 
 ; Adds register A to score.  Keep it under 100 at a time.
@@ -1022,7 +1030,8 @@ MetaColumn_PitWall:
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
 MetaColumn_PitWide:
     .byte $03
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
+    ;.byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
     .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
     .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
 MetaColumn_PitWallWide:
@@ -1060,6 +1069,9 @@ JumpFrames:
     .byte $49, $47, $45, $44, $43, $42, $41, $41, $41, $41, $41, $41
 JumpFrameEnd:
 
+FallFrames:
+    .byte $7D ; and go down from here
+FallFrameEnd:
 
     nop ; to separate the data label from DedInit
 
