@@ -81,6 +81,7 @@ Scores_Init:
     sta DoNMIPointer+1
 
     jsr ClearSprites
+    jsr ClearAttrTable0
 
     ; Debug stuff.  Overwrites save RAM
 ;    ldx #0
