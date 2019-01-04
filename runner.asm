@@ -54,6 +54,7 @@ meta_column_offset: .res 1  ; meta tile column wraps at 32
 last_meta_offset:   .res 1  ; used to determine if rng is needed
 map_meta_tmp:       .res 1
 rng_result:         .res 1
+ColCache:           .res 8
 
 ; Pointer to the current frame routine
 DoFramePointer:     .res 2
@@ -176,6 +177,9 @@ SPZ_ATT = spritezero+2
 SPZ_X   = spritezero+3
 
 sprites:            .res 252
+
+; use this byte for sprite Y position.  it's the bottom right sprite.
+SP_COLLIDE_Y    = sprites+28
 
 SP_TITLEY0      = sprites+0
 SP_TITLEY1      = sprites+4

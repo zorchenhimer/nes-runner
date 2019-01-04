@@ -397,35 +397,90 @@ Game_Frame:
     jmp WaitSpriteZero
 
 CheckCollide:
-    ; load up Y
-    lda sprites
-    cmp #$47    ; top of obstacle
+    ; Find byte offset for current metacolumn to check for collide
+    lda meta_column_offset
+    clc
+    adc #1  ; offeset from left side of screen to check for collide
+    and #$1F    ; i forget why this is here, but i'm keeping it.
+    asl a
+    asl a
+    tax
+
+    ; Load meta columns into ColCache
+    ldy #0
+@loop:
+    lda meta_columns, x
+    sta ColCache, y
+    inx
+    iny
+    lda meta_column_offset
+    cmp #30     ; check for nametable wrap.  not 31 cuz we add 1 above.
+    bne @nocheck
+    cpy #4
+    bne @loop
+    jmp @Wrapped
+
+@nocheck:
+    cpy #8
+    bne @loop
+    jmp @NoWrap
+
+@Wrapped:
+    ldx #0
+@WLoop:
+    lda meta_columns, x
+    sta ColCache, y
+    inx
+    iny
+    cpy #8
+    bne @WLoop
+
+@NoWrap:
+    ; Check collisions against cache
+    lda SP_COLLIDE_Y
+    cmp #$77
+    bcc @layer2
+
+    ; Layer 1: the Pit
+    lda ColCache+3
+    cmp #G_MC_OBS    ; #$02
+    bcc @l1Right
+    jmp @collide
+
+@l1Right:
+    lda ColCache+7
+    cmp #G_MC_OBS    ; #$02
+    bcc @layer2
+    jmp @collide
+
+    ; Lower obstacle on the ground
+@layer2:
+    lda SP_COLLIDE_Y
+    cmp #$67
+    bcc @layer3
+
+    lda ColCache+1
+    beq @l2Right
+    jmp @collide
+
+@l2Right:
+    lda ColCache+5
+    beq @layer3
+    jmp @collide
+
+    ; Upper obstacle on the ground
+@layer3:
+    lda SP_COLLIDE_Y
+    cmp #$57
     bcc @done
 
-    ; check the player's right meta column
-    lda meta_column_offset
-    clc
-    adc #2  ; offeset from left side of screen to check for collide
-    and #$1F
-    asl a
-    asl a
-    tax
-    lda meta_columns, x
-    sta player_scroll
-    bne @collide
+    lda ColCache+0
+    beq @l3Right
+    jmp @collide
 
-    ; check the player's left meta column
-    lda meta_column_offset
-    clc
-    adc #1
-    and #$1F
-    asl a
-    asl a
-    tax
-    lda meta_columns, x
-    sta player_scroll
-    bne @collide
-    jmp @done
+@l3Right:
+    lda ColCache+4
+    beq @done
 
 @collide:
     lda #1
@@ -993,7 +1048,7 @@ G_MC_PIT    = $03
 MetaColumn_Definitions:
     .word MetaColumn_Nothin
     .word MetaColumn_Wall
-    .word MetaColumn_PitWide
+    .word MetaColumn_HalfWall
     .word MetaColumn_DoubleWall
     .word MetaColumn_PitWall
     .word MetaColumn_DoubleWall
@@ -1039,6 +1094,9 @@ MetaColumn_PitWallWide:
     .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
     .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
+MetaColumn_HalfWall:
+    .byte $01
+    .byte G_MC_NOTHIN, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
 
 ; Tile indicies
 Meta_Sky:
