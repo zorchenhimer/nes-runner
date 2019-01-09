@@ -38,13 +38,18 @@ Game_Init:
     lda #10
     sta obs_countdown
 
-    ; Load the RNG seed form PRG RAM and re-seed if it doesn't exist
-    ;lda rng_seed
-    ;bne @skip_rng_init
+    ; Load the RNG seed form PRG RAM and re-seed if it doesn't exist.
+    ; Check both bytes of the RNG seed.
+    lda rng_seed
+    bne @skip_rng_init
+    lda rng_seed+1
+    bne @skip_rng_init
+
     lda #'Z'  ; $5A
     sta rng_seed
     lda #'o'  ; $6F
     sta rng_seed+1
+
 @skip_rng_init:
 
     lda rng_seed
