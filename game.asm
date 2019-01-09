@@ -32,6 +32,7 @@ Game_Init:
     sta meta_last_gen
     sta meta_tile_addr
     sta TmpAttr
+    sta rngFlipFlop
 
     lda #10
     sta obs_countdown
