@@ -1,3 +1,6 @@
+; TODO:
+;   goto enter new high score if applicable
+
 DedInit:
     lda #1
     sta Ded_Fading
@@ -112,11 +115,6 @@ Ded_Frame:
     jmp WaitSpriteZero
 
 @fadeDone:
-    ; TODO:
-    ;   display "game over"
-    ;   wait for start pressed
-    ;   goto enter new high score if applicable
-
     lda #PPU_CTRL_TITLE
     sta $2000
 
