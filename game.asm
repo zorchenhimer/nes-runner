@@ -33,6 +33,7 @@ Game_Init:
     sta meta_tile_addr
     sta TmpAttr
     sta rngFlipFlop
+    sta meta_cols_to_buffer
 
     lda #10
     sta obs_countdown
