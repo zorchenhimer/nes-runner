@@ -34,6 +34,27 @@ InitSeed:
     lda #PPU_CTRL_VERT
     sta $2000
 
+    bit $2000
+    lda #$21
+    sta $2006
+    lda #$86
+    sta $2006
+
+    lda #$22
+    sta $2007
+    lda #$32
+    sta $2007
+
+    lda #$21
+    sta $2006
+    lda #$87
+    sta $2006
+
+    lda #$23
+    sta $2007
+    lda #$33
+    sta $2007
+
     lda #$21
     sta TmpAddr
     lda #$89
@@ -85,31 +106,17 @@ InitSeed:
     lda #0
     sta TitleIndex  ; reuse this index
 
+    ; Load up the current seed and set the input values to it.
+    lda rng_seed
+    sta working_seed
+    lda rng_seed+1
+    sta working_seed+1
+    jsr seed_LoadFromMemory
+
     ; Attribute tables for selected
     jsr seed_SetAttr
 
-    lda rng_seed
-    and #$F0
-    lsr a
-    lsr a
-    lsr a
-    lsr a
-    sta Seed_Input0
-    lda rng_seed
-    and #$0F
-    sta Seed_Input1
-
-    lda rng_seed+1
-    and #$F0
-    lsr a
-    lsr a
-    lsr a
-    lsr a
-    sta Seed_Input2
-    lda rng_seed+1
-    and #$0F
-    sta Seed_Input3
-
+    ; Update sprites to reflect the above input values.
     jsr seed_UpdateSprites
 
     ; Load up cursor sprites
@@ -119,6 +126,31 @@ InitSeed:
     ;   current values
 
     dec TurnPPUOn
+    rts
+
+; Load up the current seed and set the input values to it.
+seed_LoadFromMemory:
+    lda working_seed
+    and #$F0
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    sta Seed_Input0
+    lda working_seed
+    and #$0F
+    sta Seed_Input1
+
+    lda working_seed+1
+    and #$F0
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    sta Seed_Input2
+    lda working_seed+1
+    and #$0F
+    sta Seed_Input3
     rts
 
 seed_UpdateSprites:
@@ -222,7 +254,7 @@ Seed_NMI:
     bit $2002
     lda #$23
     sta $2006
-    lda #$DA
+    lda #$D9
     sta $2006
 
     ; Transfer attribute buffer to PPU
@@ -234,11 +266,13 @@ Seed_NMI:
     bpl @loop
 
     ; scroll stuff
-    lda #0
+    lda #244
     sta $2005
+    lda #0
     sta $2005
 
     lda #PPU_CTRL_HORIZ
+    ora #$01
     sta $2000
 
     jmp NMI_Finished
@@ -300,13 +334,15 @@ seed_DrawBox:
     rts
 
 SeedFrame:
+    jsr prng
+
     lda #BUTTON_RIGHT
     jsr ButtonPressedP1
     beq @noRight
 
     inc TitleIndex
     lda TitleIndex
-    cmp #5
+    cmp #6
     bcc @noRight
     dec TitleIndex  ; don't loop, just stop
 
@@ -322,14 +358,16 @@ SeedFrame:
 @noLeft:
 
     lda TitleIndex
-    cmp #4
-    bcs @onLast
+    beq @onEnd
+    cmp #5
+    bcs @onEnd
 
     lda #BUTTON_UP
     jsr ButtonPressedP1
     beq @noUp
 
     ldx TitleIndex
+    dex
     lda Seed_Input0, x
     clc
     adc #1
@@ -342,6 +380,7 @@ SeedFrame:
     jsr ButtonPressedP1
     beq @end
     ldx TitleIndex
+    dex
     lda Seed_Input0, x
     sec
     sbc #1
@@ -349,11 +388,27 @@ SeedFrame:
     sta Seed_Input0, x
     jmp @end
 
-@onLast:
+@onEnd:
     lda #BUTTON_A
     jsr ButtonPressedP1
     beq @end
 
+    lda TitleIndex
+    bne @EnterPressed
+
+    ; Rando selected
+    ; do rando thing
+    ;lda rng_seed
+    ;sta working_seed
+    ;lda rng_seed+1
+    ;sta working_seed+1
+
+    ;jsr prng
+
+    jsr seed_LoadFromMemory
+    jmp @end
+
+@EnterPressed:
     ; save stuff
     lda Seed_Input0
     asl a
@@ -488,22 +543,25 @@ seed_SetSpriteXY:
 BOX_TILE_START  = $03
 
 SeedAttrBoxes:
+    .word sbRando
     .word sb01
     .word sb02
     .word sb03
     .word sb04
     .word sbThumb
 
+sbRando:
+    .byte $55, $00, $00, $00, $00
 sb01:
-    .byte $55, $00, $00, $00
+    .byte $00, $55, $00, $00, $00
 sb02:
-    .byte $00, $11, $00, $00
+    .byte $00, $00, $11, $00, $00
 sb03:
-    .byte $00, $44, $11, $00
+    .byte $00, $00, $44, $11, $00
 sb04:
-    .byte $00, $00, $44, $00
+    .byte $00, $00, $00, $44, $00
 sbThumb:
-    .byte $00, $00, $00, $55
+    .byte $00, $00, $00, $00, $55
 
 ; offset of the first sprite tile in the sprite sheet
 SPRITE_TILE_START = $80
@@ -513,7 +571,7 @@ NumberYLookup:
     .byte 76, 96, 116
 NumberXLookup:
     ; 1st col, 2nd ...
-    .byte 72, 96, 120, 144
+    .byte 84, 108, 132, 156
 
 ; uses the NumberYLookup index value
 NumberAttrLookup:
