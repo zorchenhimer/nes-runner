@@ -1,12 +1,17 @@
 
+ifeq ($(OS),Windows_NT)
+export PATH := $(PATH);../tools/cc65/bin;../tools/ld65-labels
+else
+export PATH := $(PATH):../tools/cc65/bin:../tools/ld65-labels
+endif
+
 # Assembler and linker paths
-CA = c:/cc65/bin/ca65.exe
-LD = c:/cc65/bin/ld65.exe
+CA = ca65
+LD = ld65
+CL = ld65-labels
 
 # Tool to generate credits data
 CR = go run ../credits/generate-credits.go
-#CL = go run ../tools/ld65-labels/main.go
-CL = ../tools/ld65-labels/ld65-labels.exe
 
 # Mapper configuration for linker
 NESCFG = nes_001.cfg
