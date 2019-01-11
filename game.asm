@@ -450,13 +450,13 @@ CheckCollide:
 
     ; Layer 1: the Pit
     lda ColCache+3
-    cmp #G_MC_OBS    ; #$02
+    cmp #G_MC_OBS    ; #$06
     bcc @l1Right
     jmp @collide
 
 @l1Right:
     lda ColCache+7
-    cmp #G_MC_OBS    ; #$02
+    cmp #G_MC_OBS    ; #$06
     bcc @layer2
     jmp @collide
 
@@ -1040,14 +1040,22 @@ GamePalette:
 MetaTiles:
     .word Meta_Sky
     .word Meta_Ground
+    .word Meta_Pit_Left
+    .word Meta_Pit_Right
+    .word Meta_Pit_Left_Bottom
+    .word Meta_Pit_Right_Bottom
     .word Meta_Obstacle
     .word Meta_Pit
 
-; Game Meta Columns
-G_MC_NOTHIN = $00
-G_MC_GROUND = $01
-G_MC_OBS    = $02
-G_MC_PIT    = $03
+; Game Meta Tiles
+G_MC_NOTHIN     = $00
+G_MC_GROUND     = $01
+G_MC_PIT_LEFT   = $02
+G_MC_PIT_RIGHT  = $03
+G_MC_PIT_LEFT_BOTTOM   = $04
+G_MC_PIT_RIGHT_BOTTOM  = $05
+G_MC_OBS        = $06
+G_MC_PIT        = $07
 
 ; used for RNG
 ; TODO: Make this list 16 entries long. Use both bytes of RNG for
@@ -1064,7 +1072,7 @@ MetaColumn_Definitions:
 
     .word MetaColumn_Nothin
     .word MetaColumn_Wall
-    .word MetaColumn_PitWide
+    .word MetaColumn_WallPitWide
     .word MetaColumn_DoubleWall
     .word MetaColumn_PitWallWide
     .word MetaColumn_DoubleWall
@@ -1083,24 +1091,28 @@ MetaColumn_DoubleWall:
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
 MetaColumn_Pit:
-    .byte $02
+    .byte $03
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT_LEFT, G_MC_PIT_LEFT_BOTTOM
     .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT_RIGHT, G_MC_PIT_RIGHT_BOTTOM
 MetaColumn_PitWall:
-    .byte $02
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
-    .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
-MetaColumn_PitWide:
     .byte $03
-    ;.byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT_LEFT, G_MC_PIT_LEFT_BOTTOM
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
+MetaColumn_WallPitWide:
+    .byte $04
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
     .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
     .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT_RIGHT, G_MC_PIT_RIGHT_BOTTOM
 MetaColumn_PitWallWide:
-    .byte $03
+    .byte $05
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT_LEFT, G_MC_PIT_LEFT_BOTTOM
     .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
     .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT_RIGHT, G_MC_PIT_RIGHT_BOTTOM
 MetaColumn_HalfWall:
     .byte $01
     .byte G_MC_NOTHIN, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
@@ -1113,7 +1125,15 @@ Meta_Ground:
 Meta_Obstacle:
     .byte $82, $92, $83, $93
 Meta_Pit:
-    .byte $A2, $B2, $A3, $B3
+    .byte $A3, $B3, $A2, $B2
+Meta_Pit_Left:
+    .byte $A0, $B0, $A4, $B4
+Meta_Pit_Right:
+    .byte $A5, $B5, $A1, $B1
+Meta_Pit_Left_Bottom:
+    .byte $A0, $B0, $A2, $B2
+Meta_Pit_Right_Bottom:
+    .byte $A3, $B3, $A1, $B1
 
 PAUSED_X    = 104
 PAUSED_Y    = 25
