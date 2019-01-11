@@ -20,45 +20,12 @@ DedInit:
     lda #>Ded_NMI
     sta DoNMIPointer+1
 
-    lda Score_Tables
-    sta TmpAddr
-    lda Score_Tables+1
-    sta TmpAddr+1
-
-    lda rng_seed
-    ;sta Score_IndexPage
-    jsr BinToHex
-
-    ldy #0
-    lda TmpY
-    sta (TmpAddr), y
-    iny
-    lda TmpX
-    sta (TmpAddr), y
-
-    lda rng_seed+1
-    ;sta Score_IndexPage+1
-    jsr BinToHex
-    iny
-    lda TmpY
-    sta (TmpAddr), y
-    iny
-    lda TmpX
-    sta (TmpAddr), y
-
-    ldy #12
-    lda PlayerScore3
-    sta (TmpAddr), y
-    iny
-    lda PlayerScore2
-    sta (TmpAddr), y
-    iny
-    lda PlayerScore1
-    sta (TmpAddr), y
-    iny
-    lda PlayerScore0
-    sta (TmpAddr), y
+    jsr Scores_CheckIfNew
+    bne :+
     rts
+
+:   jmp Scores_InsertNewScore
+    ;rts
 
 Ded_NMI:
     lda Ded_Fading

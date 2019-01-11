@@ -148,6 +148,10 @@ clear_nt_tile:      .res 1
 game_paused:        .res 1
 rngFlipFlop:        .res 1
 
+; Score stuff
+SavedScore:         .res 4  ; Address of a score
+TmpScoreEntry:      .res 16
+
 .segment "SAVERAM"
     ; battery backed RAM
 rng_seed:       .res 2

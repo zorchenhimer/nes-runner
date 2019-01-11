@@ -398,6 +398,168 @@ Scores_NMI:
 
     jmp NMI_Finished
 
+; Check to see if the current score belongs on the board
+Scores_CheckIfNew:
+    lda #$FC
+    sta SavedScore
+    lda #$60
+    sta SavedScore+1
+
+    lda #7
+    jmp scores_NewGreaterThanOld
+
+; new score in an address and the old score as an index
+scores_NewGreaterThanOld:
+    tay
+@loop:
+    lda (SavedScore), Y
+    sta TmpX
+    lda PlayerScoreBase100, Y
+    cmp TmpX
+
+    bcc @nope   ; less than, we're done
+    beq @next   ; equal, check next digit
+    bcs @yup    ; greater than, we're done
+
+@next:
+    iny
+    cpy #4
+    bne @loop
+
+    cmp TmpX
+    beq @nope
+
+@yup:
+    lda #1
+    rts
+
+@nope:
+    lda #0
+    rts
+
+; Inserts a new score.  Entry point for inserting a score into a page.
+Scores_InsertNewScore:
+    jsr Scores_CheckIfNew
+    bne :+
+    rts ; score doesn't make the cut
+
+:   lda #6
+    sta TmpY    ; index of current saved score
+
+; Starting at the bottom, find the spot for the new score, copying scores down
+; a row when needed.
+@loop:
+    lda TmpY
+    beq @insert
+    jsr scores_MoveEntryDown
+
+    lda TmpY
+    jsr scores_NewGreaterThanOld
+    beq @insert
+    dec TmpY
+    jmp @loop
+
+; Spot found, overwrite entry (it's been copied a slot down)
+@insert:
+    ; multiply by 16 to get offset from index.  The start of the page is used
+    ; with this to get the correct position in Save RAM.
+    inc TmpY
+    lda TmpY
+    asl a
+    asl a
+    asl a
+    asl a
+    tay
+
+    ; load up the address of the page to start at
+    lda Score_Tables
+    sta TmpAddr
+    lda Score_Tables+1
+    sta TmpAddr+1
+
+    ; Get the ASCII values for the seed, and store them in the correct entry.
+    lda rng_seed
+    jsr BinToHex
+
+    lda TmpX
+    sta (TmpAddr), y
+    iny
+    lda TmpY
+    sta (TmpAddr), y
+    iny
+
+    lda rng_seed+1
+    jsr BinToHex
+
+    lda TmpX
+    sta (TmpAddr), y
+    iny
+    lda TmpY
+    sta (TmpAddr), y
+
+    ; Move offset to the start of the base100 score
+    tya
+    clc
+    adc #9
+    tay
+
+    lda #4
+    sta TmpX
+
+    lda Score_Tables
+    sta TmpAddr
+    lda Score_Tables+1
+    sta TmpAddr+1
+
+    ; Write the new score to the entry
+    ldx #0
+@b100loop:
+    lda PlayerScoreBase100, x
+    sta (TmpAddr), y
+    inx
+    iny
+    cpx #4
+    bne @b100loop
+    rts
+
+; Current entry to move down is in A
+; TODO: make this work with other tables
+scores_MoveEntryDown:
+    cmp #7  ; if it's the last entry, don't move it anywhere.  It'll just get over written.
+    bne :+
+    rts
+:
+    ; Multiply entry index by 16 to get offset
+    asl a
+    asl a
+    asl a
+    asl a
+    tay
+
+    lda Score_Tables
+    sta TmpAddr
+    lda Score_Tables+1
+    sta TmpAddr+1
+
+    ldx #0
+@loopRead:
+    lda (TmpAddr), y
+    sta TmpScoreEntry, x
+    inx
+    iny
+    cpx #16
+    bne @loopRead
+
+    ldx #0
+@loopWrite:
+    lda TmpScoreEntry, x
+    sta (TmpAddr), y
+    inx
+    iny
+    cpx #16
+    bne @loopWrite
+    rts
+
 ; Tile constants
 SC_TILE_BACKGROUND  = $0F
 SC_TILE_ROLL_TOP    = $11
