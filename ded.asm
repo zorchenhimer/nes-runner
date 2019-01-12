@@ -72,12 +72,16 @@ Ded_Frame:
     tax
     ldy #31
 @fadeLoop:
-    lda DedFade, x
+    lda PaletteRAM, y
+    sec
+    sbc #$10
+    bpl @notBlack
+    lda #$0D
+@notBlack:
     sta PaletteRAM, y
     inx
     dey
-    cpy #27
-    bne @fadeLoop
+    bpl @fadeLoop   ; Fade all eight palettes
     inc Ded_Pal
     jmp WaitSpriteZero
 
@@ -276,10 +280,3 @@ DedStart:
 
 DedStartPal:
     .byte $2D,$00,$10,$20,$10,$00
-
-DedFade:
-    .byte $0F,$17,$2B,$39
-    .byte $0F,$07,$1B,$29
-    .byte $0F,$0D,$0B,$19
-    .byte $0F,$0D,$0D,$09
-    .byte $0F,$0D,$0D,$0D
