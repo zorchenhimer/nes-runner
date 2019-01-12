@@ -1,68 +1,21 @@
 ; TODO:
-;   Fix attribute stuff
+;   Fix attribute stuff. doesn't write to the correct addresses.  Cache it on load.
+;       it's also writing the attr row twice?  rows colors are four tiles high, for some reason.
 
 Credits_Init:
     ; - Clear backgound for both nametables
     ; - Update palettes
     inc SkipNMI
 
-    lda #PPU_MASK_OFF
+    lda #$00
     sta $2001
 
     lda #<Credits_Palette
     sta PaletteAddr
     lda #>Credits_Palette
     sta PaletteAddr+1
-    jsr LoadPalettes
-    jsr UpdatePalettes
 
-    jsr ClearSprites
-
-    jsr ClearNametable0
-    jsr ClearNametable2
-
-    jsr ClearAttrTable0
-    jsr ClearAttrTable2
-
-    lda #0
-    sta cr_chunkCurrent
-    sta cr_currentPPULine
-    sta cr_currentAttrOffset
-
-    ;lda #$80
-    ;sta cr_AttributeByte
-
-    lda #$23
-    sta cr_attrNameTable
-
-    ;lda #3
-    ;sta cr_nextAttrWait
-
-; Fill the screen with names
-@loop:
-    jsr Credits_LoadChunk
-    jsr Credits_WriteBuffer
-    ;bit cr_UpdateReady
-    ;bvc @noAttr
-    ;jsr Credits_WriteAttr
-
-;@noAttr:
-    lda cr_chunkCurrent
-    cmp #Credits_NameCount-1
-    beq @endLoop
-    cmp #29
-    bne @loop
-
-@endLoop:
-
-    lda #CR_SCROLL_WAIT
-    sta cr_scrollWait
-
-    lda #32
-    sta cr_nextChunkWait
-    ;lda #3
-    ;sta cr_nextAttrWait
-
+    ; Set frame and NMI pointers
     lda #<Credits_Frame
     sta DoFramePointer
     lda #>Credits_Frame
@@ -73,39 +26,89 @@ Credits_Init:
     lda #>Credits_NMI
     sta DoNMIPointer+1
 
+    jsr LoadPalettes
+    jsr UpdatePalettes
+
+    lda #$00
+    jsr FillNametable0
+    lda #$00
+    jsr FillNametable2
+
+    jsr ClearAttrTable0
+    jsr ClearAttrTable2
+
+    lda #0
+    sta cr_chunkCurrent
+
+    lda #$23
+    sta cr_AttributeAddress
+
+    clc
+    ; Setup some debug sprites
+    ; X
+    lda #$10
+    sta sprites+3
+    sta sprites+7
+    sta sprites+11
+
+    ; Y
+    lda #$10
+    sta sprites
+    adc #$10
+    sta sprites+4
+    adc #$10
+    sta sprites+8
+
+    ; Tiles
+    lda #'1'
+    sta sprites+1
+    lda #'2'
+    sta sprites+5
+    lda #'3'
+    sta sprites+9
+
+    ; Attributes
+    lda #$01
+    sta sprites+6
+    lda #$02
+    sta sprites+10
+
+; Fill the screen with names
+    lda #30
+    sta TmpX
+@loop:
+    jsr Credits_LoadChunk
+    jsr Credits_WriteBuffer
+    dec TmpX
+    bne @loop
+
+    lda #CR_SCROLL_WAIT
+    sta cr_scrollWait
+
+    lda #32
+    sta cr_nextChunkWait
+
     ; reset scroll
     bit $2001
     lda #$00
     sta $2005
     sta $2005
-    sta cr_scroll
 
+    ;lda #%00011110
+    ;sta $2001
     lda #CR_TOP
     sta cr_scroll_table
-
-    dec TurnPPUOn
+    lda #0
+    ;sta SkipNMI
     rts
 
-Credits_NMI:
-    bit cr_UpdateReady
-    bpl @noUpdate
-    jsr Credits_WriteBuffer
-    ;jmp @end
-
-@noUpdate:
-    lda #0
-    sta cr_UpdateReady
-
-    jsr Credits_UpdateScroll
-    jmp NMI_Finished
-
 Credits_WriteAttr:
-    lda cr_currentAttrOffset
-    tax
+    lda #0
+    sta cr_AttributeReady
 
-    lda cr_attrNameTable
+    lda cr_AttributeAddress
     sta $2006
-    lda PPU_AttrLookup_Low, x
+    lda cr_AttributeAddress+1
     sta $2006
 
     ldx #8
@@ -115,13 +118,14 @@ Credits_WriteAttr:
     dex
     bne @loop
 
-    ;lda #$80
-    ;sta cr_AttributeByte
-    inc cr_currentAttrOffset
+    lda #0
+    sta cr_AttributeByte
     rts
 
 ; Write the TileBuffer to the PPU
 Credits_WriteBuffer:
+    lda #0
+    sta cr_UpdateReady
     lda cr_currentPPULine
     cmp #30
     bcc @noWrap
@@ -222,7 +226,7 @@ cr_Decode_Opcode:
 cr_op_ClearRow:
     ldx cr_tileBufferOffset
     ldy #32
-    lda #' '
+    lda #CLEAR_TILE_ID
 @loop:
     sta TileBuffer, x
     inx
@@ -332,35 +336,89 @@ cr_op_ByteList:
     clc
     adc cr_tileBufferOffset
     sta cr_tileBufferOffset
+
     inc cr_tmpByte
     lda cr_tmpByte
     jsr cr_Decode_Opcode_IncAddr
     jmp cr_Decode_Opcode
 
 cr_op_Attr:
+    lda cr_currentAttrOffset
+    tax
+
+    lda PPU_AttrLookup_Low, x
+    sta cr_AttributeAddress+1
+
     lda #1
     jsr cr_Decode_Opcode_IncAddr
 
     ldy #0
+    lda cr_currentAttrOffset
+    cmp #7
+    beq @lastRow
+    cmp #15
+    beq @lastRow
+
+    lda cr_AttrSecondWrite
+    bne @secondWrite
+
     lda (cr_chunkAddress), y
     sta cr_AttributeByte
 
+    inc cr_AttrSecondWrite
+    rts
+
+@secondWrite:
+    lda (cr_chunkAddress), y
+
+    asl A
+    asl A
+    asl A
+    asl A
+
+    ora cr_AttributeByte
+    sta cr_AttributeByte
+
+    lda #$FF
+    sta cr_AttributeReady
+    lda #0
+    sta cr_AttrSecondWrite
+    jmp @overLast
+
+@lastRow:
+    ldy #0
+    lda (cr_chunkAddress), y
+    sta cr_AttributeByte
+
+    asl A
+    asl A
+    asl A
+    asl A
+
+    ora cr_AttributeByte
+    sta cr_AttributeByte
+
+@overLast:
+    inc cr_currentAttrOffset
     lda cr_currentAttrOffset
     cmp #8
     bcc @noWrap
     lda #0
     sta cr_currentAttrOffset
 
-    lda cr_attrNameTable
+    lda cr_AttributeAddress
     cmp #$23
-    beq @other
-    lda #$23
-    sta cr_attrNameTable
-    jmp @noWrap
+    bne @other
+    jmp @secondNT
 
 @other:
+    lda #$23
+    sta cr_AttributeAddress
+    jmp @noWrap
+
+@secondNT:
     lda #$2B
-    sta cr_attrNameTable
+    sta cr_AttributeAddress
 
 @noWrap:
     lda #$FF
@@ -431,9 +489,14 @@ Credits_Frame:
     sta cr_scroll_table
     jmp WaitFrame
 
-Credits_UpdateScroll:
-    bit $2002
+Credits_NMI:
+    bit cr_UpdateReady
+    bpl @noUpdate
+    jsr Credits_WriteBuffer
 
+@noUpdate:
+    ; Scroll
+    bit $2002
     ; X
     lda #0
     sta $2005
@@ -443,7 +506,7 @@ Credits_UpdateScroll:
     ; Name table
     lda cr_scroll_table
     sta $2000
-    rts
+    jmp NMI_Finished
 
 ; start of row addresses - 30 total rows
 PPU_RowStartLookup_High:
@@ -463,7 +526,7 @@ PPU_AttrLookup_Low:
     .byte $C0, $C8, $D0, $D8, $E0, $E8, $F0, $F8
 
 Credits_Palette:
-    .byte $0F,$30,$13,$0F, $0F,$05,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F
+    .byte $0F,$30,$13,$33, $0F,$13,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F
     .byte $0F,$30,$13,$0F, $0F,$05,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F
 
     .include "credits_data.i"
