@@ -324,8 +324,6 @@ Scores_Draw_Page:
     pla
     tax
 
-    ; TODO: use the sc_ppu_high_byte_odd sc_ppu_low_byte_odd lookup
-    ;       tables for the addresses for the following writes
     lda sc_ppu_high_byte_odd, x
     sta $2006
     lda sc_ppu_low_byte_odd, x
@@ -617,24 +615,6 @@ Scores_BG_Row:
 Scores_Palette:
     .byte $37,$0F,$17,$07, $37,$05,$15,$13, $37,$0A,$1A,$13, $37,$11,$21,$13
     .byte $37,$30,$13,$13, $37,$05,$15,$13, $37,$0A,$1A,$13, $37,$11,$21,$13
-
-;sc_demo_index:
-;    ; first byte is current seed
-;    .byte $FF, $FF
-;
-;    ; index data here
-;    .byte $12, $34
-;    .byte $00, $00
-
-; seven rows of data
-;sc_demo_data:
-;    .byte "some name1  ", $01, $00, $00, $00
-;    .byte "some name2  ", $02, $00, $00, $00
-;    .byte "some name3  ", $03, $00, $00, $00
-;    .byte "some name4  ", $04, $00, $00, $00
-;    .byte "some name5  ", $05, $00, $00, $00
-;    .byte "some name6  ", $06, $00, $00, $00
-;    .byte "some name7  ", $07, $00, $00, $00
 
 ; lookup for name rows
 sc_ppu_high_byte:
