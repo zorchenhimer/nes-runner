@@ -528,5 +528,3 @@ PPU_AttrLookup_Low:
 Credits_Palette:
     .byte $0F,$30,$13,$33, $0F,$13,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F
     .byte $0F,$30,$13,$0F, $0F,$05,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F
-
-    .include "credits_data.i"

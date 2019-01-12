@@ -202,11 +202,12 @@ SP_TITLEX1      = sprites+7
     .byte $00, $EA   ; current Page ID
     .include "game.asm"
     .include "ded.asm"
+    .include "background.asm"
 
 .segment "PAGE1"
     ; credits
     .byte $01, $EA   ; current Page ID
-    .include "credits.asm"
+    .include "credits_data.i"
 
 .segment "PAGE2"
     ; ???
@@ -548,3 +549,4 @@ ChangeGameState:
     .include "scores.asm"
     .include "utils.asm"
     .include "seed.asm"
+    .include "credits.asm"
