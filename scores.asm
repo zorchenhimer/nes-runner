@@ -3,7 +3,7 @@
 
 ;   Individual scores - 16 bytes/score = 511 scores (-1 for current seed; other metadata)
 ; Seed      2 bytes
-; Score     4  BCD.  make this non-decimal binary
+; Score     4 bytes - base100
 ; Name      10
 
 ;   page of 8 per seed - 114 bytes/page of 8 = 71 pages of scores; 568 scores total
@@ -400,7 +400,7 @@ Scores_NMI:
 
 ; Check to see if the current score belongs on the board
 Scores_CheckIfNew:
-    lda #$FC
+    lda #$80
     sta SavedScore
     lda #$60
     sta SavedScore+1
@@ -410,24 +410,34 @@ Scores_CheckIfNew:
 
 ; new score in an address and the old score as an index
 scores_NewGreaterThanOld:
+    asl a
+    asl a
+    asl a
+    asl a
+    clc
+    adc #12
     tay
+
+    ldx #0
 @loop:
-    lda (SavedScore), Y
+    lda (SavedScore), y
     sta TmpX
-    lda PlayerScoreBase100, Y
+    lda PlayerScoreBase100, x
     cmp TmpX
 
-    bcc @nope   ; less than, we're done
     beq @next   ; equal, check next digit
+    bcc @nope   ; less than, we're done
     bcs @yup    ; greater than, we're done
 
 @next:
     iny
-    cpy #4
+    inx
+    cpx #4
     bne @loop
 
     cmp TmpX
     beq @nope
+    bcc @nope
 
 @yup:
     lda #1
@@ -443,14 +453,14 @@ Scores_InsertNewScore:
     bne :+
     rts ; score doesn't make the cut
 
-:   lda #6
+:   lda #7
     sta TmpY    ; index of current saved score
 
 ; Starting at the bottom, find the spot for the new score, copying scores down
 ; a row when needed.
 @loop:
     lda TmpY
-    beq @insert
+    bmi @insert
     jsr scores_MoveEntryDown
 
     lda TmpY
