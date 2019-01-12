@@ -19,6 +19,28 @@ Game_Init:
     jsr ClearAttrTable0
     jsr ClearAttrTable1
 
+    lda #$23
+    sta $2006
+    lda #$D8
+    sta $2006
+
+    ldx #16
+    lda #$55
+:   sta $2007
+    dex
+    bne :-
+
+    lda #$27
+    sta $2006
+    lda #$D8
+    sta $2006
+
+    ldx #16
+    lda #$55
+:   sta $2007
+    dex
+    bne :-
+
     ; Initialize a bunch of variables
     lda #0
     sta PlayerScore0
@@ -1033,7 +1055,7 @@ SeedText:
     .byte "Level Seed  ", $00
 
 GamePalette:
-    .byte $0F,$17,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39
+    .byte $0F,$17,$2B,$39, $0F,$15,$25,$35, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39
     .byte $0F,$15,$2B,$39, $0F,$0F,$2B,$39, $0F,$20,$2B,$39, $0F,$1C,$2B,$39
 
 ; Meta tile IDs -> meta tile tile addresses
