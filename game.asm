@@ -28,27 +28,27 @@ Game_Init:
     lda #1
     jsr DrawBackground
 
+    bit $2000
+    ; Update attribute data
     lda #$23
     sta $2006
     lda #$D8
     sta $2006
 
-    ldx #16
+    lda #$AA
+    jsr game_DrawAttributeRow
     lda #$55
-:   sta $2007
-    dex
-    bne :-
+    jsr game_DrawAttributeRow
 
     lda #$27
     sta $2006
     lda #$D8
     sta $2006
 
-    ldx #16
+    lda #$AA
+    jsr game_DrawAttributeRow
     lda #$55
-:   sta $2007
-    dex
-    bne :-
+    jsr game_DrawAttributeRow
 
     ; Initialize a bunch of variables
     lda #0
@@ -307,6 +307,13 @@ Game_Init:
     sta DoNMIPointer+1
     rts
 ;; End of Game_Init
+
+game_DrawAttributeRow:
+    ldx #8
+:   sta $2007
+    dex
+    bne :-
+    rts
 
 Game_NMI:
     ; Check to see if a column is buffered.  If so, draw it
@@ -1058,7 +1065,7 @@ SeedText:
     .byte "Level Seed  ", $00
 
 GamePalette:
-    .byte $0F,$17,$2B,$39, $0F,$15,$25,$35, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39
+    .byte $0F,$1C,$2B,$39, $0F,$17,$25,$35, $0F,$1A,$0A,$39, $0F,$1C,$2B,$39
     .byte $0F,$15,$2B,$39, $0F,$0F,$2B,$39, $0F,$20,$2B,$39, $0F,$1C,$2B,$39
 
 ; Meta tile IDs -> meta tile tile addresses
@@ -1069,18 +1076,20 @@ MetaTiles:
     .word Meta_Pit_Right
     .word Meta_Pit_Left_Bottom
     .word Meta_Pit_Right_Bottom
+    .word Meta_Nothing
     .word Meta_Obstacle
     .word Meta_Pit
 
 ; Game Meta Tiles
-G_MC_NOTHIN     = $00
+G_MC_BACKGROUND = $00
 G_MC_GROUND     = $01
 G_MC_PIT_LEFT   = $02
 G_MC_PIT_RIGHT  = $03
 G_MC_PIT_LEFT_BOTTOM   = $04
 G_MC_PIT_RIGHT_BOTTOM  = $05
-G_MC_OBS        = $06
-G_MC_PIT        = $07
+G_MC_NOTHIN     = $06
+G_MC_OBS        = $07
+G_MC_PIT        = $08
 
 ; used for RNG
 ; TODO: Make this list 16 entries long. Use both bytes of RNG for
@@ -1107,7 +1116,7 @@ MetaColumn_Definitions:
 ; Meta tile indicies.  First byte is number of columns.
 MetaColumn_Nothin:
     .byte $01
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_GROUND, G_MC_GROUND
+    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_GROUND, G_MC_GROUND
 MetaColumn_Wall:
     .byte $01
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
@@ -1117,30 +1126,30 @@ MetaColumn_DoubleWall:
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
 MetaColumn_Pit:
     .byte $03
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT_LEFT, G_MC_PIT_LEFT_BOTTOM
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT_RIGHT, G_MC_PIT_RIGHT_BOTTOM
+    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_PIT_LEFT, G_MC_PIT_LEFT_BOTTOM
+    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_PIT_RIGHT, G_MC_PIT_RIGHT_BOTTOM
 MetaColumn_PitWall:
     .byte $03
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT_LEFT, G_MC_PIT_LEFT_BOTTOM
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_PIT_LEFT, G_MC_PIT_LEFT_BOTTOM
+    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_NOTHIN, G_MC_PIT
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
 MetaColumn_WallPitWide:
     .byte $04
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT_RIGHT, G_MC_PIT_RIGHT_BOTTOM
+    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_PIT_RIGHT, G_MC_PIT_RIGHT_BOTTOM
 MetaColumn_PitWallWide:
     .byte $05
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT_LEFT, G_MC_PIT_LEFT_BOTTOM
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_PIT_LEFT, G_MC_PIT_LEFT_BOTTOM
+    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_NOTHIN, G_MC_PIT
     .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT
-    .byte G_MC_NOTHIN, G_MC_NOTHIN, G_MC_PIT_RIGHT, G_MC_PIT_RIGHT_BOTTOM
+    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_NOTHIN, G_MC_PIT
+    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_PIT_RIGHT, G_MC_PIT_RIGHT_BOTTOM
 MetaColumn_HalfWall:
     .byte $01
-    .byte G_MC_NOTHIN, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
+    .byte G_MC_BACKGROUND, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
 
 ; Tile indicies
 Meta_Sky:
@@ -1159,6 +1168,8 @@ Meta_Pit_Left_Bottom:
     .byte $A0, $B0, $A2, $B2
 Meta_Pit_Right_Bottom:
     .byte $A3, $B3, $A1, $B1
+Meta_Nothing:
+    .byte $00, $00, $00, $00
 
 PAUSED_X    = 104
 PAUSED_Y    = 25
