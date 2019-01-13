@@ -19,6 +19,9 @@ Game_Init:
     jsr ClearAttrTable0
     jsr ClearAttrTable1
 
+    lda #1
+    jsr DrawBackground
+
     lda #$23
     sta $2006
     lda #$D8
@@ -1055,7 +1058,7 @@ SeedText:
     .byte "Level Seed  ", $00
 
 GamePalette:
-    .byte $0F,$17,$2B,$39, $0F,$15,$25,$35, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39
+    .byte $0F,$17,$2B,$39, $0F,$15,$25,$35, $0F,$1C,$2B,$39, $0F,$04,$34,$24
     .byte $0F,$15,$2B,$39, $0F,$0F,$2B,$39, $0F,$20,$2B,$39, $0F,$1C,$2B,$39
 
 ; Meta tile IDs -> meta tile tile addresses
