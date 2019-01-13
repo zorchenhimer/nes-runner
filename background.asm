@@ -237,6 +237,220 @@ bg_data_City:
     .byte BG_OP_RLE_REP, 3, 2, $19, $1A
     .byte BG_OP_SINGLE, $01
 
+    ; Copypasta start
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $15, $11
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $16, $12
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $18
+    .byte BG_OP_RLE_REP, 4, 2, $17, $1B
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $13
+    .byte BG_OP_RLE_REP, 4, 2, $15, $11
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $14
+    .byte BG_OP_RLE_REP, 4, 2, $16, $12
+
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $15, $11
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $16, $12
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $18
+    .byte BG_OP_RLE_REP, 4, 2, $17, $1B
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $1E
+    .byte BG_OP_SINGLE, $1C
+    .byte BG_OP_RLE_REP, 3, 2, $19, $1A
+    .byte BG_OP_SINGLE, $01
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $13
+    .byte BG_OP_RLE_REP, 4, 2, $15, $11
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $14
+    .byte BG_OP_RLE_REP, 4, 2, $16, $12
+
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $15, $11
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $16, $12
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $18
+    .byte BG_OP_RLE_REP, 4, 2, $17, $1B
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $1E
+    .byte BG_OP_SINGLE, $1C
+    .byte BG_OP_RLE_REP, 3, 2, $19, $1A
+    .byte BG_OP_SINGLE, $01
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $13
+    .byte BG_OP_RLE_REP, 4, 2, $15, $11
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $14
+    .byte BG_OP_RLE_REP, 4, 2, $16, $12
+
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $15, $11
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $16, $12
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $18
+    .byte BG_OP_RLE_REP, 4, 2, $17, $1B
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $1E
+    .byte BG_OP_SINGLE, $1C
+    .byte BG_OP_RLE_REP, 3, 2, $19, $1A
+    .byte BG_OP_SINGLE, $01
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $13
+    .byte BG_OP_RLE_REP, 4, 2, $15, $11
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $14
+    .byte BG_OP_RLE_REP, 4, 2, $16, $12
+
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $15, $11
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $16, $12
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $18
+    .byte BG_OP_RLE_REP, 4, 2, $17, $1B
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $1E
+    .byte BG_OP_SINGLE, $1C
+    .byte BG_OP_RLE_REP, 3, 2, $19, $1A
+    .byte BG_OP_SINGLE, $01
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $13
+    .byte BG_OP_RLE_REP, 4, 2, $15, $11
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $14
+    .byte BG_OP_RLE_REP, 4, 2, $16, $12
+
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $15, $11
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $16, $12
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $18
+    .byte BG_OP_RLE_REP, 4, 2, $17, $1B
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $1E
+    .byte BG_OP_SINGLE, $1C
+    .byte BG_OP_RLE_REP, 3, 2, $19, $1A
+    .byte BG_OP_SINGLE, $01
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $13
+    .byte BG_OP_RLE_REP, 4, 2, $15, $11
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $14
+    .byte BG_OP_RLE_REP, 4, 2, $16, $12
+
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $15, $11
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $16, $12
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $18
+    .byte BG_OP_RLE_REP, 4, 2, $17, $1B
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $1E
+    .byte BG_OP_SINGLE, $1C
+    .byte BG_OP_RLE_REP, 3, 2, $19, $1A
+    .byte BG_OP_SINGLE, $01
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $13
+    .byte BG_OP_RLE_REP, 4, 2, $15, $11
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $14
+    .byte BG_OP_RLE_REP, 4, 2, $16, $12
+
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $15, $11
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $16, $12
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $18
+    .byte BG_OP_RLE_REP, 4, 2, $17, $1B
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $1E
+    .byte BG_OP_SINGLE, $1C
+    .byte BG_OP_RLE_REP, 3, 2, $19, $1A
+    .byte BG_OP_SINGLE, $01
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $13
+    .byte BG_OP_RLE_REP, 4, 2, $15, $11
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $14
+    .byte BG_OP_RLE_REP, 4, 2, $16, $12
+
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $15, $11
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $16, $12
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $18
+    .byte BG_OP_RLE_REP, 4, 2, $17, $1B
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $1E
+    .byte BG_OP_SINGLE, $1C
+    .byte BG_OP_RLE_REP, 3, 2, $19, $1A
+    .byte BG_OP_SINGLE, $01
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $13
+    .byte BG_OP_RLE_REP, 4, 2, $15, $11
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $14
+    .byte BG_OP_RLE_REP, 4, 2, $16, $12
+
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $15, $11
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $16, $12
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $18
+    .byte BG_OP_RLE_REP, 4, 2, $17, $1B
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $1E
+    .byte BG_OP_SINGLE, $1C
+    .byte BG_OP_RLE_REP, 3, 2, $19, $1A
+    .byte BG_OP_SINGLE, $01
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $1F
+    .byte BG_OP_SINGLE, $1D
+    .byte BG_OP_RLE_REP, 3, 2, $17, $1B
+    .byte BG_OP_SINGLE, $01
+
     .byte BG_OP_ATTR, $0F,$04,$34,$24
 
 bg_data_empty:
