@@ -6,6 +6,7 @@ BG_OP_RLE       = 2
 BG_OP_RLE_REP   = 3 ; run length repeating
 ;BG_OP_ADDR      = 4
 BG_OP_ATTR      = 4
+BG_OP_SINGLE    = 5
 
 bg_OPCodes:
     .word bg_op_EOD-1
@@ -13,6 +14,7 @@ bg_OPCodes:
     .word bg_op_Runlength-1
     .word bg_op_Runlength_Repeating-1
     .word bg_op_Attribute-1
+    .word bg_op_Single-1
 
 Background_Themes:
     .word bg_data_empty
@@ -107,6 +109,14 @@ bg_op_EOD:
     rts
 
 bg_op_ByteList:
+    jmp bg_Decode_Opcode
+
+bg_op_Single:
+    jsr bg_IncrementAddress
+    ldy #0
+    lda (TmpAddr), y
+    jsr bg_WriteByte
+    jsr bg_IncrementAddress
     jmp bg_Decode_Opcode
 
 bg_op_Runlength:
@@ -206,11 +216,27 @@ bg_op_Attribute:
 
 bg_data_City:
     .byte BG_OP_RLE, 3, $00
-    .byte BG_OP_RLE, 1, $13
+    .byte BG_OP_SINGLE, $13
     .byte BG_OP_RLE_REP, 4, 2, $15, $11
     .byte BG_OP_RLE, 3, $00
-    .byte BG_OP_RLE, 1, $14
+    .byte BG_OP_SINGLE, $14
     .byte BG_OP_RLE_REP, 4, 2, $16, $12
+
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $15, $11
+    .byte BG_OP_RLE, 6, $00
+    .byte BG_OP_RLE_REP, 3, 2, $16, $12
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $18
+    .byte BG_OP_RLE_REP, 4, 2, $17, $1B
+
+    .byte BG_OP_RLE, 3, $00
+    .byte BG_OP_SINGLE, $1E
+    .byte BG_OP_SINGLE, $1C
+    .byte BG_OP_RLE_REP, 3, 2, $19, $1A
+    .byte BG_OP_SINGLE, $01
+
     .byte BG_OP_ATTR, $0F,$04,$34,$24
 
 bg_data_empty:
