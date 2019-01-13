@@ -19,6 +19,12 @@ Game_Init:
     jsr ClearAttrTable0
     jsr ClearAttrTable1
 
+    lda #<GamePalette
+    sta PaletteAddr
+    lda #>GamePalette
+    sta PaletteAddr+1
+    jsr LoadPalettes
+
     lda #1
     jsr DrawBackground
 
@@ -184,12 +190,6 @@ Game_Init:
     ; initial value for fading paused palette
     lda #$20
     sta PAUSED_PAL
-
-    lda #<GamePalette
-    sta PaletteAddr
-    lda #>GamePalette
-    sta PaletteAddr+1
-    jsr LoadPalettes
 
 ; Status bar stuff
     lda #$23
@@ -1058,7 +1058,7 @@ SeedText:
     .byte "Level Seed  ", $00
 
 GamePalette:
-    .byte $0F,$17,$2B,$39, $0F,$15,$25,$35, $0F,$1C,$2B,$39, $0F,$04,$34,$24
+    .byte $0F,$17,$2B,$39, $0F,$15,$25,$35, $0F,$1C,$2B,$39, $0F,$1C,$2B,$39
     .byte $0F,$15,$2B,$39, $0F,$0F,$2B,$39, $0F,$20,$2B,$39, $0F,$1C,$2B,$39
 
 ; Meta tile IDs -> meta tile tile addresses

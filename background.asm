@@ -172,10 +172,8 @@ bg_op_Attribute:
     lda #$C0
     sta $2006
 
+    lda #$FF
     ldy #0
-    lda (TmpAddr), y
-    sta TmpX
-
 :   sta $2007
     iny
     cpy #24
@@ -186,12 +184,22 @@ bg_op_Attribute:
     lda #$C0
     sta $2006
 
-    lda TmpX
 
+    lda #$FF
     ldy #0
 :   sta $2007
     iny
     cpy #24
+    bne :-
+
+    ; Load Palette
+    ldy #0
+    ldx #19
+:   lda (TmpAddr), y
+    sta PaletteRAM, x
+    iny
+    dex
+    cpx #15
     bne :-
 
     rts
@@ -203,11 +211,11 @@ bg_data_City:
     .byte BG_OP_RLE, 3, $00
     .byte BG_OP_RLE, 1, $14
     .byte BG_OP_RLE_REP, 4, 2, $16, $12
-    .byte BG_OP_ATTR, $FF
+    .byte BG_OP_ATTR, $0F,$04,$34,$24
 
 bg_data_empty:
     .byte BG_OP_RLE, 255, $00
     .byte BG_OP_RLE, 255, $00
     .byte BG_OP_RLE, 255, $00
     .byte BG_OP_RLE, 3, $00
-    .byte BG_OP_ATTR, $FF
+    .byte BG_OP_ATTR, $0F,$0F,$0F,$0F
