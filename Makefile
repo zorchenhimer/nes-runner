@@ -1,9 +1,5 @@
 
-ifeq ($(OS),Windows_NT)
-export PATH := $(PATH);../tools/cc65/bin;../tools/ld65-labels
-else
 export PATH := $(PATH):../tools/cc65/bin:../tools/ld65-labels
-endif
 
 # Assembler and linker paths
 CA = ca65
@@ -11,7 +7,7 @@ LD = ld65
 CL = ld65-labels
 
 # Tool to generate credits data
-CR = go run ../credits/generate-credits.go
+CR = go run generate-credits.go
 
 # Mapper configuration for linker
 NESCFG = nes_001.cfg
@@ -36,14 +32,14 @@ RM = rm
 default: all
 all: bin/$(NAME).nes bin/$(NAME).mlb
 symbols: cleanSym bin/$(NAME).mlb
-names: clrNames credits_data.i
+#names: clrNames credits_data.i bin/$(NAME).nes
 
-clean:
-	-$(RM) bin/*.*
+clean: clrNames
+	-$(RM) bin/*.* credits_data.i
 cleanSym:
 	-$(RM) bin/*.mlb
-clrNames:
-	-$(RM) credits_data.i
+#clrNames:
+#	-$(RM) credits_data.i
 
 bin/:
 	mkdir bin
