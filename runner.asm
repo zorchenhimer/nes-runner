@@ -10,6 +10,18 @@
 ;       needs to be finished/populated
 ;   Sound engine
 
+; Just prints stuff.  Eventually this will be used with the sound engine 
+; (and maybe some logic stuff too).
+.ifdef NTSC
+    .out "NTSC is defined"
+.else
+    .ifdef PAL
+        .out "PAL is defined"
+    .else
+        .out "Neither PAL nor NTSC is defined"
+    .endif
+.endif
+
 .include "nes2header.inc"
 nes2mapper 1
 nes2prg 4 * 16 * 1024

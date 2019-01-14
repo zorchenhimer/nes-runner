@@ -26,8 +26,9 @@ SOURCES = $(NAME).asm nes2header.inc game.asm \
 
 # misc
 RM = rm
+TVFORMAT = -D NTSC
 
-.PHONY: clean default cleanSym symbols clrNames
+.PHONY: clean default cleanSym symbols clrNames pal set_pal
 
 default: all
 all: bin/$(NAME).nes bin/$(NAME).mlb
@@ -41,6 +42,10 @@ cleanSym:
 #clrNames:
 #	-$(RM) credits_data.i
 
+set_pal:
+	$(eval export TVFORMAT=-D PAL)
+pal: set_pal all
+
 bin/:
 	mkdir bin
 
@@ -49,6 +54,7 @@ bin/$(NAME).o: bin/ $(SOURCES) $(CHR)
 		-t nes \
 		-o bin/$(NAME).o\
 		-l bin/$(NAME).lst \
+		$(TVFORMAT) \
 		$(NAME).asm
 
 bin/$(NAME).nes: bin/$(NAME).o $(NESCFG)
