@@ -93,6 +93,8 @@ Ded_Frame:
     lda #PPU_MASK_OFF
     sta $2001
 
+    jsr ClearAttrTable0
+
     ; Clear out the tile column draw buffer
     ldx #15
     lda #0
