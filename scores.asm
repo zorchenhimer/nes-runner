@@ -617,14 +617,12 @@ Scores_Palette:
     .byte $37,$30,$13,$13, $37,$05,$15,$13, $37,$0A,$1A,$13, $37,$11,$21,$13
 
 ; lookup for name rows
-sc_ppu_high_byte:
-    .byte $21, $21, $21, $21, $22, $22, $22, $22
-sc_ppu_low_byte:
-    .byte $27, $67, $A7, $E7, $27, $67, $A7, $E7
+.define sc_NamePPUAddresses $2127, $2167, $21A7, $21E7, $2227, $2267, $22A7, $22E7
+sc_ppu_high_byte:   .hibytes sc_NamePPUAddresses
+sc_ppu_low_byte:    .lobytes sc_NamePPUAddresses
 
 ; lookup for score rows
-sc_ppu_high_byte_odd:
-    .byte $21, $21, $21, $22, $22, $22, $22, $23
-sc_ppu_low_byte_odd:
-    .byte $4F, $8F, $CF, $0F, $4F, $8F, $CF, $0F
+.define sc_ScorePPUAddresses $214F, $218F, $21CF, $220F, $224F, $228F, $22CF, $230F
+sc_ppu_high_byte_odd:   .hibytes sc_ScorePPUAddresses
+sc_ppu_low_byte_odd:    .lobytes sc_ScorePPUAddresses
 
