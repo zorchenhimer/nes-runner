@@ -1,10 +1,9 @@
 
-export PATH := $(PATH):../tools/cc65/bin:../tools/ld65-labels
+export PATH := $(PATH):../tools/cc65/bin
 
 # Assembler and linker paths
 CA = ca65
 LD = ld65
-CL = ld65-labels
 
 # Tool to generate credits data
 CR = go run generate-credits.go
@@ -31,7 +30,7 @@ TVFORMAT = -D NTSC
 .PHONY: clean default cleanSym symbols clrNames pal set_pal
 
 default: all
-all: bin/$(NAME).nes bin/$(NAME).mlb
+all: bin/$(NAME).nes
 symbols: cleanSym bin/$(NAME).mlb
 #names: clrNames credits_data.i bin/$(NAME).nes
 
@@ -62,11 +61,9 @@ bin/$(NAME).nes: bin/$(NAME).o $(NESCFG)
 		-C $(NESCFG) \
 		-m bin/$(NAME).nes.map -vm \
 		-Ln bin/$(NAME).labels \
-		--dbgfile bin/$(NAME).nes.db \
+		--dbgfile bin/$(NAME).nes.dbg \
 		bin/$(NAME).o
 
-bin/$(NAME).mlb: bin/$(NAME).nes.db
-	$(CL) bin/$(NAME).nes.db
 
 credits_data.i: subscriber-list.csv
 	$(CR) -x zorchenhimer -o credits_data.i -i subscriber-list.csv
