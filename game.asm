@@ -25,7 +25,7 @@ Game_Init:
     sta PaletteAddr+1
     jsr LoadPalettes
 
-    lda #1
+    lda #0  ; background theme ID
     jsr DrawBackground
 
     bit $2000

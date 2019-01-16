@@ -164,6 +164,11 @@ rngFlipFlop:        .res 1
 SavedScore:         .res 4  ; Address of a score
 TmpScoreEntry:      .res 16
 
+bg_tile_row:            .res 1
+bg_data_pointer:        .res 2
+bg_lookup_pointer:      .res 2
+bg_lookup_data_pointer: .res 2
+
 .segment "SAVERAM"
     ; battery backed RAM
 rng_seed:       .res 2
