@@ -32,14 +32,12 @@ TVFORMAT = -D NTSC
 default: all
 all: bin/$(NAME).nes
 symbols: cleanSym bin/$(NAME).mlb
-#names: clrNames credits_data.i bin/$(NAME).nes
+names: clrNames credits_data.i bin/$(NAME).nes
 
 clean: clrNames
 	-$(RM) bin/*.* credits_data.i
 cleanSym:
 	-$(RM) bin/*.mlb
-#clrNames:
-#	-$(RM) credits_data.i
 
 set_pal:
 	$(eval export TVFORMAT=-D PAL)
@@ -64,7 +62,6 @@ bin/$(NAME).nes: bin/$(NAME).o $(NESCFG)
 		--dbgfile bin/$(NAME).nes.dbg \
 		bin/$(NAME).o
 
-
-credits_data.i: subscriber-list.csv
+credits_data.i:
 	$(CR) -x zorchenhimer -o credits_data.i -i subscriber-list.csv
 
