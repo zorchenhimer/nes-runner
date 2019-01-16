@@ -131,7 +131,51 @@ DrawBackground:
     cpy #68
     bne :-
 
+; This is the transition row, but I cannot assign a palette to it
+; because it doesn't align with the attribute table.  Instead,
+; use the last (unused) byte of the background palette.
+    bit $2002
+    lda #$21
+    sta $2006
+    lda #$60
+    sta $2006
+
+    lda (bg_data_pointer), y
+    sta TmpCounter
+    ldx #17
+@transitionLoop:
+
+    ldy TmpCounter
+    tya
+    sta $2007
+    iny
+    tya
+    sta $2007
+    iny
+    tya
+    sta $2007
+    iny
+    tya
+    sta $2007
+
+
+    cpx #9
+    beq @secondNT
+
+    dex
+    bne @transitionLoop
     rts
+
+@secondNT:
+    ; on the second nametable
+    dex
+
+    bit $2002
+    lda #$25
+    sta $2006
+    lda #$60
+    sta $2006
+    jmp @transitionLoop
 
 ; Draw a column of 11 (+1 duplicate) tiles
 bg_DrawColumn:
@@ -208,4 +252,7 @@ bg_data_City:
     .byte $00, $01, $02, $01, $00, $01, $00, $01
 
     ; Palette data
-    .byte $0F,$04,$34,$24
+    .byte $0F,$04,$34,$1A ;$24
+
+    ; Start byte for the four transition tiles
+    .byte $70

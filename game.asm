@@ -1066,7 +1066,7 @@ SeedText:
 
 GamePalette:
     .byte $0F,$1C,$2B,$39, $0F,$17,$25,$35, $0F,$1A,$0A,$39, $0F,$1C,$2B,$39
-    .byte $0F,$15,$2B,$39, $0F,$0F,$2B,$39, $0F,$20,$2B,$39, $0F,$1C,$2B,$39
+    .byte $0F,$30,$2B,$39, $0F,$0F,$2B,$39, $0F,$20,$2B,$39, $0F,$1C,$2B,$39
 
 ; Meta tile IDs -> meta tile tile addresses
 MetaTiles:
