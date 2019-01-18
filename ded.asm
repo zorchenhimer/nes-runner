@@ -176,6 +176,7 @@ Ded_Frame:
     sta SPZ_IDX
     lda #0
     sta SPZ_ATT
+    lda #8
     sta SPZ_X
     lda #127
     sta SPZ_Y
@@ -193,7 +194,8 @@ Ded_Frame:
     lda #$00
     sta $2006
 
-    lda #$01
+    lda #$03
+    sta $2007
     sta $2007
 
     ; Attribute byte for BG tile for sprite zero

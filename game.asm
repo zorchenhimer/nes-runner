@@ -98,7 +98,7 @@ Game_Init:
     lda #%00100001
     sta spritezero+2
 
-    lda #0
+    lda #8
     sta spritezero+3
 
     ; Setup the player sprite
