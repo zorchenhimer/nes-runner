@@ -230,29 +230,41 @@ bg_DrawColumn:
 ;   Five more bytes of two tiles each.
 ;   Last tile row is drawn as one "transition line" between the background and forground.
 
-bg_meta_City_01:    .byte $10, $00, $12, $32, $32, $32
-bg_meta_City_02:    .byte $20, $00, $12, $32, $32, $32
-bg_meta_City_03:    .byte $20, $00, $00, $15, $45, $45 ;, [...]
+bg_meta_City_A_Left:    .byte $10, $00, $01, $23, $23, $23
+bg_meta_City_A_Right:   .byte $20, $00, $01, $23, $23, $23
+bg_meta_City_03:        .byte $10, $00, $00, $15, $45, $45 ;, [...]
+bg_meta_City_B_Left:    .byte $10, $06, $78, $98, $98, $98
+bg_meta_City_B_Right:   .byte $20, $06, $78, $98, $98, $98
+bg_meta_City_C_Left:    .byte $10, $67, $89, $89, $89, $89
+bg_meta_City_C_Right:   .byte $20, $67, $89, $89, $89, $89
+bg_meta_City_D_Left:    .byte $10, $00, $00, $00, $AB, $AB
+bg_meta_City_D_Right:   .byte $20, $00, $00, $00, $AB, $AB
 
 bg_meta_City_Lookup:
-    .word bg_meta_City_01
-    .word bg_meta_City_02
+    .word bg_meta_City_A_Left
+    .word bg_meta_City_A_Right
     .word bg_meta_City_03
+    .word bg_meta_City_B_Left
+    .word bg_meta_City_B_Right
+    .word bg_meta_City_C_Left
+    .word bg_meta_City_C_Right
+    .word bg_meta_City_D_Left
+    .word bg_meta_City_D_Right
 
 ; TODO: combine these bytes just like the meta column definitions above
 ;       (ie, two IDs per byte)
 bg_data_City:
-    .byte $00, $01, $02, $01, $00, $01, $00, $01
-    .byte $00, $01, $02, $01, $00, $01, $00, $01
-    .byte $00, $01, $02, $01, $00, $01, $00, $01
-    .byte $00, $01, $02, $01, $00, $01, $00, $01
-    .byte $00, $01, $02, $01, $00, $01, $00, $01
-    .byte $00, $01, $02, $01, $00, $01, $00, $01
-    .byte $00, $01, $02, $01, $00, $01, $00, $01
-    .byte $00, $01, $02, $01, $00, $01, $00, $01
+    .byte $00, $01, $02, $03, $04, $01, $05, $06
+    .byte $00, $01, $02, $03, $04, $01, $05, $06
+    .byte $00, $01, $02, $03, $04, $01, $05, $06
+    .byte $00, $01, $02, $03, $04, $07, $08, $06
+    .byte $00, $01, $02, $03, $04, $01, $05, $06
+    .byte $00, $01, $02, $03, $04, $01, $05, $06
+    .byte $00, $01, $02, $03, $04, $01, $05, $06
+    .byte $00, $01, $02, $03, $04, $01, $05, $06
 
     ; Palette data
-    .byte $0F,$04,$34,$1A ;$24
+    .byte $1A,$04,$34,$0F ;$24
 
     ; Start byte for the four transition tiles
     .byte $70
