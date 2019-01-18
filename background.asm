@@ -142,7 +142,7 @@ DrawBackground:
 
     lda (bg_data_pointer), y
     sta TmpCounter
-    ldx #17
+    ldx #16
 @transitionLoop:
 
     ldy TmpCounter
