@@ -34,25 +34,27 @@ InitSeed:
     lda #PPU_CTRL_VERT
     sta $2000
 
+    ; Rando button; left column
     bit $2000
     lda #$21
     sta $2006
     lda #$86
     sta $2006
 
-    lda #$22
+    lda #$EE
     sta $2007
-    lda #$32
+    lda #$FE
     sta $2007
 
+    ; Rando button; right column
     lda #$21
     sta $2006
     lda #$87
     sta $2006
 
-    lda #$23
+    lda #$EF
     sta $2007
-    lda #$33
+    lda #$FF
     sta $2007
 
     lda #$21
