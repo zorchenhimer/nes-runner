@@ -238,7 +238,12 @@ bg_meta_City_B_Right:   .byte $20, $06, $78, $98, $98, $98
 bg_meta_City_C_Left:    .byte $10, $67, $89, $89, $89, $89
 bg_meta_City_C_Right:   .byte $20, $67, $89, $89, $89, $89
 bg_meta_City_D_Left:    .byte $10, $00, $00, $00, $AB, $AB
-bg_meta_City_D_Right:   .byte $20, $00, $00, $00, $AB, $AB
+bg_meta_City_D_Right:   .byte $20, $00, $00, $CD, $AB, $AB
+bg_meta_City_E_Left:    .byte $10, $00, $00, $CD, $BA, $BA
+bg_meta_City_E_Right:   .byte $20, $00, $00, $00, $BA, $BA
+bg_meta_City_F_Left:    .byte $10, $00, $00, $32, $32, $32
+bg_meta_City_F_Right:   .byte $20, $00, $00, $32, $32, $32
+bg_meta_City_G:         .byte $20, $00, $00, $03, $23, $23
 
 bg_meta_City_Lookup:
     .word bg_meta_City_A_Left
@@ -246,22 +251,29 @@ bg_meta_City_Lookup:
     .word bg_meta_City_03
     .word bg_meta_City_B_Left
     .word bg_meta_City_B_Right
+
     .word bg_meta_City_C_Left
     .word bg_meta_City_C_Right
     .word bg_meta_City_D_Left
     .word bg_meta_City_D_Right
+    .word bg_meta_City_E_Left
+
+    .word bg_meta_City_E_Right
+    .word bg_meta_City_F_Left
+    .word bg_meta_City_F_Right
+    .word bg_meta_City_G
 
 ; TODO: combine these bytes just like the meta column definitions above
 ;       (ie, two IDs per byte)
 bg_data_City:
+    .byte $00, $01, $02, $03, $04, $01, $0B, $0C
     .byte $00, $01, $02, $03, $04, $01, $05, $06
+    .byte $0B, $0C, $0D, $03, $04, $01, $05, $06
+    .byte $00, $01, $02, $03, $04, $07, $08, $09
+    .byte $0A, $02, $01, $03, $04, $01, $05, $06
+    .byte $03, $04, $00, $01, $02, $01, $0B, $0C
     .byte $00, $01, $02, $03, $04, $01, $05, $06
-    .byte $00, $01, $02, $03, $04, $01, $05, $06
-    .byte $00, $01, $02, $03, $04, $07, $08, $06
-    .byte $00, $01, $02, $03, $04, $01, $05, $06
-    .byte $00, $01, $02, $03, $04, $01, $05, $06
-    .byte $00, $01, $02, $03, $04, $01, $05, $06
-    .byte $00, $01, $02, $03, $04, $01, $05, $06
+    .byte $0B, $0C, $0D, $03, $04, $01, $0B, $0C
 
     ; Palette data
     .byte $1A,$04,$34,$0F ;$24
