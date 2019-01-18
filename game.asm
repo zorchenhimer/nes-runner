@@ -1079,17 +1079,19 @@ MetaTiles:
     .word Meta_Nothing
     .word Meta_Obstacle
     .word Meta_Pit
+    .word Meta_FireHydrant
 
 ; Game Meta Tiles
-G_MC_BACKGROUND = $00
-G_MC_GROUND     = $01
-G_MC_PIT_LEFT   = $02
-G_MC_PIT_RIGHT  = $03
+G_MC_BACKGROUND     = $00
+G_MC_GROUND         = $01
+G_MC_PIT_LEFT       = $02
+G_MC_PIT_RIGHT      = $03
 G_MC_PIT_LEFT_BOTTOM   = $04
 G_MC_PIT_RIGHT_BOTTOM  = $05
-G_MC_NOTHIN     = $06
-G_MC_OBS        = $07
-G_MC_PIT        = $08
+G_MC_NOTHIN         = $06
+G_MC_OBS            = $07
+G_MC_PIT            = $08
+G_MC_FIREHYDRANT    = $09
 
 ; used for RNG
 ; TODO: Make this list 16 entries long. Use both bytes of RNG for
@@ -1100,14 +1102,14 @@ MetaColumn_Definitions:
     .word MetaColumn_HalfWall
     .word MetaColumn_DoubleWall
     .word MetaColumn_PitWall
-    .word MetaColumn_DoubleWall
+    .word MetaColumn_HalfWall
     .word MetaColumn_Pit
     .word MetaColumn_Nothin
 
     .word MetaColumn_Nothin
     .word MetaColumn_Wall
     .word MetaColumn_WallPitWide
-    .word MetaColumn_DoubleWall
+    .word MetaColumn_HalfWall
     .word MetaColumn_PitWallWide
     .word MetaColumn_DoubleWall
     .word MetaColumn_Pit
@@ -1149,7 +1151,7 @@ MetaColumn_PitWallWide:
     .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_PIT_RIGHT, G_MC_PIT_RIGHT_BOTTOM
 MetaColumn_HalfWall:
     .byte $01
-    .byte G_MC_BACKGROUND, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
+    .byte G_MC_BACKGROUND, G_MC_FIREHYDRANT, G_MC_GROUND, G_MC_GROUND
 
 ; Tile indicies
 Meta_Sky:
@@ -1170,6 +1172,8 @@ Meta_Pit_Right_Bottom:
     .byte $A3, $B3, $A1, $B1
 Meta_Nothing:
     .byte $00, $00, $00, $00
+Meta_FireHydrant:
+    .byte $84, $94, $85, $95
 
 PAUSED_X    = 104
 PAUSED_Y    = 25
