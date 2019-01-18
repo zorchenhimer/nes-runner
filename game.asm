@@ -25,7 +25,24 @@ Game_Init:
     sta PaletteAddr+1
     jsr LoadPalettes
 
-    lda #0  ; background theme ID
+    lda #$24
+    sta bg_ZNT1
+
+    lda #$20
+    sta bg_XNTSwitch
+    sta bg_ZNT0
+
+    lda #$21
+    sta bg_TransHigh0
+
+    lda #$25
+    sta bg_TransHigh1
+
+    lda #$60
+    sta bg_TransLow
+
+    lda #$00  ; background theme ID
+    sta bg_XStart
     jsr DrawBackground
 
     bit $2000

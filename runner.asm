@@ -169,6 +169,15 @@ bg_data_pointer:        .res 2
 bg_lookup_pointer:      .res 2
 bg_lookup_data_pointer: .res 2
 
+bg_XStart:      .res 1
+bg_XNTSwitch:   .res 1
+bg_ZNT0:        .res 1
+bg_ZNT1:        .res 1
+
+bg_TransHigh0:  .res 1
+bg_TransHigh1:  .res 1
+bg_TransLow:    .res 1
+
 .segment "SAVERAM"
     ; battery backed RAM
 rng_seed:       .res 2

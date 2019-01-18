@@ -22,18 +22,19 @@ bg_WriteByte:
     sta TmpY
 
     inc TmpX
+
     lda TmpX
-    cmp #32
+    cmp bg_XNTSwitch ;#32
     bne @noNTChange
 
     ; Set second nametable
-    lda #$24
+    lda bg_ZNT1
     sta TmpZ
 
     lda #12
     sta TmpY
 
-    lda #0
+    lda bg_XStart
     sta TmpX
 
 @noNTChange:
@@ -65,11 +66,11 @@ DrawBackground:
     lda #13
     sta TmpY    ; row - Counts down from 12. on zero, increment TmpX.
 
-    lda #$20
+    lda bg_ZNT0
     sta TmpZ    ; nametable
     sta $2006
 
-    lda #0
+    lda bg_XStart
     sta TmpX    ; column - max of 32 per nametable
     sta $2006
 
@@ -135,9 +136,9 @@ DrawBackground:
 ; because it doesn't align with the attribute table.  Instead,
 ; use the last (unused) byte of the background palette.
     bit $2002
-    lda #$21
+    lda bg_TransHigh0
     sta $2006
-    lda #$60
+    lda bg_TransLow
     sta $2006
 
     lda (bg_data_pointer), y
@@ -171,9 +172,9 @@ DrawBackground:
     dex
 
     bit $2002
-    lda #$25
+    lda bg_TransHigh1
     sta $2006
-    lda #$60
+    lda bg_TransLow
     sta $2006
     jmp @transitionLoop
 
