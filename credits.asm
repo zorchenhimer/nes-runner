@@ -2,7 +2,8 @@
 ;   Fix attribute stuff. doesn't write to the correct addresses.  Cache it on load.
 ;       it's also writing the attr row twice?  rows colors are four tiles high, for some reason.
 
-CLEAR_TILE_ID = ' '
+CLEAR_TILE_ID   = ' '
+CR_T2_SPEED     = 8
 
 Credits_Init:
     ; - Clear backgound for both nametables
@@ -60,6 +61,13 @@ Credits_Init:
 
     lda #32
     sta cr_nextChunkWait
+
+    lda #$21
+    sta TitleColor
+    lda #0
+    sta TitleColor2
+    lda #CR_T2_SPEED
+    sta cr_t2Count
 
     ; reset scroll
     bit $2001
@@ -464,7 +472,59 @@ cr_OPCodes:
     ; padding to fix the dissassembly in the debugger
     .byte $EA, $EA
 
+cr_colors_T2:
+    .byte $00
+
+cr_colors_T3:
+    .byte $00
+
+cr_TierColors:
+    lda cr_t2Count
+    bne @t3check
+
+    lda #CR_T2_SPEED
+    sta cr_t2Count
+
+; Tier two color
+    inc TitleColor2
+    ldx TitleColor2
+    cpx #6
+    bne :+
+    ldx #0
+    stx TitleColor2
+
+:
+    lda Credits_Tier2, x
+    sta PaletteRAM+26
+
+@t3check:
+    dec cr_t2Count
+
+    lda frame_odd
+    bne :+
+    lda #1
+    sta frame_odd
+    rts
+
+:   lda #0
+    sta frame_odd
+
+; Tier three color
+    inc TitleColor
+    lda TitleColor
+    cmp #$2C
+    bne :+
+    lda #$21
+    sta TitleColor
+:
+    lda TitleColor
+    sta PaletteRAM+22
+
+    rts
+
 Credits_Frame:
+    jsr cr_TierColors
+
     lda #BUTTON_START
     jsr ButtonPressedP1
     beq @nobutton
@@ -553,3 +613,6 @@ PPU_AttrLookup_Low:
 Credits_Palette:
     .byte $0F,$30,$13,$33, $0F,$05,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F
     .byte $0F,$30,$13,$0F, $0F,$05,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F
+
+Credits_Tier2:
+    .byte $03, $13, $23, $33, $23, $13

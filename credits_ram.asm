@@ -23,6 +23,7 @@ cr_tileBufferOffset:    .res 1
 cr_AttributeByte:       .res 1
 cr_AttributeAddress:    .res 2
 cr_loopCounter:         .res 1
+cr_t2Count:             .res 1
 
 Credits_NameCount = (credits_data_chunks_end - credits_data_chunks) / 2
 
