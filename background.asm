@@ -87,15 +87,31 @@ DrawBackground:
     sta bg_lookup_pointer+1
 
     lda #0
+    sta frame_odd
     sta TmpCounter
-@loop:
+@bg_loop:
     ldy TmpCounter
+    lda frame_odd
+    beq @firstHalf
+    ; second half of data byte
+
     ; load column metadata id
     ; eg, an ID out of the bg_data_City table
     lda (bg_data_pointer), y
-    asl a
+    and #$0F
+    asl a   ; offset for a word table
+    tay
+    jmp @readData
+
+@firstHalf:
+    lda (bg_data_pointer), y
+    and #$F0
+    lsr a   ; offset for a word table
+    lsr a
+    lsr a
     tay
 
+@readData:
     ; Lookup the ID from above in bg_meta_City_Lookup table
     lda (bg_lookup_pointer), y
     tax
@@ -113,11 +129,21 @@ DrawBackground:
     ; Draw a column of 11 (+1 duplicate) tiles
     jsr bg_DrawColumn
 
+    lda frame_odd
+    bne @IncIndex
+    lda #1
+    sta frame_odd
+    jmp @bg_loop
+
+@IncIndex:
+    lda #0
+    sta frame_odd
+
     ; Draw 64 columns of tiles
     inc TmpCounter
     ldy TmpCounter
-    cpy #64
-    bne @loop
+    cpy #32
+    bne @bg_loop
 
     lda #PPU_CTRL_HORIZ
     sta $2000
@@ -129,7 +155,7 @@ DrawBackground:
     sta PaletteRAM, x
     dex
     iny
-    cpy #68
+    cpy #36
     bne :-
 
 ; This is the transition row, but I cannot assign a palette to it
@@ -231,6 +257,7 @@ bg_DrawColumn:
 ;   Five more bytes of two tiles each.
 ;   Last tile row is drawn as one "transition line" between the background and forground.
 
+; pointed to by bg_lookup_data_pointer
 bg_meta_City_A_Left:    .byte $10, $00, $01, $23, $23, $23
 bg_meta_City_A_Right:   .byte $20, $00, $01, $23, $23, $23
 bg_meta_City_03:        .byte $10, $00, $00, $15, $45, $45 ;, [...]
@@ -246,6 +273,7 @@ bg_meta_City_F_Left:    .byte $10, $00, $00, $32, $32, $32
 bg_meta_City_F_Right:   .byte $20, $00, $00, $32, $32, $32
 bg_meta_City_G:         .byte $20, $00, $00, $03, $23, $23
 
+; pointed to by bg_lookup_pointer
 bg_meta_City_Lookup:
     .word bg_meta_City_A_Left
     .word bg_meta_City_A_Right
@@ -264,17 +292,17 @@ bg_meta_City_Lookup:
     .word bg_meta_City_F_Right
     .word bg_meta_City_G
 
-; TODO: combine these bytes just like the meta column definitions above
-;       (ie, two IDs per byte)
+; pointed to by bg_data_pointer
+; Each byte contains two tile columns
 bg_data_City:
-    .byte $00, $01, $02, $03, $04, $01, $0B, $0C
-    .byte $00, $01, $02, $03, $04, $01, $05, $06
-    .byte $0B, $0C, $0D, $03, $04, $01, $05, $06
-    .byte $00, $01, $02, $03, $04, $07, $08, $09
-    .byte $0A, $02, $01, $03, $04, $01, $05, $06
-    .byte $03, $04, $00, $01, $02, $01, $0B, $0C
-    .byte $00, $01, $02, $03, $04, $01, $05, $06
-    .byte $0B, $0C, $0D, $03, $04, $01, $0B, $0C
+    .byte $01, $23, $41, $BC
+    .byte $01, $23, $41, $56
+    .byte $BC, $D3, $41, $56
+    .byte $01, $23, $47, $89
+    .byte $A2, $13, $41, $56
+    .byte $34, $01, $21, $BC
+    .byte $01, $23, $41, $56
+    .byte $BC, $D3, $41, $BC
 
     ; Palette data
     .byte $1A,$04,$34,$0F ;$24
