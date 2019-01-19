@@ -258,17 +258,17 @@ bg_DrawColumn:
 ;   Last tile row is drawn as one "transition line" between the background and forground.
 
 ; pointed to by bg_lookup_data_pointer
-bg_meta_City_A_Left:    .byte $10, $00, $01, $23, $23, $23
-bg_meta_City_A_Right:   .byte $20, $00, $01, $23, $23, $23
+bg_meta_City_A_Left:    .byte $10, $00, $01, $AB, $23, $AB
+bg_meta_City_A_Right:   .byte $20, $00, $01, $AB, $23, $AB
 bg_meta_City_03:        .byte $10, $00, $00, $15, $45, $45 ;, [...]
 bg_meta_City_B_Left:    .byte $10, $06, $78, $98, $98, $98
 bg_meta_City_B_Right:   .byte $20, $06, $78, $98, $98, $98
 bg_meta_City_C_Left:    .byte $10, $67, $89, $89, $89, $89
 bg_meta_City_C_Right:   .byte $20, $67, $89, $89, $89, $89
-bg_meta_City_D_Left:    .byte $10, $00, $00, $00, $AB, $AB
-bg_meta_City_D_Right:   .byte $20, $00, $00, $CD, $AB, $AB
-bg_meta_City_E_Left:    .byte $10, $00, $00, $CD, $BA, $BA
-bg_meta_City_E_Right:   .byte $20, $00, $00, $00, $BA, $BA
+bg_meta_City_D_Left:    .byte $30, $00, $00, $00, $12, $12
+bg_meta_City_D_Right:   .byte $40, $00, $00, $34, $12, $12
+bg_meta_City_E_Left:    .byte $30, $00, $00, $34, $21, $21
+bg_meta_City_E_Right:   .byte $40, $00, $00, $00, $21, $21
 bg_meta_City_F_Left:    .byte $10, $00, $00, $32, $32, $32
 bg_meta_City_F_Right:   .byte $20, $00, $00, $32, $32, $32
 bg_meta_City_G:         .byte $20, $00, $00, $03, $23, $23
