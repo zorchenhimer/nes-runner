@@ -2,6 +2,8 @@
 ;   Fix attribute stuff. doesn't write to the correct addresses.  Cache it on load.
 ;       it's also writing the attr row twice?  rows colors are four tiles high, for some reason.
 
+CLEAR_TILE_ID = ' '
+
 Credits_Init:
     ; - Clear backgound for both nametables
     ; - Update palettes
@@ -36,42 +38,13 @@ Credits_Init:
 
     jsr ClearAttrTable0
     jsr ClearAttrTable2
+    jsr ClearSprites
 
     lda #0
     sta cr_chunkCurrent
 
     lda #$23
     sta cr_AttributeAddress
-
-    clc
-    ; Setup some debug sprites
-    ; X
-    lda #$10
-    sta sprites+3
-    sta sprites+7
-    sta sprites+11
-
-    ; Y
-    lda #$10
-    sta sprites
-    adc #$10
-    sta sprites+4
-    adc #$10
-    sta sprites+8
-
-    ; Tiles
-    lda #'1'
-    sta sprites+1
-    lda #'2'
-    sta sprites+5
-    lda #'3'
-    sta sprites+9
-
-    ; Attributes
-    lda #$01
-    sta sprites+6
-    lda #$02
-    sta sprites+10
 
 ; Fill the screen with names
     lda #30
@@ -94,12 +67,12 @@ Credits_Init:
     sta $2005
     sta $2005
 
-    ;lda #%00011110
-    ;sta $2001
+    lda #%00011110
+    sta $2001
     lda #CR_TOP
     sta cr_scroll_table
     lda #0
-    ;sta SkipNMI
+    sta SkipNMI
     rts
 
 Credits_WriteAttr:
@@ -120,6 +93,27 @@ Credits_WriteAttr:
 
     lda #0
     sta cr_AttributeByte
+
+    lda cr_AttributeAddress+1
+    cmp #$F8
+    beq :+
+    rts
+
+:   lda cr_AttributeAddress
+    cmp #$23
+    bne @firstNT
+    jmp @secondNT
+
+@firstNT:
+    lda #$23
+    sta cr_AttributeAddress
+    jmp @done
+
+@secondNT:
+    lda #$2B
+    sta cr_AttributeAddress
+
+@done:
     rts
 
 ; Write the TileBuffer to the PPU
@@ -222,8 +216,7 @@ cr_Decode_Opcode:
     ; jump to op code subroutine
     rts
 
-; Add 32 bytes of Spaces to the tile buffer
-cr_op_ClearRow:
+cr_ClearRow:
     ldx cr_tileBufferOffset
     ldy #32
     lda #CLEAR_TILE_ID
@@ -239,7 +232,11 @@ cr_op_ClearRow:
     sta cr_tileBufferOffset
 
     lda #1
-    jsr cr_Decode_Opcode_IncAddr
+    jmp cr_Decode_Opcode_IncAddr
+
+; Add 32 bytes of Spaces to the tile buffer
+cr_op_ClearRow:
+    jsr cr_ClearRow
     jmp cr_Decode_Opcode
 
 ; Start at the given byte and increment N times
@@ -317,6 +314,10 @@ cr_op_RunLength:
 
 ; Dump a list of bytes to the buffer
 cr_op_ByteList:
+    jsr cr_ByteList
+    jmp cr_Decode_Opcode
+
+cr_ByteList:
     lda #1
     jsr cr_Decode_Opcode_IncAddr
     ldx cr_tileBufferOffset
@@ -340,28 +341,20 @@ cr_op_ByteList:
     inc cr_tmpByte
     lda cr_tmpByte
     jsr cr_Decode_Opcode_IncAddr
-    jmp cr_Decode_Opcode
+    rts
 
 cr_op_Attr:
-    lda cr_currentAttrOffset
-    tax
-
-    lda PPU_AttrLookup_Low, x
-    sta cr_AttributeAddress+1
-
     lda #1
     jsr cr_Decode_Opcode_IncAddr
-
-    ldy #0
-    lda cr_currentAttrOffset
-    cmp #7
-    beq @lastRow
-    cmp #15
-    beq @lastRow
 
     lda cr_AttrSecondWrite
     bne @secondWrite
 
+    lda cr_currentAttrOffset
+    cmp #7
+    beq @lastRow
+
+    ldy #0
     lda (cr_chunkAddress), y
     sta cr_AttributeByte
 
@@ -379,11 +372,18 @@ cr_op_Attr:
     ora cr_AttributeByte
     sta cr_AttributeByte
 
+    ldx cr_currentAttrOffset
+
+    lda PPU_AttrLookup_Low, x
+    sta cr_AttributeAddress+1
+
     lda #$FF
     sta cr_AttributeReady
     lda #0
     sta cr_AttrSecondWrite
-    jmp @overLast
+
+    inc cr_currentAttrOffset
+    rts
 
 @lastRow:
     ldy #0
@@ -398,34 +398,58 @@ cr_op_Attr:
     ora cr_AttributeByte
     sta cr_AttributeByte
 
-@overLast:
-    inc cr_currentAttrOffset
-    lda cr_currentAttrOffset
-    cmp #8
-    bcc @noWrap
+    ldx cr_currentAttrOffset
+    lda PPU_AttrLookup_Low, x
+    sta cr_AttributeAddress+1
+
+    ; wrap to the next nametable
     lda #0
     sta cr_currentAttrOffset
 
-    lda cr_AttributeAddress
-    cmp #$23
-    bne @other
-    jmp @secondNT
-
-@other:
-    lda #$23
-    sta cr_AttributeAddress
-    jmp @noWrap
-
-@secondNT:
-    lda #$2B
-    sta cr_AttributeAddress
-
-@noWrap:
     lda #$FF
     sta cr_AttributeReady
-    rts
 
 cr_op_EndOfData:
+    rts
+
+cr_op_Name:
+    ; Clear the row, prefix spaces, suffix spaces, attribute, name data
+    jsr cr_ClearRow
+
+    ; prefix
+    ldy #0
+    lda (cr_chunkAddress), y
+    sta cr_loopCounter
+    lda #CR_PADDING
+    ldx cr_tileBufferOffset
+:
+    sta TileBuffer, x
+    inx
+    dec cr_loopCounter
+    bne :-
+    stx cr_tileBufferOffset
+
+    lda #1
+    jsr cr_Decode_Opcode_IncAddr
+
+    ; suffix
+    ldy #0
+    lda (cr_chunkAddress), y
+    pha ; store this for later
+
+    jsr cr_op_Attr
+    jsr cr_ByteList
+
+    pla
+    sta cr_loopCounter
+    lda #CR_PADDING
+    ldx cr_tileBufferOffset
+:
+    sta TileBuffer, x
+    inx
+    dec cr_loopCounter
+    bne :-
+
     rts
 
 cr_OPCodes:
@@ -435,6 +459,7 @@ cr_OPCodes:
     .word cr_op_RunLength-1
     .word cr_op_ByteList-1
     .word cr_op_Attr-1
+    .word cr_op_Name-1
 
     ; padding to fix the dissassembly in the debugger
     .byte $EA, $EA
@@ -526,5 +551,5 @@ PPU_AttrLookup_Low:
     .byte $C0, $C8, $D0, $D8, $E0, $E8, $F0, $F8
 
 Credits_Palette:
-    .byte $0F,$30,$13,$33, $0F,$13,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F
+    .byte $0F,$30,$13,$33, $0F,$05,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F
     .byte $0F,$30,$13,$0F, $0F,$05,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F

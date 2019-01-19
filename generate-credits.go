@@ -30,6 +30,7 @@ const (
     CR_OP_RLE       // Run Length Encoded
     CR_OP_BYTE_LIST // List of bytes, NULL terminated
     CR_OP_ATTR      // One bite value for the row, as well as End of Data
+    CR_OP_NAME
 )
 
 type GenericChunk struct {
@@ -55,7 +56,7 @@ func (c *GenericChunk) AsmString(num int) string {
         comment = "; " + c.Comment + "\n"
     }
 
-    return fmt.Sprintf("%scredits_data_chunk_%02d:\n    %s", comment, num, strings.Join(codestrings, "\n    "))
+    return fmt.Sprintf("%scredits_data_chunk_%02d:\n    %s\n", comment, num, strings.Join(codestrings, "\n    "))
 
 }
 
@@ -165,7 +166,7 @@ func NewSub(row []string) (*Subscriber, error) {
         Tier: 1,
     }
 
-    switch(row[2][:1]) {
+    switch(string(row[2][5])) {
     case "2":
         sub.Tier = 2
     case "3":
@@ -176,10 +177,8 @@ func NewSub(row []string) (*Subscriber, error) {
 }
 
 const asmTemplate = `credits_data_chunk_%02d:
-    .byte CR_OP_CLEAR_ROW
-    .byte CR_OP_RLE, %d, ` + CLEAR_TILE_ID + `
-    .byte CR_OP_BYTE_LIST, "%s", $00
-    .byte CR_OP_RLE, %d, ` + CLEAR_TILE_ID
+    .byte CR_OP_NAME, %d, %d, $%02X, %q, $00
+`  // prefix, suffix, attribute, name
 
 func (s *Subscriber) AsmString(num int) string {
     length := len(s.Username)
@@ -192,9 +191,12 @@ func (s *Subscriber) AsmString(num int) string {
         panic(fmt.Sprintf("Chunklength is not 64 bytes (%d)! %q length:%d offset:%d trailing:%d half:%d", chunkLength, s.Username, length, offset, trailing, half))
     }
 
-    //tier_attr := s.Tier - 1
+    tier_attr := s.Tier - 1
+    //attr = s.AttributeValue()
+    //attr = attr << uint(2) | s.AttributeValue()
+    tier_attr = tier_attr << uint(2) | s.Tier - 1
 
-    return fmt.Sprintf(asmTemplate, num, offset, s.Username, trailing)//, tier_attr)
+    return fmt.Sprintf(asmTemplate, num, offset, trailing, tier_attr, s.Username)
 }
 
 func (s Subscriber) AttributeValue() uint {
@@ -288,38 +290,33 @@ func main() {
         subList = []DataChunk{
 
             &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"Almost Second", now, 1},
             &Subscriber{"Second", now, 2},
             &Subscriber{"Third", now, 3},
             &Subscriber{"First", now, 1},
-            &Subscriber{"Second", now, 2},
-            &Subscriber{"Third", now, 3},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
+            &Subscriber{"First", now, 1},
             &Subscriber{"First", now, 1},
             &Subscriber{"Second", now, 2},
-            &Subscriber{"Third", now, 3},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"Second", now, 2},
-            &Subscriber{"Third", now, 3},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"Second", now, 2},
-            &Subscriber{"Third", now, 3},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"Second", now, 2},
-            &Subscriber{"Third", now, 3},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"Second", now, 2},
-            &Subscriber{"Third", now, 3},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"Second", now, 2},
-            &Subscriber{"Third", now, 3},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"Second", now, 2},
-            &Subscriber{"Third", now, 3},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"Second", now, 2},
-            &Subscriber{"Third", now, 3},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"Second", now, 2},
-            &Subscriber{"Third", now, 3},
+
             //&Subscriber{"01 Connie Klein", now, 1},
             //&Subscriber{"02 Stephanie Blake", now, 1},
             //&Subscriber{"03 Rosie Burgess", now, 1},
@@ -397,6 +394,8 @@ func main() {
                     NewGenericData(CR_OP_INC_BYTE, 15, []byte{0x80}),
                     // padding
                     NewGenericData(CR_OP_RLE, 7, []byte(" ")),
+                    // attribute
+                    NewGenericData(CR_OP_ATTR, 0, []byte{0x0}),
                 },
         },
         // bottom half of header
@@ -414,6 +413,8 @@ func main() {
                     NewGenericData(CR_OP_RLE, 7, []byte(" ")),
                     // blank row
                     NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
+                    // attribute
+                    NewGenericData(CR_OP_ATTR, 0, []byte{0x0}),
                 },
         },
     }
@@ -425,6 +426,8 @@ func main() {
             OpCodes:    []*GenericData{
                 NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
                 NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
+                // attribute
+                NewGenericData(CR_OP_ATTR, 0, []byte{0x0}),
             },
         },
         &Subscriber{"Thank you!!", now, 1},
@@ -434,6 +437,8 @@ func main() {
             OpCodes:    []*GenericData{
                 NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
                 NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
+                // attribute
+                NewGenericData(CR_OP_ATTR, 0, []byte{0x0}),
             },
         },
         &GenericChunk{
@@ -442,6 +447,8 @@ func main() {
             OpCodes:    []*GenericData{
                 NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
                 NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
+                // attribute
+                NewGenericData(CR_OP_ATTR, 0, []byte{0x0}),
             },
         },
     }
@@ -462,11 +469,11 @@ func main() {
     fmt.Fprintln(outFile, "credits_data_chunks_end:\n")
 
     count := 0
-    attr := uint(0)
+    //attr := uint(0)
     for i, s := range allChunks {
         // calculate the attribute byte
-        attr = s.AttributeValue()
-        attr = attr << uint(2) | s.AttributeValue()
+        //attr = s.AttributeValue()
+        //attr = attr << uint(2) | s.AttributeValue()
 
         if verbose { fmt.Printf("  %02d %s\n", i, s.String()); }
         fmt.Fprintln(outFile, s.AsmString(i))
@@ -484,8 +491,8 @@ func main() {
             //attr = attrA | attrB
 
             // Print the attribute OP code
-            fmt.Fprintf(outFile, "    .byte CR_OP_ATTR, $%02X\n\n", attr)
-            if verbose { fmt.Printf("Attribute byte: %02X\n", attr) }
+            //fmt.Fprintf(outFile, "    .byte CR_OP_ATTR, $%02X\n\n", attr)
+            //if verbose { fmt.Printf("Attribute byte: %02X\n", attr) }
         //}
         count += 1
     }
