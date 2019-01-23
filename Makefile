@@ -57,9 +57,9 @@ bin/$(NAME).o: bin/ $(SOURCES) $(CHR)
 bin/$(NAME).nes: bin/$(NAME).o $(NESCFG)
 	$(LD) -o bin/$(NAME).nes \
 		-C $(NESCFG) \
-		-m bin/$(NAME).nes.map -vm \
+		-m bin/$(NAME).map -vm \
 		-Ln bin/$(NAME).labels \
-		--dbgfile bin/$(NAME).nes.dbg \
+		--dbgfile bin/$(NAME).dbg \
 		bin/$(NAME).o
 
 credits_data.i:
