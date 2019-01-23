@@ -1,3 +1,6 @@
+; TODO:
+;   add an option to only draw the background on one nametable. (to be used on the title screen transition)
+
 ; Master id of themes
 Background_Themes:
     .word bg_data_City
@@ -184,7 +187,6 @@ DrawBackground:
     iny
     tya
     sta $2007
-
 
     cpx #9
     beq @secondNT

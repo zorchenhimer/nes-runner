@@ -1,13 +1,11 @@
 ; TODO
+;   High Scores table
+;       new high score notification
+;       scores for a given seed?
 ;   Better map generation
 ;   Game states and substates
-;       menu stuff
-;           high scores
-;           new high score
 ;   Player Sprite
-;   Background art (mountains or some shit.  happy little trees?)
-;   High Scores table
-;       needs to be finished/populated
+;   more Background art (mountains or some shit.  happy little trees?)
 ;   Sound engine
 
 ; Just prints stuff.  Eventually this will be used with the sound engine 
@@ -280,7 +278,7 @@ RESET:
     bpl @vblankwait2
 
 ; Main init
-    jsr MMC1_Setup
+    jsr MMC1_Setup_Vert
     jsr MMC1_Page0
 
     jsr ClearNametable0
@@ -407,24 +405,17 @@ NMI_skip:
 IRQ:
     rti
 
-MMC1_Setup:
+MMC1_Setup_Vert:
     ; control stuff
     ; vertical mirroring, switchable $8000, fixed $C000, chr 8k
     ; %0000 1110
     lda #%00001110
-    sta $8000
-    lsr a
-    sta $8000
-    lsr a
-    sta $8000
-    lsr a
-    sta $8000
-    lsr a
-    sta $8000
-    rts
+    jmp MMC1_Setup
 
 MMC1_Setup_Horiz:
     lda #%00001111
+
+MMC1_Setup:
     sta $8000
     lsr a
     sta $8000
@@ -439,34 +430,18 @@ MMC1_Setup_Horiz:
 MMC1_Page0:
     ; select bank PRG 0, enable RAM
     lda #%00000000
-    sta $E000
-    lsr a
-    sta $E000
-    lsr a
-    sta $E000
-    lsr a
-    sta $E000
-    lsr a
-    sta $E000
-    rts
+    jmp MMC1_Page
 
 MMC1_Page1:
     ; select bank PRG 1, enable RAM
     lda #%00000001
-    sta $E000
-    lsr a
-    sta $E000
-    lsr a
-    sta $E000
-    lsr a
-    sta $E000
-    lsr a
-    sta $E000
-    rts
+    jmp MMC1_Page
 
 MMC1_Page2:
     ; select bank PRG 2, enable RAM
     lda #%00000010
+
+MMC1_Page:
     sta $E000
     lsr a
     sta $E000
@@ -481,20 +456,13 @@ MMC1_Page2:
 MMC1_Pattern0:
     ; select CHR 0
     lda #%00000000
-    sta $A000
-    lsr a
-    sta $A000
-    lsr a
-    sta $A000
-    lsr a
-    sta $A000
-    lsr a
-    sta $A000
-    rts
+    jmp MMC1_Pattern
 
 MMC1_Pattern1:
     ; select CHR 1
     lda #%00000010
+
+MMC1_Pattern:
     sta $A000
     lsr a
     sta $A000
@@ -510,7 +478,7 @@ ChangeGameState:
     lda #0
     sta gamestate_changed
 
-    jsr MMC1_Setup
+    jsr MMC1_Setup_Vert
 
     bit current_gamestate
     bvs @title
