@@ -1,3 +1,5 @@
+CLEAR_ATTR_ID = $00
+
 ; Was a button pressed this frame?
 ButtonPressedP1:
     sta btnPressedMask
@@ -146,7 +148,7 @@ FillNametable3:
     jmp utils_ClearNametable
 
 ClearNametable0:
-    lda #' '
+    lda #CLEAR_TILE_ID
     sta clear_nt_tile
 
     bit $2002
@@ -155,7 +157,7 @@ ClearNametable0:
     jmp utils_ClearNametable
 
 ClearNametable1:
-    lda #' '
+    lda #CLEAR_TILE_ID
     sta clear_nt_tile
 
     bit $2002
@@ -164,7 +166,7 @@ ClearNametable1:
     jmp utils_ClearNametable
 
 ClearNametable2:
-    lda #' '
+    lda #CLEAR_TILE_ID
     sta clear_nt_tile
 
     bit $2002
@@ -173,7 +175,7 @@ ClearNametable2:
     jmp utils_ClearNametable
 
 ClearNametable3:
-    lda #' '
+    lda #CLEAR_TILE_ID
     sta clear_nt_tile
 
     bit $2002

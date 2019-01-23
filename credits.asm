@@ -1,9 +1,6 @@
-; TODO:
-;   Fix attribute stuff. doesn't write to the correct addresses.  Cache it on load.
-;       it's also writing the attr row twice?  rows colors are four tiles high, for some reason.
 
 CLEAR_TILE_ID   = ' '
-CR_T2_SPEED     = 8
+CR_T2_SPEED     = 8     ; color cycle speed (in frames) for the tier two names
 
 Credits_Init:
     ; - Clear backgound for both nametables
@@ -525,6 +522,9 @@ cr_TierColors:
 Credits_Frame:
     jsr cr_TierColors
 
+; This is for the actual rom. CRDEBUG is defined in the
+; credits dev makefile.
+.ifndef CRDEBUG
     lda #BUTTON_START
     jsr ButtonPressedP1
     beq @nobutton
@@ -532,8 +532,9 @@ Credits_Frame:
     lda #GS_TITLE
     sta current_gamestate
     inc gamestate_changed
-
 @nobutton:
+.endif
+
     lda cr_scrollWait
     bne @notYet
 
