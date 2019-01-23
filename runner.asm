@@ -108,6 +108,8 @@ TitleLength:    .res 1  ; number of menu options
 TitleColor:     .res 1  ; current color, lol
 TitleColor2:    .res 1
 TitleGameStates:.res 10 ; list of gamestates
+TitleScroll:    .res 1
+TitlePPUCtrl:   .res 1
 
 ; Base-100 numbers of the score
 PlayerScoreBase100: .res 0
@@ -493,11 +495,9 @@ ChangeGameState:
 
 @game:
     lda CURRENT_PAGE
-    cmp #PAGEID_GAME
-    beq @noswap
+
     jsr MMC1_Page0
 
-@noswap:
     lda current_gamestate
     cmp #GS_DED
     beq @ded
@@ -524,6 +524,7 @@ ChangeGameState:
     lda #PPU_MASK_OFF
     sta $2001
 
+    jsr MMC1_Setup_Horiz
     jsr MMC1_Page0
     jsr MMC1_Pattern0
 

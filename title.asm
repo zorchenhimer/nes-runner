@@ -29,38 +29,56 @@ InitTitle:
     lda #$FF
     sta bg_ZNT1
 
-    lda #$22
+    lda #$28
     sta bg_ZNT0
 
-    lda #$40
+    lda #$00
     sta bg_XStart
 
-    lda #$60
+    lda #$20
     sta bg_XNTSwitch
 
-    lda #$23
+    lda #$29
     sta bg_TransHigh0
 
     lda #$27
     sta bg_TransHigh1
 
-    lda #$A0
+    lda #$60
     sta bg_TransLow
 
     lda #0
     jsr DrawBackground
 
 ; Attributes for skyline
-    lda #$23
+    lda #$2B
     sta $2006
-    lda #$E0
+    lda #$C0
     sta $2006
 
-    ldx #32
+    ldx #24
     lda #$55
 :   sta $2007
     dex
     bne :-
+
+    ;lda #$2B
+    ;sta $2006
+    ;lda #$D8
+    ;sta $2006
+
+    ldx #8
+    lda #$AA
+:   sta $2007
+    dex
+    bne :-
+
+    ldx #8
+    lda #$FF
+:   sta $2007
+    dex
+    bne :-
+
 
 ; Init the cursor sprite
     ; Y coord
@@ -86,7 +104,7 @@ InitTitle:
     sta SP_TITLETILE1
 
     ; Sprite Zero
-    lda #135
+    lda #$88
     sta SPZ_Y
     lda #$F8
     sta SPZ_X
@@ -104,9 +122,9 @@ InitTitle:
 ; /RAINBOW
 
     ; Draw Title
-    lda #$20
+    lda #$22
     sta $2006
-    lda #$CA
+    lda #$4A
     sta $2006
 
     ldx #0
@@ -118,9 +136,9 @@ InitTitle:
     jmp @loop2
 @titleTextDone:
 
-    lda #$21
+    lda #$22
     sta TmpAddr
-    lda #$2C
+    lda #$AD
     sta TmpAddr+1
 
     ; Draw menu items
@@ -168,12 +186,94 @@ InitTitle:
     tya
     sta TitleLength
 
-    lda #$22
+    ; Tile for sprite zero hit
+    lda #$23
     sta $2006
-    lda #$3F
+    lda #$BF
     sta $2006
-    lda #$0F
+    ;lda #$0F
+    lda #$20
     sta $2007
+
+    ; Draw blank playfield
+    lda #$29
+    sta $2006
+    lda #$80
+    sta $2006
+
+; Sky metatiles
+    ldx #16
+:
+    lda Meta_Sky+0
+    sta $2007
+    lda Meta_Sky+2
+    sta $2007
+    dex
+    bne :-
+
+    ldx #16
+:
+    lda Meta_Sky+1
+    sta $2007
+    lda Meta_Sky+3
+    sta $2007
+    dex
+    bne :-
+
+    ldx #16
+:
+    lda Meta_Sky+0
+    sta $2007
+    lda Meta_Sky+2
+    sta $2007
+    dex
+    bne :-
+
+    ldx #16
+:
+    lda Meta_Sky+1
+    sta $2007
+    lda Meta_Sky+3
+    sta $2007
+    dex
+    bne :-
+
+; Ground metatiles
+    ldx #16
+:
+    lda Meta_Ground+0
+    sta $2007
+    lda Meta_Ground+2
+    sta $2007
+    dex
+    bne :-
+
+    ldx #16
+:
+    lda Meta_Ground+1
+    sta $2007
+    lda Meta_Ground+3
+    sta $2007
+    dex
+    bne :-
+
+    ldx #16
+:
+    lda Meta_Ground+0
+    sta $2007
+    lda Meta_Ground+2
+    sta $2007
+    dex
+    bne :-
+
+    ldx #16
+:
+    lda Meta_Ground+1
+    sta $2007
+    lda Meta_Ground+3
+    sta $2007
+    dex
+    bne :-
 
     lda #<Frame_Title
     sta DoFramePointer
@@ -189,6 +289,7 @@ InitTitle:
     bit $2002
     lda #$00
     sta $2005
+    lda #95
     sta $2005
 
     dec TurnPPUOn
@@ -198,6 +299,7 @@ NMI_Title:
     bit $2002
     lda #0
     sta $2005
+    lda #95
     sta $2005
 
     lda #PPU_CTRL_TITLE
@@ -205,7 +307,7 @@ NMI_Title:
 
     jmp NMI_Finished
 
-Frame_Title:
+title_Colors:
     ; only update colors every other frame
     lda frame_odd
     beq @t_nocolorwrap
@@ -220,29 +322,33 @@ Frame_Title:
     lda #$1C
     sta TitleColor2
 
-;    lda $03A8
-;    cmp #$24
-;    beq @b24
-;    lda #$24
-;    sta $03A8
-;
-;    jmp @bb
-;@b24:
-;    lda #$30
-;    sta $03A8
-;@bb:
-
 @t_nocolorwrap:
 
     ; load palette into ram
     lda TitleColor
     sta PaletteRAM+30
 
-    lda #$0F
-    sta PaletteRAM+31
+    ;lda #$0F
+    ;sta PaletteRAM+31
 
     lda TitleColor2
     sta PaletteRAM+14
+
+    lda frame_odd
+    bne @tf_setev
+
+    lda #1
+    sta frame_odd
+    jmp @tf_wot
+@tf_setev:
+    lda #0
+    sta frame_odd
+
+@tf_wot:
+    rts
+
+Frame_Title:
+    jsr title_Colors
 
     lda #BUTTON_SELECT
     jsr ButtonPressedP1
@@ -271,29 +377,20 @@ Frame_Title:
 
 @t_noselect:
 
-    lda frame_odd
-    bne @tf_setev
-
-    lda #1
-    sta frame_odd
-    jmp @tf_wot
-@tf_setev:
-    lda #0
-    sta frame_odd
-
-@tf_wot:
     lda #BUTTON_START
     jsr ButtonPressedP1
-    beq @t_nostart
+    beq t_nostart
 
     ldx TitleIndex
     lda TitleGameStates, x
     sta current_gamestate
+    cmp #GS_GAME
+    beq Title_GameTrans
     inc gamestate_changed
 
-@t_nostart:
+t_nostart:
     bit $2002
-    bvs @t_nostart
+    bvs t_nostart
 
 :   bit $2002
     bvc :-
@@ -301,6 +398,101 @@ Frame_Title:
     lda #PPU_CTRL_HORIZ
     sta $2000
     jmp WaitFrame
+
+Title_GameTrans:
+    lda #95
+    sta TitleScroll
+
+    lda #PPU_CTRL_HORIZ
+    sta TitlePPUCtrl
+
+    lda #<Title_Trans_Frame_Fading
+    sta DoFramePointer
+    lda #>Title_Trans_Frame_Fading
+    sta DoFramePointer+1
+
+    lda #<Title_Trans_NMI
+    sta DoNMIPointer
+    lda #>Title_Trans_NMI
+    sta DoNMIPointer+1
+
+Title_Trans_Frame_Fading:
+    lda TitleColor
+    cmp #$1C
+    beq :+
+    jsr title_Colors
+    jmp t_nostart
+:
+    lda frame_odd
+    beq :+
+    lda #$0C
+    sta PaletteRAM+30
+    lda #$01
+    sta PaletteRAM+14
+
+    lda #<Title_Trans_Frame_Scrolling
+    sta DoFramePointer
+    lda #>Title_Trans_Frame_Scrolling
+    sta DoFramePointer+1
+
+:   lda #$FF
+    sta frame_odd
+    jmp t_nostart
+    ;jmp WaitFrame
+
+Title_Trans_Frame_Scrolling:
+    lda #$1F
+    sta PaletteRAM+30
+    sta PaletteRAM+14
+
+    lda #$00
+    sta SP_TITLETILE0
+    sta SP_TITLETILE1
+
+    lda frame_odd
+    beq :+
+    lda #$00
+    sta frame_odd
+    jmp :++
+
+:   lda #$FF
+    sta frame_odd
+    inc TitleScroll
+    dec SPZ_Y
+    lda SPZ_Y
+
+:   lda TitleScroll
+    cmp #$E8
+    bne :+
+
+    lda #<Title_Trans_Frame_Load
+    sta DoFramePointer
+    lda #>Title_Trans_Frame_Load
+    sta DoFramePointer+1
+
+    lda #0
+    sta TitleScroll
+    lda #PPU_CTRL_HORIZ
+    ora #$02
+    sta TitlePPUCtrl
+
+:   jmp t_nostart
+    ;jmp WaitFrame
+
+Title_Trans_Frame_Load:
+    inc gamestate_changed
+    jmp WaitFrame
+
+Title_Trans_NMI:
+    bit $2002
+    lda #0
+    sta $2005
+    lda TitleScroll
+    sta $2005
+
+    lda TitlePPUCtrl
+    sta $2000
+    jmp NMI_Finished
 
 TitleText:
     .byte '"', "runner", '"', $00
@@ -330,6 +522,6 @@ Title_BG6:
     .byte $D3, $D1, $D5, $D1, $D5, $D1, $D5, $D1, $D5
 
 TitlePalette:
-    .byte $0F,$30,$21,$15, $0F,$04,$34,$0F, $0F,$15,$0F,$0F, $0F,$11,$11,$11
-    .byte $0F,$10,$00,$30, $0F,$05,$05,$05, $0F,$0A,$0A,$0A, $0F,$0F,$11,$11
+    .byte $1A,$30,$21,$15, $1A,$04,$34,$0F, $1A,$0A,$39,$06, $1A,$17,$25,$35
+    .byte $1A,$10,$00,$30, $1A,$05,$05,$05, $1A,$0A,$0A,$0A, $1A,$0F,$11,$11
     .byte $EA, $EA

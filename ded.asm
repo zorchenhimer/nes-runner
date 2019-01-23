@@ -106,6 +106,9 @@ Ded_Frame:
     jsr ClearNametable0
     jsr ClearNametable1
 
+    jsr ClearAttrTable0
+    jsr ClearAttrTable1
+
     jsr ClearSprites
 
     ; update palettes. just reuse the title palettes
@@ -213,6 +216,9 @@ Ded_Frame:
     sta SkipNMI
 
 GameOverWait:
+    lda #$0F
+    sta PaletteRAM+28
+    sta PaletteRAM+20
 
     ; "press start" fade thing
     dec TmpY

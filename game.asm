@@ -83,7 +83,7 @@ Game_Init:
     sta rngFlipFlop
     sta meta_cols_to_buffer
 
-    lda #10
+    lda #18
     sta obs_countdown
 
     ; Load the RNG seed form PRG RAM and re-seed if it doesn't exist.
