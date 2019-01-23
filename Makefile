@@ -50,15 +50,12 @@ bin/$(NAME).o: bin/ $(SOURCES) $(CHR)
 	$(CA) -g \
 		-t nes \
 		-o bin/$(NAME).o\
-		-l bin/$(NAME).lst \
 		$(TVFORMAT) \
 		$(NAME).asm
 
 bin/$(NAME).nes: bin/$(NAME).o $(NESCFG)
 	$(LD) -o bin/$(NAME).nes \
 		-C $(NESCFG) \
-		-m bin/$(NAME).map -vm \
-		-Ln bin/$(NAME).labels \
 		--dbgfile bin/$(NAME).dbg \
 		bin/$(NAME).o
 
