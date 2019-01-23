@@ -349,26 +349,49 @@ cr_ByteList:
     rts
 
 cr_op_Attr:
+    ; don't increment if coming from cr_op_Name
+    bit cr_AttrTmp
+    bmi :+
     lda #1
     jsr cr_Decode_Opcode_IncAddr
 
-    lda cr_AttrSecondWrite
+:   lda cr_AttrSecondWrite
     bne @secondWrite
 
     lda cr_currentAttrOffset
     cmp #7
     beq @lastRow
 
+    lda cr_AttrTmp
+    bmi @notChunkA
+
     ldy #0
     lda (cr_chunkAddress), y
+    jmp @notChunkADone
+
+@notChunkA:
+    and #$0F
+
+@notChunkADone:
     sta cr_AttributeByte
+
+    lda #0
+    sta cr_AttrTmp
 
     inc cr_AttrSecondWrite
     rts
 
 @secondWrite:
-    lda (cr_chunkAddress), y
 
+    lda cr_AttrTmp
+    bmi @notChunkB
+    lda (cr_chunkAddress), y
+    jmp @notChunkBDone
+
+@notChunkB:
+    and #$0F
+
+@notChunkBDone:
     asl A
     asl A
     asl A
@@ -386,13 +409,23 @@ cr_op_Attr:
     sta cr_AttributeReady
     lda #0
     sta cr_AttrSecondWrite
+    sta cr_AttrTmp
 
     inc cr_currentAttrOffset
     rts
 
 @lastRow:
+    lda cr_AttrTmp
+    bmi @notChunkC
+
     ldy #0
     lda (cr_chunkAddress), y
+    jmp @notChunkCDone
+
+@notChunkC:
+    and #$0F
+
+@notChunkCDone:
     sta cr_AttributeByte
 
     asl A
@@ -410,6 +443,7 @@ cr_op_Attr:
     ; wrap to the next nametable
     lda #0
     sta cr_currentAttrOffset
+    sta cr_AttrTmp
 
     lda #$FF
     sta cr_AttributeReady
@@ -417,44 +451,78 @@ cr_op_Attr:
 cr_op_EndOfData:
     rts
 
+; FIXME: i broke this.  whoops.
 cr_op_Name:
     ; Clear the row, prefix spaces, suffix spaces, attribute, name data
     jsr cr_ClearRow
 
-    ; prefix
+    ; Metadata byte.  bits 7-6 are attribute, rest are length.
     ldy #0
     lda (cr_chunkAddress), y
-    sta cr_loopCounter
-    lda #CR_PADDING
-    ldx cr_tileBufferOffset
-:
-    sta TileBuffer, x
-    inx
-    dec cr_loopCounter
-    bne :-
-    stx cr_tileBufferOffset
+    pha         ; store byte for later
+    and #$C0    ; get Attribute bits
 
-    lda #1
-    jsr cr_Decode_Opcode_IncAddr
+    ; Rotate bits 7-6 to bits 1-0
+    clc
+    rol a
+    rol a
+    rol a
+    sta cr_AttrTmp
 
-    ; suffix
-    ldy #0
-    lda (cr_chunkAddress), y
-    pha ; store this for later
+    ; fill the nibble
+    asl a
+    asl a
+    ora cr_AttrTmp
+    ora #$80
+    sta cr_AttrTmp
 
+    ; write attribute stuff
     jsr cr_op_Attr
-    jsr cr_ByteList
 
-    pla
+    ; Length
+    pla     ; retrieve byte for length
+    and #$3F
+    pha     ; store length for later
+    lsr a   ; divide by two
+
+    sta TmpY
+    lda #16
+    sec
+    sbc TmpY    ; the amount of padding
+
     sta cr_loopCounter
+    ldy #0
     lda #CR_PADDING
     ldx cr_tileBufferOffset
-:
-    sta TileBuffer, x
+
+:   sta TileBuffer, x
     inx
-    dec cr_loopCounter
+    iny
+    cpy cr_loopCounter
     bne :-
 
+    ldy #1
+    pla ; grab length again
+    sta cr_loopCounter
+    sta TmpY
+
+    ; Loop through data for the given length
+:   lda (cr_chunkAddress), y
+    sta TileBuffer, x
+    iny
+    inx
+    dec TmpY
+    bne :-
+
+    ; suffix padding
+    lda #CR_PADDING
+:   sta TileBuffer, x
+    inx
+    iny
+    cpy #32     ; 32 is end of row
+    bne :-
+
+    ; increment address isn't needed
     rts
 
 cr_OPCodes:

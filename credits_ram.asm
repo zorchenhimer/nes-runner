@@ -18,6 +18,7 @@ cr_nextAttrWait:    .res 1  ; chunk updates until the next attribute update
 cr_UpdateReady:     .res 1  ; is there a tile or attribute update ready for the PPU?
 cr_AttributeReady:  .res 1
 cr_AttrSecondWrite: .res 1
+cr_AttrTmp:        .res 1
 
 cr_tileBufferOffset:    .res 1
 cr_AttributeByte:       .res 1

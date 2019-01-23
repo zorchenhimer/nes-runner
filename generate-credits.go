@@ -56,7 +56,7 @@ func (c *GenericChunk) AsmString(num int) string {
         comment = "; " + c.Comment + "\n"
     }
 
-    return fmt.Sprintf("%scredits_data_chunk_%02d:\n    %s\n", comment, num, strings.Join(codestrings, "\n    "))
+    return fmt.Sprintf("%scr_data_chunk_%02d:\n    %s\n", comment, num, strings.Join(codestrings, "\n    "))
 
 }
 
@@ -176,9 +176,7 @@ func NewSub(row []string) (*Subscriber, error) {
     return sub, nil
 }
 
-const asmTemplate = `credits_data_chunk_%02d:
-    .byte CR_OP_NAME, %d, %d, $%02X, %q, $00
-`  // prefix, suffix, attribute, name
+const asmTemplate = "cr_data_chunk_%02d: .byte CR_OP_NAME, $%02X, %q"  // prefix, suffix, attribute, name
 
 func (s *Subscriber) AsmString(num int) string {
     length := len(s.Username)
@@ -191,12 +189,13 @@ func (s *Subscriber) AsmString(num int) string {
         panic(fmt.Sprintf("Chunklength is not 64 bytes (%d)! %q length:%d offset:%d trailing:%d half:%d", chunkLength, s.Username, length, offset, trailing, half))
     }
 
-    tier_attr := s.Tier - 1
+    attr_len := (s.Tier - 1) << uint(6) | len(s.Username)
     //attr = s.AttributeValue()
     //attr = attr << uint(2) | s.AttributeValue()
-    tier_attr = tier_attr << uint(2) | s.Tier - 1
+    //tier_attr = tier_attr << uint(2) | s.Tier - 1
 
-    return fmt.Sprintf(asmTemplate, num, offset, trailing, tier_attr, s.Username)
+    //return fmt.Sprintf(asmTemplate, num, offset, trailing, tier_attr, s.Username)
+    return fmt.Sprintf(asmTemplate, num, attr_len, s.Username)
 }
 
 func (s Subscriber) AttributeValue() uint {
@@ -464,7 +463,7 @@ func main() {
 
     fmt.Fprintln(outFile, "credits_data_chunks:")
     for i, _ := range allChunks {
-        fmt.Fprintf(outFile, "    .word credits_data_chunk_%02d\n", i)
+        fmt.Fprintf(outFile, "    .word cr_data_chunk_%02d\n", i)
     }
     fmt.Fprintln(outFile, "credits_data_chunks_end:\n")
 
