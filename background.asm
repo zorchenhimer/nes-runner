@@ -34,7 +34,11 @@ bg_WriteByte:
     lda bg_ZNT1
     sta TmpZ
 
-    lda #12
+    bpl :+
+    pla
+    rts
+
+:   lda #12
     sta TmpY
 
     lda bg_XStart
@@ -54,7 +58,10 @@ bg_WriteByte:
 
 @noAddrSet:
     pla
-    sta $2007
+    bit TmpZ
+    bpl :+
+    rts
+:   sta $2007
     rts
 
 ; Background data index in A
@@ -172,7 +179,11 @@ DrawBackground:
 
     lda (bg_data_pointer), y
     sta TmpCounter
-    ldx #16
+    bit bg_ZNT1
+    bpl :+
+    ldx #8
+    jmp @transitionLoop
+:   ldx #16
 @transitionLoop:
 
     ldy TmpCounter
