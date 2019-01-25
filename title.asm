@@ -347,6 +347,7 @@ title_Colors:
 @tf_wot:
     rts
 
+; This is the default frame
 Frame_Title:
     jsr title_Colors
 
@@ -399,6 +400,7 @@ t_nostart:
     sta $2000
     jmp WaitFrame
 
+; Start of the transition, not a frame handler.
 Title_GameTrans:
     lda #95
     sta TitleScroll
@@ -416,6 +418,7 @@ Title_GameTrans:
     lda #>Title_Trans_NMI
     sta DoNMIPointer+1
 
+; Fade frame handler.
 Title_Trans_Frame_Fading:
     lda TitleColor
     cmp #$1C
@@ -440,6 +443,7 @@ Title_Trans_Frame_Fading:
     jmp t_nostart
     ;jmp WaitFrame
 
+; Scroll down to playfield
 Title_Trans_Frame_Scrolling:
     lda #$1F
     sta PaletteRAM+30
@@ -449,20 +453,12 @@ Title_Trans_Frame_Scrolling:
     sta SP_TITLETILE0
     sta SP_TITLETILE1
 
-    lda frame_odd
-    beq :+
-    lda #$00
-    sta frame_odd
-    jmp :++
-
-:   lda #$FF
-    sta frame_odd
     inc TitleScroll
     dec SPZ_Y
     lda SPZ_Y
 
-:   lda TitleScroll
-    cmp #$E8
+    lda TitleScroll
+    cmp #$EF
     bne :+
 
     lda #<Title_Trans_Frame_Load
@@ -476,8 +472,10 @@ Title_Trans_Frame_Scrolling:
     ora #$02
     sta TitlePPUCtrl
 
-:   jmp t_nostart
-    ;jmp WaitFrame
+    lda #$E0
+    sta SPZ_Y
+
+:   jmp WaitFrame
 
 Title_Trans_Frame_Load:
     inc gamestate_changed
