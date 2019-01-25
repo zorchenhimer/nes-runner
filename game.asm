@@ -191,17 +191,18 @@ Game_Init:
     sta sprites+34, x
     lda #PAUSED_Y
     sta sprites+32, x
-    lda #' '
+    lda #$00
     sta sprites+33, x
 
     pla     ; load A
+    clc
     adc #8
     inx
     inx
     inx
     inx
     iny
-    cpx #24
+    cpx #4*4
     bne @pyloop
 
     ; initial value for fading paused palette
@@ -386,10 +387,10 @@ Game_Frame:
     sta TmpY    ; Update platte once every eight frames.
 
     ldx TmpX
-    lda DedStartPal, x
+    lda PausedPalTable, x
     sta PAUSED_PAL
     inx
-    cpx #6
+    cpx #4
     ; Wrap color index if needed
     bne @noWrap
     ldx #0
@@ -973,21 +974,21 @@ g_PausedSprites_On:
     inx
     inx
     iny
-    cpx #24
+    cpx #4*4    ; four sprites, for bytes each
     bne @loop
     rts
 
 ; Turn off "Paused" sprites
 g_PausedSprites_Off:
     ldx #0
-    lda #' '
+    lda #$00
 @loop:
     sta sprites+33, x
     inx
     inx
     inx
     inx
-    cpx #24
+    cpx #4*4
     bne @loop
     rts
 
@@ -1192,15 +1193,15 @@ Meta_Nothing:
 Meta_FireHydrant:
     .byte $84, $94, $85, $95
 
-PAUSED_X    = 104
+PAUSED_X    = 112
 PAUSED_Y    = 25
 PAUSED_ATTR = $02
 PAUSED_PAL  = PaletteRAM+6
 PausedSprites:
-    .byte "Paused"
+    .byte $09, $0A, $0B, $0C
 
 PausedPalTable:
-    .byte $2D,$00,$10,$20,$10,$00
+    .byte $00,$10,$20,$10
 
 ; peak is at $3F
 JumpFrameLength:
