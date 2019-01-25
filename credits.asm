@@ -40,6 +40,7 @@ Credits_Init:
 
     lda #0
     sta cr_chunkCurrent
+    sta cr_tileBufferOffset
 
     lda #$23
     sta cr_AttributeAddress
@@ -518,8 +519,7 @@ cr_op_Name:
     lda #CR_PADDING
 :   sta TileBuffer, x
     inx
-    iny
-    cpy #32     ; 32 is end of row
+    cpx #64     ; 32 is end of row, 64 is end of second row.
     bne :-
 
     ; increment address isn't needed
