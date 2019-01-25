@@ -110,6 +110,7 @@ TitleColor2:    .res 1
 TitleGameStates:.res 10 ; list of gamestates
 TitleScroll:    .res 1
 TitlePPUCtrl:   .res 1
+title_clear:    .res 1
 
 ; Base-100 numbers of the score
 PlayerScoreBase100: .res 0

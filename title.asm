@@ -25,6 +25,8 @@ InitTitle:
     jsr ClearSprites
     jsr ClearNametable0
     jsr ClearAttrTable0
+    jsr ClearNametable2
+    jsr ClearAttrTable2
 
     lda #$FF
     sta bg_ZNT1
@@ -405,9 +407,6 @@ Title_GameTrans:
     lda #95
     sta TitleScroll
 
-    lda #PPU_CTRL_HORIZ
-    sta TitlePPUCtrl
-
     lda #<Title_Trans_Frame_Fading
     sta DoFramePointer
     lda #>Title_Trans_Frame_Fading
@@ -417,6 +416,9 @@ Title_GameTrans:
     sta DoNMIPointer
     lda #>Title_Trans_NMI
     sta DoNMIPointer+1
+
+    lda #PPU_CTRL_TITLE
+    sta TitlePPUCtrl
 
 ; Fade frame handler.
 Title_Trans_Frame_Fading:
@@ -432,11 +434,15 @@ Title_Trans_Frame_Fading:
     sta PaletteRAM+30
     lda #$01
     sta PaletteRAM+14
+    dec title_clear
 
     lda #<Title_Trans_Frame_Scrolling
     sta DoFramePointer
     lda #>Title_Trans_Frame_Scrolling
     sta DoFramePointer+1
+
+    lda #PPU_CTRL_HORIZ
+    sta TitlePPUCtrl
 
 :   lda #$FF
     sta frame_odd
@@ -482,6 +488,69 @@ Title_Trans_Frame_Load:
     jmp WaitFrame
 
 Title_Trans_NMI:
+    bit title_clear
+    bvc @noclear
+
+    lda #0
+    sta title_clear
+
+    ; Erase Title
+    lda #$22
+    sta $2006
+    lda #$4A
+    sta $2006
+
+    lda #$20
+    ldx #TitleSeedText - TitleText - 1
+:
+    sta $2007
+    dex
+    bne :-
+
+    ; Erase items
+    ; TODO: make this dynamic just like
+    ;       drawing it in the first place is.
+    ldx #$22
+    stx $2006
+    ldx #$AD
+    stx $2006
+
+    ldx #10
+:   sta $2007
+    dex
+    bne :-
+
+    ldx #$22
+    stx $2006
+    ldx #$ED
+    stx $2006
+
+    ldx #10
+:   sta $2007
+    dex
+    bne :-
+
+    ldx #$23
+    stx $2006
+    ldx #$2D
+    stx $2006
+
+    ldx #11
+:   sta $2007
+    dex
+    bne :-
+
+    ldx #$23
+    stx $2006
+    ldx #$6D
+    stx $2006
+
+    ldx #7
+:   sta $2007
+    dex
+    bne :-
+
+@noclear:
     bit $2002
     lda #0
     sta $2005
