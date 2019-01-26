@@ -577,7 +577,7 @@ NumberXLookup:
 
 ; uses the NumberYLookup index value
 NumberAttrLookup:
-    .byte $21, $20, $22
+    .byte $01, $00, $02
 
 SeedPalette:
     ;      input box,       inputed val
