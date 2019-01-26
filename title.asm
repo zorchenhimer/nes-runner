@@ -298,6 +298,11 @@ InitTitle:
     rts
 
 NMI_Title:
+
+    jsr WritePalettes
+    jsr WriteSprites
+
+    ; Scroll half way down the screen
     bit $2002
     lda #0
     sta $2005
@@ -387,7 +392,7 @@ Frame_Title:
     ldx TitleIndex
     lda TitleGameStates, x
     sta current_gamestate
-    cmp #GS_GAME
+    cmp #STATES::GS_GAME
     beq Title_GameTrans
     inc gamestate_changed
 
@@ -568,10 +573,10 @@ TitleSeedText:
     .byte "Current seed: ", $00
 
 TitleData:
-    .byte "Start Game", $00, GS_GAME
-    .byte "Enter Seed", $00, GS_SEED
-    .byte "High Scores", $00, GS_HIGHSCORE
-    .byte "Credits", $00, GS_CREDITS
+    .byte "Start Game", $00, STATES::GS_GAME
+    .byte "Enter Seed", $00, STATES::GS_SEED
+    .byte "High Scores", $00, STATES::GS_HIGHSCORE
+    .byte "Credits", $00, STATES::GS_CREDITS
     .byte $00
 
 Title_BG1:

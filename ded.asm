@@ -2,6 +2,8 @@
 ;   goto enter new high score if applicable
 
 DedInit:
+    jsr MMC1_Setup_Vert
+
     lda #1
     sta Ded_Fading
     lda #0
@@ -28,6 +30,9 @@ DedInit:
     ;rts
 
 Ded_NMI:
+    jsr WritePalettes
+    jsr WriteSprites
+
     lda Ded_Fading
     beq @noscroll
     ; only update the scroll (for the status bar thing) if fading
@@ -117,7 +122,7 @@ Ded_Frame:
     lda #>TitlePalette
     sta PaletteAddr+1
     jsr LoadPalettes
-    jsr UpdatePalettes
+    jsr WritePalettes
 
     lda #$21
     sta $2006
@@ -256,7 +261,7 @@ GameOverWait:
     lda working_seed+1
     sta rng_seed+1
 
-    lda #GS_TITLE
+    lda #STATES::GS_TITLE
     sta current_gamestate
     inc gamestate_changed
     ;jmp dedSpriteZero
@@ -277,7 +282,7 @@ dedSpriteZero:
 
 ReplayLastMap:
     ; Do not save last working seed.  Jump right to a new game.
-    lda #GS_GAME
+    lda #STATES::GS_GAME
     sta current_gamestate
     inc gamestate_changed
     jmp dedSpriteZero

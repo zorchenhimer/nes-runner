@@ -377,7 +377,7 @@ Scores_Frame:
     jsr ButtonPressedP1
     beq @nobutton
 
-    lda #GS_TITLE
+    lda #STATES::GS_TITLE
     sta current_gamestate
     inc gamestate_changed
 

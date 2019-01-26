@@ -79,15 +79,18 @@ current_gamestate:  .res 1
 
 ; main state in is high bits
 ; sub state is in low bits
-GS_CREDITS  = %00000000
 
-GS_GAME     = %10000000
-GS_DED      = %10000001
+.enum STATES
+    GS_TITLE
 
-GS_TITLE    = %01000000
-GS_HIGHSCORE= %01000001
-GS_NEWHIGH  = %01000010
-GS_SEED     = %01000011
+    GS_CREDITS
+
+    GS_GAME
+    GS_DED
+
+    GS_HIGHSCORE
+    GS_SEED
+.endenum
 
 PauseOn:        .res 1
 PauseOff:       .res 1
@@ -97,6 +100,7 @@ TurnPPUOn:      .res 1
 TmpCounter:     .res 1
 TmpAttr:        .res 1
 TmpAddr:        .res 2
+TmpAddr2:       .res 2
 TmpY:           .res 1
 TmpX:           .res 1
 TmpZ:           .res 1
@@ -290,7 +294,7 @@ RESET:
     jsr ClearAttrTable0
     jsr ClearAttrTable1
 
-    lda #GS_TITLE
+    lda #STATES::GS_TITLE
     sta current_gamestate
     jsr ChangeGameState
 
@@ -327,6 +331,41 @@ WaitFrame:
     bne @loop
     jmp DoFrame
 
+WritePalettes:
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+
+    bit $2002
+    lda #$3F
+    sta $2006
+    lda #$00
+    sta $2006
+    ldx #31
+@loop:
+    lda PaletteRAM, x
+    sta $2007
+    dex
+    lda PaletteRAM, x
+    sta $2007
+    dex
+    lda PaletteRAM, x
+    sta $2007
+    dex
+    lda PaletteRAM, x
+    sta $2007
+    dex
+    bpl @loop
+    rts
+
+WriteSprites:
+    ; Write sprites to PPU
+    bit $2002
+    lda #$00
+    sta $2003
+    lda #$02
+    sta $4014
+    rts
+
 NMI:
     pha
     txa
@@ -353,38 +392,6 @@ NMI:
     jsr ChangeGameState
     jmp NMI_Finished
 @nochange:
-
-    ;jsr UpdatePalettes
-    bit $2002
-    lda #PPU_CTRL_HORIZ
-    sta $2000
-
-    lda #$3F
-    sta $2006
-    lda #$00
-    sta $2006
-    ldx #31
-@loop:
-    lda PaletteRAM, x
-    sta $2007
-    dex
-    lda PaletteRAM, x
-    sta $2007
-    dex
-    lda PaletteRAM, x
-    sta $2007
-    dex
-    lda PaletteRAM, x
-    sta $2007
-    dex
-    bpl @loop
-
-    ; Write sprites to PPU
-    bit $2002
-    lda #$00
-    sta $2003
-    lda #$02
-    sta $4014
 
     jmp (DoNMIPointer)
 
@@ -481,65 +488,30 @@ ChangeGameState:
     lda #0
     sta gamestate_changed
 
-    jsr MMC1_Setup_Vert
-
-    bit current_gamestate
-    bvs @title
-    bmi @game
-
-    ; Credits stuff
-    jsr MMC1_Setup_Horiz
-    jsr MMC1_Page1
-    jsr MMC1_Pattern1
-
-    jmp Credits_Init
-
-@game:
-    lda CURRENT_PAGE
-
-    jsr MMC1_Page0
-
-    lda current_gamestate
-    cmp #GS_DED
-    beq @ded
-    ;bcs @highscore
-
-    lda #PPU_MASK_OFF
-    sta $2001
-
-    jsr MMC1_Pattern0
-    jmp Game_Init
-
-@ded:
-    jmp DedInit
-
-@highscore:
-    jsr MMC1_Setup_Horiz
-
-    lda #PPU_MASK_OFF
-    sta $2001
-
-    jmp Scores_Init
-
-@title:
-    lda #PPU_MASK_OFF
-    sta $2001
-
     jsr MMC1_Setup_Horiz
     jsr MMC1_Page0
     jsr MMC1_Pattern0
 
     lda current_gamestate
-    cmp #GS_SEED
-    beq @seed
+    asl a
+    tax
 
-    cmp #GS_HIGHSCORE
-    beq @highscore
+    lda GameState_InitTable, x
+    sta TmpAddr
+    inx
+    lda GameState_InitTable, x
+    sta TmpAddr+1
 
-    jmp InitTitle
+    jmp (TmpAddr)
+    ; RTS handled in the init code
 
-@seed:
-    jmp InitSeed
+GameState_InitTable:
+    .word InitTitle
+    .word Credits_Init
+    .word Game_Init
+    .word DedInit
+    .word Scores_Init
+    .word InitSeed
 
     .include "title.asm"
     .include "scores.asm"

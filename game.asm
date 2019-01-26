@@ -4,8 +4,11 @@
 
 Game_Init:
     inc SkipNMI
+
     lda #PPU_MASK_OFF
     sta $2001
+
+    jsr MMC1_Setup_Vert
 
     lda #PPU_CTRL_HORIZ
     sta $2000
@@ -334,6 +337,9 @@ game_DrawAttributeRow:
     rts
 
 Game_NMI:
+    jsr WritePalettes
+    jsr WriteSprites
+
     ; Check to see if a column is buffered.  If so, draw it
     ; to the screen.
     bit column_ready
@@ -442,7 +448,7 @@ Game_Frame:
     beq @pit
 
     ; Collision == ded
-    lda #GS_DED
+    lda #STATES::GS_DED
     sta current_gamestate
     inc gamestate_changed
 @pit:

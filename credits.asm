@@ -7,6 +7,10 @@ Credits_Init:
     ; - Update palettes
     inc SkipNMI
 
+    jsr MMC1_Setup_Horiz
+    jsr MMC1_Page1
+    jsr MMC1_Pattern1
+
     lda #$00
     sta $2001
 
@@ -27,7 +31,7 @@ Credits_Init:
     sta DoNMIPointer+1
 
     jsr LoadPalettes
-    jsr UpdatePalettes
+    jsr WritePalettes
 
     lda #$00
     jsr FillNametable0
@@ -597,7 +601,7 @@ Credits_Frame:
     jsr ButtonPressedP1
     beq @nobutton
 
-    lda #GS_TITLE
+    lda #STATES::GS_TITLE
     sta current_gamestate
     inc gamestate_changed
 @nobutton:
@@ -644,6 +648,9 @@ Credits_Frame:
     jmp WaitFrame
 
 Credits_NMI:
+    jsr WritePalettes
+    jsr WriteSprites
+
     bit cr_UpdateReady
     bpl @noUpdate
     jsr Credits_WriteBuffer

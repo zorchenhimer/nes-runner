@@ -8,13 +8,16 @@
 InitSeed:
     inc SkipNMI
 
+    lda #PPU_MASK_OFF
+    sta $2001
+
     ; write palettes
     lda #<SeedPalette
     sta PaletteAddr
     lda #>SeedPalette
     sta PaletteAddr+1
     jsr LoadPalettes
-    jsr UpdatePalettes
+    jsr WritePalettes
 
     jsr ClearNametable0
     jsr ClearAttrTable0
@@ -253,6 +256,9 @@ seed_UpdateSprites:
     rts
 
 Seed_NMI:
+    ;jsr WritePalettes
+    jsr WriteSprites
+
     bit $2002
     lda #$23
     sta $2006
@@ -428,7 +434,7 @@ SeedFrame:
     ora Seed_Input3
     sta rng_seed+1
 
-    lda #GS_TITLE
+    lda #STATES::GS_TITLE
     sta current_gamestate
     inc gamestate_changed
 
