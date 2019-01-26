@@ -17,7 +17,7 @@ InitTitle:
 
     ; Then load ROM -> RAM
     jsr LoadPalettes
-    jsr UpdatePalettes
+    jsr WritePalettes
 
     lda #0
     sta TitleIndex
@@ -28,6 +28,7 @@ InitTitle:
     jsr ClearNametable2
     jsr ClearAttrTable2
 
+; Draw the visible Skyline
     lda #$FF
     sta bg_ZNT1
 
@@ -52,6 +53,27 @@ InitTitle:
     lda #0
     jsr DrawBackground
 
+; Draw the offscreen skyline
+    lda #$FF
+    sta bg_ZNT1
+
+    lda #$20
+    sta bg_ZNT0
+    sta bg_XNTSwitch
+
+    lda #$21
+    sta bg_TransHigh0
+
+    lda #$27    ; doesn't matter
+    sta bg_TransHigh1
+
+    lda #$60
+    sta bg_TransLow
+
+    lda #$00
+    sta bg_XStart
+    jsr DrawBackground
+
 ; Attributes for skyline
     lda #$2B
     sta $2006
@@ -64,23 +86,15 @@ InitTitle:
     dex
     bne :-
 
-    ;lda #$2B
-    ;sta $2006
-    ;lda #$D8
-    ;sta $2006
+    ldx #$23
+    stx $2006
+    ldx #$C0
+    stx $2006
 
-    ldx #8
-    lda #$AA
+    ldx #24
 :   sta $2007
     dex
     bne :-
-
-    ldx #8
-    lda #$FF
-:   sta $2007
-    dex
-    bne :-
-
 
 ; Init the cursor sprite
     ; Y coord
@@ -196,86 +210,6 @@ InitTitle:
     ;lda #$0F
     lda #$20
     sta $2007
-
-    ; Draw blank playfield
-    lda #$29
-    sta $2006
-    lda #$80
-    sta $2006
-
-; Sky metatiles
-    ldx #16
-:
-    lda Meta_Sky+0
-    sta $2007
-    lda Meta_Sky+2
-    sta $2007
-    dex
-    bne :-
-
-    ldx #16
-:
-    lda Meta_Sky+1
-    sta $2007
-    lda Meta_Sky+3
-    sta $2007
-    dex
-    bne :-
-
-    ldx #16
-:
-    lda Meta_Sky+0
-    sta $2007
-    lda Meta_Sky+2
-    sta $2007
-    dex
-    bne :-
-
-    ldx #16
-:
-    lda Meta_Sky+1
-    sta $2007
-    lda Meta_Sky+3
-    sta $2007
-    dex
-    bne :-
-
-; Ground metatiles
-    ldx #16
-:
-    lda Meta_Ground+0
-    sta $2007
-    lda Meta_Ground+2
-    sta $2007
-    dex
-    bne :-
-
-    ldx #16
-:
-    lda Meta_Ground+1
-    sta $2007
-    lda Meta_Ground+3
-    sta $2007
-    dex
-    bne :-
-
-    ldx #16
-:
-    lda Meta_Ground+0
-    sta $2007
-    lda Meta_Ground+2
-    sta $2007
-    dex
-    bne :-
-
-    ldx #16
-:
-    lda Meta_Ground+1
-    sta $2007
-    lda Meta_Ground+3
-    sta $2007
-    dex
-    bne :-
 
     lda #<Frame_Title
     sta DoFramePointer
@@ -409,6 +343,9 @@ t_nostart:
 
 ; Start of the transition, not a frame handler.
 Title_GameTrans:
+    lda #$00
+    sta TmpX
+
     lda #95
     sta TitleScroll
 
@@ -435,11 +372,13 @@ Title_Trans_Frame_Fading:
 :
     lda frame_odd
     beq :+
-    lda #$0C
-    sta PaletteRAM+30
-    lda #$01
-    sta PaletteRAM+14
+    ;lda #$0C
+    ;sta PaletteRAM+30
+    ;lda #$01
+    ;sta PaletteRAM+14
     dec title_clear
+
+    jsr ClearSprites
 
     lda #<Title_Trans_Frame_Scrolling
     sta DoFramePointer
@@ -447,12 +386,83 @@ Title_Trans_Frame_Fading:
     sta DoFramePointer+1
 
     lda #PPU_CTRL_HORIZ
+    ora #$02
     sta TitlePPUCtrl
+
+    lda ttrans_draw_lookup
+    sta TmpAddr2
+    lda ttrans_draw_lookup+1
+    sta TmpAddr2+1
+
+    lda #$FF
+    sta TmpX
 
 :   lda #$FF
     sta frame_odd
     jmp t_nostart
     ;jmp WaitFrame
+
+ttrans_draw_00:
+    lda #$21
+    sta TmpAddr
+    lda #$C0
+    sta TmpAddr+1
+
+    lda #<Meta_Sky
+    sta meta_tile_addr
+    lda #>Meta_Sky
+    sta meta_tile_addr+1
+
+    lda #<ttrans_draw_01
+    sta TmpAddr2
+    lda #>ttrans_draw_01
+    sta TmpAddr2+1
+    jmp ttrans_draw_done
+
+ttrans_draw_01:
+    lda #$22
+    sta TmpAddr
+    lda #$00
+    sta TmpAddr+1
+
+    lda #<Meta_Ground
+    sta meta_tile_addr
+    lda #>Meta_Ground
+    sta meta_tile_addr+1
+
+    lda #<ttrans_draw_02
+    sta TmpAddr2
+    lda #>ttrans_draw_02
+    sta TmpAddr2+1
+    jmp ttrans_draw_done
+
+ttrans_draw_02:
+    lda #$22
+    sta TmpAddr
+    lda #$40
+    sta TmpAddr+1
+
+    lda #<Meta_Ground
+    sta meta_tile_addr
+    lda #>Meta_Ground
+    sta meta_tile_addr+1
+
+    lda #<ttrans_draw_03
+    sta TmpAddr2
+    lda #>ttrans_draw_03
+    sta TmpAddr2+1
+    jmp ttrans_draw_done
+
+ttrans_draw_03:
+    lda #$00
+    sta TmpX
+    jmp ttrans_draw_done
+
+ttrans_draw_lookup: ; pointing to routines that load a metatile to draw
+    .word ttrans_draw_00
+    .word ttrans_draw_01
+    .word ttrans_draw_02
+    .word ttrans_draw_03
 
 ; Scroll down to playfield
 Title_Trans_Frame_Scrolling:
@@ -468,10 +478,15 @@ Title_Trans_Frame_Scrolling:
     dec SPZ_Y
     lda SPZ_Y
 
+    jmp (TmpAddr2)
+
+ttrans_draw_done:
+
     lda TitleScroll
     cmp #$EF
     bne :+
 
+    ; Next segment
     lda #<Title_Trans_Frame_Load
     sta DoFramePointer
     lda #>Title_Trans_Frame_Load
@@ -492,6 +507,48 @@ Title_Trans_Frame_Load:
     inc gamestate_changed
     jmp WaitFrame
 
+ttrans_clear_title_loop:
+    stx $2006
+    sty $2006
+    tax
+    lda #$20
+:   sta $2007
+    dex
+    bne :-
+    rts
+
+ttrans_write_meta_row:
+    ldy #0
+    lda (meta_tile_addr), y
+    tax
+    iny
+    iny
+    lda (meta_tile_addr), y
+    ldy #8
+:   stx $2007
+    sta $2007
+
+    stx $2007
+    sta $2007
+    dey
+    bne :-
+
+    ldy #1
+    lda (meta_tile_addr), y
+    tax
+    iny
+    iny
+    lda (meta_tile_addr), y
+    ldy #8
+:   stx $2007
+    sta $2007
+
+    stx $2007
+    sta $2007
+    dey
+    bne :-
+    rts
+
 Title_Trans_NMI:
     bit title_clear
     bvc @noclear
@@ -499,63 +556,77 @@ Title_Trans_NMI:
     lda #0
     sta title_clear
 
-    ; Erase Title
-    lda #$22
-    sta $2006
-    lda #$4A
-    sta $2006
+    jsr WritePalettes
+    jsr WriteSprites
 
-    lda #$20
-    ldx #TitleSeedText - TitleText - 1
-:
-    sta $2007
-    dex
-    bne :-
+    ; Erase Title
+    ldx #$22
+    ldy #$4A
+
+    lda #TitleSeedText - TitleText - 1
+    jsr ttrans_clear_title_loop
 
     ; Erase items
-    ; TODO: make this dynamic just like
-    ;       drawing it in the first place is.
     ldx #$22
-    stx $2006
-    ldx #$AD
-    stx $2006
-
-    ldx #10
-:   sta $2007
-    dex
-    bne :-
+    ldy #$AD
+    lda #10
+    jsr ttrans_clear_title_loop
 
     ldx #$22
-    stx $2006
-    ldx #$ED
-    stx $2006
-
-    ldx #10
-:   sta $2007
-    dex
-    bne :-
+    ldy #$ED
+    lda #10
+    jsr ttrans_clear_title_loop
 
     ldx #$23
-    stx $2006
-    ldx #$2D
-    stx $2006
-
-    ldx #11
-:   sta $2007
-    dex
-    bne :-
+    ldy #$2D
+    lda #11
+    jsr ttrans_clear_title_loop
 
     ldx #$23
-    stx $2006
-    ldx #$6D
-    stx $2006
+    ldy #$6D
+    lda #7
+    jsr ttrans_clear_title_loop
 
-    ldx #7
-:   sta $2007
-    dex
-    bne :-
+    lda #<Meta_Sky
+    sta meta_tile_addr
+    lda #>Meta_Sky
+    sta meta_tile_addr+1
+
+    lda #$21
+    sta $2006
+    lda #$80
+    sta $2006
+    jsr ttrans_write_meta_row
+
+    lda #$23
+    sta $2006
+    lda #$E0
+    sta $2006
+
+    lda #$55
+    sta $2007
+    sta $2007
+    sta $2007
+    sta $2007
+    sta $2007
+    sta $2007
+    sta $2007
+    sta $2007
+    jmp @done
 
 @noclear:
+    ; load up a meta tile
+    ; draw one row
+    lda TmpX
+    beq @done
+
+    lda TmpAddr
+    sta $2006
+    lda TmpAddr+1
+    sta $2006
+    jsr ttrans_write_meta_row
+
+@done:
     bit $2002
     lda #0
     sta $2005
