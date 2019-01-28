@@ -288,24 +288,76 @@ title_Colors:
 @tf_wot:
     rts
 
-; This is the default frame
-Frame_Title:
-    jsr title_Colors
+; Move selection up
+t_sel_up:
+    dec TitleIndex
+    bpl :+
 
-    lda #BUTTON_SELECT
-    jsr ButtonPressedP1
-    beq @t_noselect
+    ; Wrap around to end
+    lda TitleLength
+    sec
+    sbc #1
+    sta TitleIndex
 
+:   rts
+
+; Move selection down
+t_sel_down:
     inc TitleIndex
     lda TitleIndex
     cmp TitleLength
-    bcc @t_sel_nowrap
+    bcc :+
 
     ; wrap the index around to zero
     lda #0
     sta TitleIndex
 
-@t_sel_nowrap:
+:   rts
+
+t_sel_go:
+    ldx TitleIndex
+    lda TitleGameStates, x
+    sta current_gamestate
+    cmp #STATES::GS_GAME
+    beq Title_GameTrans
+    inc gamestate_changed
+    rts
+
+; This is the default frame
+Frame_Title:
+    jsr title_Colors
+
+    lda #BUTTON_START
+    jsr ButtonPressedP1
+    beq :+
+    jsr t_sel_go
+    jmp @button_done
+
+:   lda #BUTTON_A
+    jsr ButtonPressedP1
+    beq :+
+    jsr t_sel_go
+    jmp @button_done
+
+:   lda #BUTTON_UP
+    jsr ButtonPressedP1
+    beq :+
+    jsr t_sel_up
+    jmp @button_done
+
+:   lda #BUTTON_DOWN
+    jsr ButtonPressedP1
+    beq :+
+    jsr t_sel_down
+    jmp @button_done
+
+:   lda #BUTTON_SELECT
+    jsr ButtonPressedP1
+    beq :+
+    jsr t_sel_down
+
+:
+@button_done:
     ; calculate Y for cursor
     lda TitleIndex
     asl a
@@ -316,19 +368,6 @@ Frame_Title:
     adc #TITLE_SPTOP
     sta SP_TITLEY0
     sta SP_TITLEY1
-
-@t_noselect:
-
-    lda #BUTTON_START
-    jsr ButtonPressedP1
-    beq t_nostart
-
-    ldx TitleIndex
-    lda TitleGameStates, x
-    sta current_gamestate
-    cmp #STATES::GS_GAME
-    beq Title_GameTrans
-    inc gamestate_changed
 
 t_nostart:
     bit $2002
