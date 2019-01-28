@@ -72,6 +72,7 @@ Scores_Init:
     lda #>Scores_Palette
     sta PaletteAddr+1
     jsr LoadPalettes
+    jsr WritePalettes
 
     lda #<Scores_Frame
     sta DoFramePointer
@@ -84,6 +85,7 @@ Scores_Init:
     sta DoNMIPointer+1
 
     jsr ClearSprites
+    jsr WriteSprites
     jsr ClearAttrTable0
 
     ; Debug stuff.  Overwrites save RAM
