@@ -45,6 +45,8 @@ Credits_Init:
     lda #0
     sta cr_chunkCurrent
     sta cr_tileBufferOffset
+    sta cr_scroll
+    sta cr_currentPPULine
 
     lda #$23
     sta cr_AttributeAddress
