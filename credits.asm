@@ -47,7 +47,7 @@ Credits_Init:
     jsr ClearSprites
 
     lda #0
-    ldx cr_currentAttrOffset
+    sta cr_currentAttrOffset
     sta cr_AttrSecondWrite
     sta cr_AttrTmp
     sta cr_AttributeReady
