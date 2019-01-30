@@ -7,7 +7,6 @@ import (
     "fmt"
     "os"
     "strings"
-    "time"
 )
 
 const CLEAR_TILE_ID = "$20"
@@ -146,7 +145,6 @@ func (c *GenericData) AsmString() string {
 
 type Subscriber struct {
     Username    string
-    Since       time.Time
     Tier        int
 }
 
@@ -155,14 +153,8 @@ func NewSub(row []string) (*Subscriber, error) {
         return nil, fmt.Errorf("Invalid row: %q", row)
     }
 
-    since, err := time.Parse(time.RFC3339, row[1])
-    if err != nil {
-        return nil, err
-    }
-
     sub := &Subscriber{
         Username: row[0],
-        Since:since,
         Tier: 1,
     }
 
@@ -203,7 +195,7 @@ func (s Subscriber) AttributeValue() uint {
 }
 
 func (s *Subscriber) String() string {
-    return fmt.Sprintf("%s: Tier %d since %s", s.Username, s.Tier, s.Since)
+    return fmt.Sprintf("%s: Tier %d", s.Username, s.Tier)
 }
 
 func main() {
@@ -252,7 +244,6 @@ func main() {
         dummyNames = true
     }
 
-    now := time.Now()
     if !dummyNames {
         file, err := os.Open(inputFile)
         if err != nil {
@@ -288,33 +279,33 @@ func main() {
         if verbose { fmt.Println("Using dummy names"); }
         subList = []DataChunk{
 
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"Almost Second", now, 1},
-            &Subscriber{"Second", now, 2},
-            &Subscriber{"Third", now, 3},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"First", now, 1},
-            &Subscriber{"Second", now, 2},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"Almost Second", 1},
+            &Subscriber{"Second", 2},
+            &Subscriber{"Third", 3},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"First", 1},
+            &Subscriber{"Second", 2},
 
             //&Subscriber{"01 Connie Klein", now, 1},
             //&Subscriber{"02 Stephanie Blake", now, 1},
@@ -429,7 +420,7 @@ func main() {
                 NewGenericData(CR_OP_ATTR, 0, []byte{0x0}),
             },
         },
-        &Subscriber{"Thank you!!", now, 1},
+        &Subscriber{"Thank you!!", 1},
         &GenericChunk{
             Comment:    "Bottom padding for Attribute",
             Attribute:  uint(0),
