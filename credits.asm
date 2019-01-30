@@ -1,3 +1,7 @@
+; FIXME:
+; Attribute write is miss-aligned with the
+; tile updates on reload of this screen.
+; Prolly something not getting init()'d correctly.
 
 CLEAR_TILE_ID   = ' '
 CR_T2_SPEED     = 8     ; color cycle speed (in frames) for the tier two names
@@ -43,10 +47,16 @@ Credits_Init:
     jsr ClearSprites
 
     lda #0
+    ldx cr_currentAttrOffset
+    sta cr_AttrSecondWrite
+    sta cr_AttrTmp
+    sta cr_AttributeReady
+    sta cr_UpdateReady
     sta cr_chunkCurrent
-    sta cr_tileBufferOffset
-    sta cr_scroll
     sta cr_currentPPULine
+    sta cr_scroll
+    sta cr_tileBufferOffset
+    sta cr_AttributeAddress+1
 
     lda #$23
     sta cr_AttributeAddress
@@ -408,6 +418,7 @@ cr_op_Attr:
     sta cr_AttributeByte
 
     ldx cr_currentAttrOffset
+    inc cr_currentAttrOffset
 
     lda PPU_AttrLookup_Low, x
     sta cr_AttributeAddress+1
@@ -417,8 +428,6 @@ cr_op_Attr:
     lda #0
     sta cr_AttrSecondWrite
     sta cr_AttrTmp
-
-    inc cr_currentAttrOffset
     rts
 
 @lastRow:
@@ -432,6 +441,7 @@ cr_op_Attr:
 @notChunkC:
     and #$0F
 
+; Last row stuff
 @notChunkCDone:
     sta cr_AttributeByte
 
