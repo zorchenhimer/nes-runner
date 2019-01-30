@@ -1,224 +1,207 @@
-; TODO:
-;   add an option to only draw the background on one nametable. (to be used on the title screen transition)
-
-; Master id of themes
-Background_Themes:
-    .word bg_data_City
-
-; Lookup table of lookup tables
-Background_Theme_Lookups:
-    .word bg_meta_City_Lookup
-
-; Increment the pointer to the theme data table (pointed to by TmpAddr).
-bg_IncrementAddress:
-    inc TmpAddr
-    bne :+
-    inc TmpAddr+1
-:   rts
-
-bg_WriteByte:
-    pha
-    dec TmpY
-    bne @noAddrSet
-
-    lda #12
-    sta TmpY
-
-    inc TmpX
-
-    lda TmpX
-    cmp bg_XNTSwitch ;#32
-    bne @noNTChange
-
-    ; Set second nametable
-    lda bg_ZNT1
-    sta TmpZ
-
-    bpl :+
-    pla
-    rts
-
-:   lda #12
-    sta TmpY
-
-    lda bg_XStart
-    sta TmpX
-
-@noNTChange:
-    bit $2000
-    lda TmpZ
-    sta $2006
-    lda TmpX
-    sta $2006
-
-    clc
-    adc #1
-    cmp #32
-    bne @noAddrSet
-
-@noAddrSet:
-    pla
-    bit TmpZ
-    bpl :+
-    rts
-:   sta $2007
-    rts
-
-; Background data index in A
-DrawBackground:
+; Load the palette with ID BGTheme into RAM
+bg_loadPalette:
+    lda BGTheme
+    asl a
     asl a
     tax
-
-    lda #PPU_CTRL_VERT
-    sta $2000
-    bit $2000
-
-    lda #13
-    sta TmpY    ; row - Counts down from 12. on zero, increment TmpX.
-
-    lda bg_ZNT0
-    sta TmpZ    ; nametable
-    sta $2006
-
-    lda bg_XStart
-    sta TmpX    ; column - max of 32 per nametable
-    sta $2006
-
-    ; Load up the pointer to the column metadata
-    lda Background_Themes, x
-    sta bg_data_pointer
-    lda Background_Themes+1, x
-    sta bg_data_pointer+1
-
-    ; Load up the pointer to the meta column lookup table
-    lda Background_Theme_Lookups, x
-    sta bg_lookup_pointer
-    lda Background_Theme_Lookups+1, x
-    sta bg_lookup_pointer+1
-
-    lda #0
-    sta frame_odd
-    sta TmpCounter
-@bg_loop:
-    ldy TmpCounter
-    lda frame_odd
-    beq @firstHalf
-    ; second half of data byte
-
-    ; load column metadata id
-    ; eg, an ID out of the bg_data_City table
-    lda (bg_data_pointer), y
-    and #$0F
-    asl a   ; offset for a word table
-    tay
-    jmp @readData
-
-@firstHalf:
-    lda (bg_data_pointer), y
-    and #$F0
-    lsr a   ; offset for a word table
-    lsr a
-    lsr a
-    tay
-
-@readData:
-    ; Lookup the ID from above in bg_meta_City_Lookup table
-    lda (bg_lookup_pointer), y
-    tax
-    iny
-    lda (bg_lookup_pointer), y
-    tay
-
-    ; Save the pointer to the meta column definition
-    ; (eg, the address for bg_meta_City_02)
-    txa
-    sta bg_lookup_data_pointer
-    tya
-    sta bg_lookup_data_pointer+1
-
-    ; Draw a column of 11 (+1 duplicate) tiles
-    jsr bg_DrawColumn
-
-    lda frame_odd
-    bne @IncIndex
-    lda #1
-    sta frame_odd
-    jmp @bg_loop
-
-@IncIndex:
-    lda #0
-    sta frame_odd
-
-    ; Draw 64 columns of tiles
-    inc TmpCounter
-    ldy TmpCounter
-    cpy #32
-    bne @bg_loop
-
-    lda #PPU_CTRL_HORIZ
-    sta $2000
-
-    ; Load up the palette
-    ldx #31
+    ldy #31
 :
-    lda (bg_data_pointer), y
-    sta PaletteRAM, x
-    dex
-    iny
-    cpy #36
+    lda bg_table_palettes, x
+    sta PaletteRAM, y
+    inx
+    dey
+    cpy #27
     bne :-
+    rts
+
+; A is the row offset
+bg_writePPUAddress:
+    tax ; used as the loop counter
+    ; Find the correct offest for the given Y (row) start
+    ; while (x > 0)
+    lda #0
+@loop:
+    cpx #0
+    beq @foundStart
+
+    ; A += 32
+    clc
+    adc #32
+
+    ; if A > 256 (wrapped around)
+    bcc @next
+    iny    ; Y++
+
+@next:
+    ; X--
+    dex
+    jmp @loop
+@foundStart:
+
+    bit $2002
+    sty $2006
+    clc
+    adc bg_current_column
+    sta $2006
+    rts
 
 ; This is the transition row, but I cannot assign a palette to it
 ; because it doesn't align with the attribute table.  Instead,
 ; use the last (unused) byte of the background palette.
-    bit $2002
-    lda bg_TransHigh0
-    sta $2006
-    lda bg_TransLow
-    sta $2006
+bg_drawTransition:
+    lda #0
+    sta bg_current_column
 
-    lda (bg_data_pointer), y
-    sta TmpCounter
-    bit bg_ZNT1
-    bpl :+
-    ldx #8
-    jmp @transitionLoop
-:   ldx #16
-@transitionLoop:
+    ; get the nametable
+    ldy BGNametable ; Y == high byte (eg $20)
 
-    ldy TmpCounter
-    tya
-    sta $2007
-    iny
-    tya
-    sta $2007
-    iny
-    tya
-    sta $2007
-    iny
-    tya
-    sta $2007
+    ; Add 12 rows to the start.  This will be drawn at the bottom of everything.
+    lda BGYStart    ; low byte (eg $00)
+    clc
+    adc #11
+    bcc @noRollover
+    iny ; roll over if needed
+@noRollover:
+    jsr bg_writePPUAddress
 
-    cpx #9
-    beq @secondNT
+    ; Load tile ID to start at
+    ldy BGTheme
+    ldx bg_table_transitions, y
+    stx TmpX
 
-    dex
-    bne @transitionLoop
+    ; Draw in chunks of four tiles
+    ldy #8
+:   ldx TmpX
+    stx $2007
+    inx
+    stx $2007
+    inx
+    stx $2007
+    inx
+    stx $2007
+    dey
+    bne :-
+
     rts
 
-@secondNT:
-    ; on the second nametable
-    dex
+bg_drawOneScreen:
+    lda #0
+    sta bg_current_column
 
-    bit $2002
-    lda bg_TransHigh1
-    sta $2006
-    lda bg_TransLow
-    sta $2006
-    jmp @transitionLoop
+    lda #PPU_CTRL_VERT
+    sta $2000
+
+    lda BGTheme
+    asl a
+    tax
+
+    ; Load up a screen data address
+    ldy BGNametable
+    cpy #$20
+    beq @left
+    cpy #$28
+    beq @left
+
+    ; right.  screen b
+    lda bg_table_screen_B, x
+    sta TmpAddr
+    inx
+    lda bg_table_screen_B, x
+    sta TmpAddr+1
+    jmp @loadColumns
+
+@left:
+    ; left. screen a
+    lda bg_table_screen_A, x
+    sta TmpAddr
+    inx
+    lda bg_table_screen_A, x
+    sta TmpAddr+1
+
+; start loading up the columns
+@loadColumns:
+
+    ; Get the address of the table that contains meta column definitions
+    dex
+    lda bg_table_column_lookups, x
+    sta bg_meta_data_pointer
+    inx
+    lda bg_table_column_lookups, x
+    sta bg_meta_data_pointer+1
+
+    lda #0
+    sta bg_odd
+    sta TmpY
+
+; load a column. loop this 32 times
+@loadLoop:
+    ldy TmpY
+    lda (TmpAddr), y    ; load a byte with two column IDs
+    bit bg_odd          ; split the byte
+    bvs @secondNibble
+
+    ; first nibble
+    and #$F0
+    lsr a
+    lsr a
+    lsr a
+    jmp @drawcolumn
+
+@secondNibble:
+    and #$0F
+    asl a
+
+@drawcolumn:
+    ; A now contains the offeset of the meta column address in the table
+    ; load the address of the meta column definition into bg_lookup_data_pointer
+    tay
+    lda (bg_meta_data_pointer), y
+    sta bg_lookup_data_pointer
+    iny
+    lda (bg_meta_data_pointer), y
+    sta bg_lookup_data_pointer+1
+
+    jsr bg_DrawColumn
+    inc bg_current_column
+
+    ; Flip flop bg_odd
+    lda bg_odd
+    beq :+
+
+    ; increment read byte (indexed in TmpY) ever other read
+    lda #0
+    sta bg_odd
+    inc TmpY
+    jmp :++
+
+:   lda #$FF
+    sta bg_odd
+:
+
+    lda bg_current_column
+    cmp #32     ; only draw 32 columns
+    bne @loadLoop
+    rts
+
+; Draw a screen of twevle columns
+DrawBackground:
+    jsr bg_loadPalette
+    jsr WritePalettes
+
+    jsr bg_drawTransition
+
+    jsr bg_drawOneScreen
+
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+    rts
 
 ; Draw a column of 11 (+1 duplicate) tiles
 bg_DrawColumn:
+    lda BGYStart
+    ldy BGNametable
+    jsr bg_writePPUAddress
+
     ; Load up the CHR row
     ldy #0
     lda (bg_lookup_data_pointer), y
@@ -228,7 +211,8 @@ bg_DrawColumn:
     ; Reload tile and draw it
     lda (bg_lookup_data_pointer), y
 
-    jsr bg_WriteByte
+    ;jsr bg_WriteByte
+    sta $2007
 
     ; Unpack tiles and OR them with the CHR row
     ; id to get the real tile ID
@@ -244,23 +228,20 @@ bg_DrawColumn:
     lsr a
     lsr a
 
-    ora bg_tile_row     ; get real tile ID
-    jsr bg_WriteByte    ; draw it
+    ora bg_tile_row ; get real tile ID
+    sta $2007       ; draw it
 
     ; Second half of byte
     lda (bg_lookup_data_pointer), y
     and #$0F
-    ora bg_tile_row     ; get real tile ID
-    jsr bg_WriteByte    ; draw it
+    ora bg_tile_row ; get real tile ID
+    sta $2007       ; draw it
     iny
 
     ; six total bytes of data
     cpy #6
     bne @loop
-
-    ; Redraw the last byte.  This will be overwritten eventually.
-    jmp bg_WriteByte
-    ;rts
+    rts
 
 ; Meta rows
 ;   Define a column of tiles.  Reference these columns in the data.
@@ -269,6 +250,41 @@ bg_DrawColumn:
 ;   First byte, first half is row of CHR. second byte is first tile.
 ;   Five more bytes of two tiles each.
 ;   Last tile row is drawn as one "transition line" between the background and forground.
+
+; Table of palettes.
+bg_table_palettes:
+    .byte $1A,$04,$34,$0F ;$24
+
+; Table of transition tile start IDs
+bg_table_transitions:
+    .byte $70
+
+; table of pointers the first screen's column data
+bg_table_screen_A:
+    .word bg_meta_city_screen_a
+
+; table of pointers the second screen's column data
+bg_table_screen_B:
+    .word bg_meta_city_screen_b
+
+; table of lookup tables that define columns
+bg_table_column_lookups:
+    .word bg_meta_City_Lookup
+; No more tables use the BackgroundThemes index
+
+; Meta column definitions.  Two per byte.
+; Each screen has 32 columns in 16 bytes.
+bg_meta_city_screen_a:
+    .byte $01, $23, $41, $BC
+    .byte $01, $23, $41, $56
+    .byte $BC, $D3, $41, $56
+    .byte $01, $23, $47, $89
+
+bg_meta_city_screen_b:
+    .byte $A2, $13, $41, $56
+    .byte $34, $01, $21, $BC
+    .byte $01, $23, $41, $56
+    .byte $BC, $D3, $41, $BC
 
 ; pointed to by bg_lookup_data_pointer
 bg_meta_City_A_Left:    .byte $10, $00, $01, $AB, $23, $AB
@@ -305,20 +321,3 @@ bg_meta_City_Lookup:
     .word bg_meta_City_F_Right
     .word bg_meta_City_G
 
-; pointed to by bg_data_pointer
-; Each byte contains two tile columns
-bg_data_City:
-    .byte $01, $23, $41, $BC
-    .byte $01, $23, $41, $56
-    .byte $BC, $D3, $41, $56
-    .byte $01, $23, $47, $89
-    .byte $A2, $13, $41, $56
-    .byte $34, $01, $21, $BC
-    .byte $01, $23, $41, $56
-    .byte $BC, $D3, $41, $BC
-
-    ; Palette data
-    .byte $1A,$04,$34,$0F ;$24
-
-    ; Start byte for the four transition tiles
-    .byte $70

@@ -16,8 +16,8 @@ Game_Init:
     ; Clear sprites and nametables
     jsr ClearSprites
 
-    jsr ClearNametable0
-    jsr ClearNametable1
+    ;jsr ClearNametable0
+    ;jsr ClearNametable1
 
     jsr ClearAttrTable0
     jsr ClearAttrTable1
@@ -28,24 +28,14 @@ Game_Init:
     sta PaletteAddr+1
     jsr LoadPalettes
 
+    lda #BackgroundThemes::City
+    sta BGTheme
+
     lda #$24
-    sta bg_ZNT1
+    sta BGNametable
 
-    lda #$20
-    sta bg_XNTSwitch
-    sta bg_ZNT0
-
-    lda #$21
-    sta bg_TransHigh0
-
-    lda #$25
-    sta bg_TransHigh1
-
-    lda #$60
-    sta bg_TransLow
-
-    lda #$00  ; background theme ID
-    sta bg_XStart
+    lda #$00
+    sta BGYStart
     jsr DrawBackground
 
     bit $2000
@@ -274,12 +264,9 @@ Game_Init:
 
 ; Draw row for sprite zero to collide with
     lda #$0F
-    ldx #0
-@statusBarRow1:
+.repeat 32
     sta $2007
-    inx
-    cpx #32
-    bne @statusBarRow1
+.endrepeat
 
     lda #$26
     sta $2006
@@ -291,12 +278,9 @@ Game_Init:
 
     ; Same as above, but for second nametable
     lda #$0F
-    ldx #0
-@statusBarRow2:
+.repeat 32
     sta $2007
-    inx
-    cpx #32
-    bne @statusBarRow2
+.endrepeat
 
     lda #$22
     sta $2006
@@ -330,10 +314,9 @@ Game_Init:
 ;; End of Game_Init
 
 game_DrawAttributeRow:
-    ldx #8
-:   sta $2007
-    dex
-    bne :-
+.repeat 8
+    sta $2007
+.endrepeat
     rts
 
 Game_NMI:

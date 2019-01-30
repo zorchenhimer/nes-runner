@@ -23,56 +23,30 @@ InitTitle:
     sta TitleIndex
 
     jsr ClearSprites
-    jsr ClearNametable0
     jsr ClearAttrTable0
-    jsr ClearNametable2
     jsr ClearAttrTable2
 
 ; Draw the visible Skyline
-    lda #$FF
-    sta bg_ZNT1
+    lda #BackgroundThemes::City
+    sta BGTheme
 
     lda #$28
-    sta bg_ZNT0
+    sta BGNametable
 
     lda #$00
-    sta bg_XStart
-
-    lda #$20
-    sta bg_XNTSwitch
-
-    lda #$29
-    sta bg_TransHigh0
-
-    lda #$27
-    sta bg_TransHigh1
-
-    lda #$60
-    sta bg_TransLow
-
-    lda #0
+    sta BGYStart
     jsr DrawBackground
 
 ; Draw the offscreen skyline
-    lda #$FF
-    sta bg_ZNT1
-
     lda #$20
-    sta bg_ZNT0
-    sta bg_XNTSwitch
-
-    lda #$21
-    sta bg_TransHigh0
-
-    lda #$27    ; doesn't matter
-    sta bg_TransHigh1
-
-    lda #$60
-    sta bg_TransLow
+    sta BGNametable
 
     lda #$00
-    sta bg_XStart
+    sta BGYStart
     jsr DrawBackground
+
+    lda PPU_CTRL_HORIZ
+    sta $2000
 
 ; Attributes for skyline
     lda #$2B
@@ -80,21 +54,19 @@ InitTitle:
     lda #$C0
     sta $2006
 
-    ldx #24
     lda #$55
-:   sta $2007
-    dex
-    bne :-
+.repeat 24
+    sta $2007
+.endrepeat
 
     ldx #$23
     stx $2006
     ldx #$C0
     stx $2006
 
-    ldx #24
-:   sta $2007
-    dex
-    bne :-
+.repeat 24
+    sta $2007
+.endrepeat
 
 ; Init the cursor sprite
     ; Y coord

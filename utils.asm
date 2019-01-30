@@ -87,10 +87,12 @@ LoadPalettes:
 
 ClearSprites:
     ldx #$00
-@loop:
     lda #$00
+@loop:
+.repeat 4
     sta $0200, x
     inx
+.endrepeat
     bne @loop
     rts
 
@@ -166,18 +168,13 @@ utils_ClearNametable:
     lda #00
     sta $2006
 
-    ldx #0
-    ldy #0
+    ldx #30
     lda clear_nt_tile
 @loop2:
+.repeat 32
     sta $2007
-    inx
-    cpx #$20
-    bne @loop2
-
-    iny
-    ldx #0
-    cpy #$1E
+.endrepeat
+    dex
     bne @loop2
     rts
 
@@ -208,10 +205,12 @@ ClearAttrTable3:
 utils_ClearAttrTable:
     lda #$C0
     sta $2006
-    ldx #64
+    ldx #8
     lda #$00
 @loop:
+.repeat 8
     sta $2007
+.endrepeat
     dex
     bne @loop
     rts

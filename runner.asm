@@ -169,19 +169,13 @@ rngFlipFlop:        .res 1
 SavedScore:         .res 4  ; Address of a score
 TmpScoreEntry:      .res 16
 
-bg_tile_row:            .res 1
-bg_data_pointer:        .res 2
-bg_lookup_pointer:      .res 2
+bg_TransStart:          .res 1
+bg_current_column:      .res 1
 bg_lookup_data_pointer: .res 2
-
-bg_XStart:      .res 1
-bg_XNTSwitch:   .res 1
-bg_ZNT0:        .res 1
-bg_ZNT1:        .res 1
-
-bg_TransHigh0:  .res 1
-bg_TransHigh1:  .res 1
-bg_TransLow:    .res 1
+bg_lookup_pointer:      .res 2
+bg_meta_data_pointer:   .res 2
+bg_odd:                 .res 1
+bg_tile_row:            .res 1
 
 .segment "SAVERAM"
     ; battery backed RAM
@@ -198,6 +192,16 @@ TileBuffer:         .res 64
 ; Start address to draw the tile_column_buffer
 tile_column_addr_high:  .res 1
 tile_column_addr_low:   .res 1
+
+; Parameters for background drawing
+BGNametable:    .res 1  ; High byte of nametable: $20, $24, $28, or $2C
+BGYStart:       .res 1  ; Number of rows down the screen to draw
+BGTheme:        .res 1  ; Theme ID of the background
+
+; ID's (indexes) for themes
+.enum BackgroundThemes
+    City
+.endenum
 
 DED_START_PAL   = $03AA
 DED_SPZ_PAL     = $039E
