@@ -21,14 +21,14 @@ InitTitle:
     lda #$80
     sta $2006
 
-;    lda #$20
-;    ldx #18
-;:
-;.repeat 32
-;    sta $2007
-;.endrepeat
-;    dex
-;    bne :-
+    lda #$20
+    ldx #18
+:
+.repeat 32
+    sta $2007
+.endrepeat
+    dex
+    bne :-
 
 ; Load the title palette's ROM addr
     lda #<TitlePalette
