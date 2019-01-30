@@ -9,6 +9,27 @@ InitTitle:
     sta $2001
     inc SkipNMI
 
+    lda #$3F
+    sta $2006
+    lda #$00
+    sta $2006
+    lda #$0F
+    sta $2007
+
+    lda #$21
+    sta $2006
+    lda #$80
+    sta $2006
+
+;    lda #$20
+;    ldx #18
+;:
+;.repeat 32
+;    sta $2007
+;.endrepeat
+;    dex
+;    bne :-
+
 ; Load the title palette's ROM addr
     lda #<TitlePalette
     sta PaletteAddr
@@ -17,7 +38,7 @@ InitTitle:
 
     ; Then load ROM -> RAM
     jsr LoadPalettes
-    jsr WritePalettes
+    ;jsr WritePalettes
 
     lda #0
     sta TitleIndex
@@ -25,20 +46,6 @@ InitTitle:
     jsr ClearSprites
     jsr ClearAttrTable0
     jsr ClearAttrTable2
-
-    lda #$21
-    sta $2006
-    lda #$80
-    sta $2006
-
-    lda #$20
-    ldx #18
-:
-.repeat 32
-    sta $2007
-.endrepeat
-    dex
-    bne :-
 
 ; Draw the visible Skyline
     lda #BackgroundThemes::City
