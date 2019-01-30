@@ -26,6 +26,20 @@ InitTitle:
     jsr ClearAttrTable0
     jsr ClearAttrTable2
 
+    lda #$21
+    sta $2006
+    lda #$80
+    sta $2006
+
+    lda #$20
+    ldx #18
+:
+.repeat 32
+    sta $2007
+.endrepeat
+    dex
+    bne :-
+
 ; Draw the visible Skyline
     lda #BackgroundThemes::City
     sta BGTheme
