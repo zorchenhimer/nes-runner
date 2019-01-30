@@ -186,7 +186,6 @@ bg_drawOneScreen:
 ; Draw a screen of twevle columns
 DrawBackground:
     jsr bg_loadPalette
-    jsr WritePalettes
 
     jsr bg_drawTransition
 

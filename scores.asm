@@ -72,7 +72,6 @@ Scores_Init:
     lda #>Scores_Palette
     sta PaletteAddr+1
     jsr LoadPalettes
-    jsr WritePalettes
 
     lda #<Scores_Frame
     sta DoFramePointer
@@ -387,6 +386,7 @@ Scores_Frame:
     jmp WaitFrame
 
 Scores_NMI:
+    jsr WritePalettes
 
     ; scroll to the first nametable
     lda #$00
