@@ -89,12 +89,8 @@ Credits_Init:
     sta $2005
     sta $2005
 
-    lda #%00011110
-    sta $2001
     lda #CR_TOP
     sta cr_scroll_table
-    lda #0
-    sta SkipNMI
     rts
 
 Credits_WriteAttr:
