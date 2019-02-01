@@ -195,7 +195,7 @@ Game_Init:
     inx
     inx
     iny
-    cpx #4*4
+    cpx #4*5
     bne @pyloop
 
     ; initial value for fading paused palette
@@ -963,7 +963,7 @@ g_PausedSprites_On:
     inx
     inx
     iny
-    cpx #4*4    ; four sprites, for bytes each
+    cpx #4*5    ; four sprites, for bytes each
     bne @loop
     rts
 
@@ -977,7 +977,7 @@ g_PausedSprites_Off:
     inx
     inx
     inx
-    cpx #4*4
+    cpx #4*5
     bne @loop
     rts
 
@@ -1187,7 +1187,7 @@ PAUSED_Y    = 25
 PAUSED_ATTR = $02
 PAUSED_PAL  = PaletteRAM+6
 PausedSprites:
-    .byte $09, $0A, $0B, $0C
+    .byte $09, $0A, $0B, $0C, $0D
 
 PausedPalTable:
     .byte $00,$10,$20,$10
