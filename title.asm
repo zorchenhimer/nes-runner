@@ -66,9 +66,6 @@ InitTitle:
     sta BGYStart
     jsr DrawBackground
 
-    lda PPU_CTRL_HORIZ
-    sta $2000
-
 ; Attributes for skyline
     lda #$2B
     sta $2006

@@ -122,7 +122,7 @@ Ded_Frame:
     lda #>TitlePalette
     sta PaletteAddr+1
     jsr LoadPalettes
-    jsr WritePalettes
+    ;jsr WritePalettes
 
     lda #$21
     sta $2006
