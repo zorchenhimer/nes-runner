@@ -3,7 +3,7 @@
 ; tile updates on reload of this screen.
 ; Prolly something not getting init()'d correctly.
 
-CLEAR_TILE_ID   = ' '
+CLEAR_TILE_ID   = 0
 CR_T2_SPEED     = 8     ; color cycle speed (in frames) for the tier two names
 
 Credits_Init:
