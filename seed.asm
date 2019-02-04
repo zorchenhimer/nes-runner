@@ -336,7 +336,7 @@ seed_DrawBox:
     cpx #$08
     bne @BoxB
 
-    ldx #$05
+    ldx #$0D
     stx $2007
 
     rts
@@ -587,7 +587,7 @@ NumberAttrLookup:
 
 SeedPalette:
     ;      input box,       inputed val
-    .byte $0F,$10,$2D,$0F, $0F,$30,$10,$0F, $0F,$15,$0F,$0F, $0F,$11,$11,$11
+    .byte $0F,$10,$2D,$0F, $0F,$30,$10,$30, $0F,$15,$0F,$0F, $0F,$11,$11,$11
     ;       current char    prev             next
     .byte $0F,$30,$30,$30, $0F,$2D,$00,$10, $0F,$10,$00,$2D, $0F,$11,$11,$11
     .byte $EA, $EA
