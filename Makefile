@@ -15,7 +15,7 @@ NESCFG = nes_001.cfg
 NAME = runner
 
 # any CHR files included
-CHR = runner.chr credits.chr
+CHR = runner_00.chr runner_01.chr credits_00.chr credits_01.chr
 
 # List of all the sources files
 SOURCES = $(NAME).asm nes2header.inc game.asm \
@@ -27,15 +27,15 @@ SOURCES = $(NAME).asm nes2header.inc game.asm \
 RM = rm
 TVFORMAT = -D NTSC
 
-.PHONY: clean default cleanSym symbols clrNames pal set_pal
+.PHONY: clean default cleanSym symbols pal set_pal
 
 default: all
 all: bin/$(NAME).nes
 symbols: cleanSym bin/$(NAME).mlb
 names: clrNames credits_data.i bin/$(NAME).nes
 
-clean: clrNames
-	-$(RM) bin/*.* credits_data.i
+clean:
+	-$(RM) bin/*.* credits_data.i *.chr
 cleanSym:
 	-$(RM) bin/*.mlb
 
@@ -45,6 +45,9 @@ pal: set_pal all
 
 bin/:
 	mkdir bin
+
+%.chr: %.bmp
+	go run ./bmp2chr.go -i $< -o $@
 
 bin/$(NAME).o: bin/ $(SOURCES) $(CHR)
 	$(CA) -g \

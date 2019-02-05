@@ -6,5 +6,5 @@ bin/
 *.mlb
 *.nl
 *.deb
-*.bmp
 *.csv
+*.chr

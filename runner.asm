@@ -30,10 +30,12 @@ nes2tv 'N'
 nes2end
 
 .segment "PATTERN0"
-    .incbin "runner.chr"
+    .incbin "runner_00.chr"
+    .incbin "runner_01.chr"
 
 .segment "PATTERN1"
-    .incbin "credits.chr"
+    .incbin "credits_00.chr"
+    .incbin "credits_01.chr"
 
 .segment "VECTORS"
     .word NMI
