@@ -225,6 +225,16 @@ GameOverWait:
     sta PaletteRAM+28
     sta PaletteRAM+20
 
+    sta PaletteRAM+3
+    sta PaletteRAM+7
+    sta PaletteRAM+11
+    sta PaletteRAM+15
+
+    sta PaletteRAM+19
+    sta PaletteRAM+23
+    sta PaletteRAM+27
+    sta PaletteRAM+31
+
     ; "press start" fade thing
     dec TmpY
     bne @noColor
