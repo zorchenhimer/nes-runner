@@ -68,22 +68,13 @@ InitTitle:
     jsr DrawBackground
 
 ; Attributes for skyline
-    lda #$2B
+    lda #$23
     sta $2006
-    lda #$C0
+    lda #$D8
     sta $2006
 
     lda #$55
-.repeat 24
-    sta $2007
-.endrepeat
-
-    ldx #$23
-    stx $2006
-    ldx #$C0
-    stx $2006
-
-.repeat 24
+.repeat 32
     sta $2007
 .endrepeat
 
@@ -269,7 +260,7 @@ title_Colors:
 
     ; load palette into ram
     lda TitleColor
-    sta PaletteRAM+30
+    sta PaletteRAM+26
 
     ;lda #$0F
     ;sta PaletteRAM+31
@@ -412,6 +403,16 @@ Title_BG6:
     .byte $D3, $D1, $D5, $D1, $D5, $D1, $D5, $D1, $D5
 
 TitlePalette:
-    .byte $1A,$30,$21,$15, $1A,$04,$34,$0F, $1A,$0A,$39,$06, $1A,$17,$25,$35
-    .byte $1A,$10,$00,$30, $1A,$05,$05,$05, $1A,$0A,$0A,$0A, $1A,$0F,$11,$11
+    ; Background
+    .byte $1A,$04,$34,$0F
+    .byte $1A,$17,$25,$0F
+    .byte $1A,$0A,$39,$06
+    .byte $1A,$30,$21,$15
+
+    ; Sprites
+    .byte $1A,$10,$00,$30
+    .byte $1A,$05,$05,$05
+    .byte $1A,$0A,$0A,$0A
+    .byte $1A,$0F,$11,$11
+
     .byte $EA, $EA
