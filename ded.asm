@@ -215,8 +215,6 @@ Ded_Frame:
     lda #$AA
     sta $2007
 
-    dec TurnPPUOn
-
     lda #0
     sta SkipNMI
 

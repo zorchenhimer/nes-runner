@@ -97,7 +97,6 @@ current_gamestate:  .res 1
 PauseOn:        .res 1
 PauseOff:       .res 1
 SkipNMI:        .res 1
-TurnPPUOn:      .res 1
 
 TmpCounter:     .res 1
 TmpAttr:        .res 1
@@ -152,8 +151,6 @@ PPU_MASK_OFF    = %00000110
 PAGEID_GAME     = 0
 PAGEID_CREDITS  = 1
 PAGEID_IDK      = 2
-
-CURRENT_PAGE    = $8000
 
 Seed_Attr_Buffer:   .res 5
 Seed_Input0:        .res 1
@@ -383,13 +380,8 @@ NMI:
     lda SkipNMI
     bne NMI_skip
 
-    bit TurnPPUOn
-    bvc @skipOn
-
     lda #PPU_MASK
     sta $2001
-    lda #0
-    sta TurnPPUOn
 
 @skipOn:
     lda gamestate_changed
@@ -402,9 +394,6 @@ NMI:
     jmp (DoNMIPointer)
 
 NMI_Finished:
-    ; Decrement this to write the PPU mask every NMI
-    dec TurnPPUOn
-
     lda #0
     sta SkipNMI
 

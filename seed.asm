@@ -129,8 +129,6 @@ InitSeed:
     ; draw stuff on background
     ;   boxes for input
     ;   current values
-
-    dec TurnPPUOn
     rts
 
 ; Load up the current seed and set the input values to it.

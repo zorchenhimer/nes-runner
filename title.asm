@@ -217,8 +217,6 @@ InitTitle:
     sta $2005
     lda #95
     sta $2005
-
-    dec TurnPPUOn
     rts
 
 NMI_Title:
