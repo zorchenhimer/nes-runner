@@ -176,6 +176,11 @@ bg_meta_data_pointer:   .res 2
 bg_odd:                 .res 1
 bg_tile_row:            .res 1
 
+framesub_index:     .res 1
+framesub_next:      .res 1
+framesub_pointer:   .res 2
+nmisub_pointer:     .res 2
+
 .segment "SAVERAM"
     ; battery backed RAM
 rng_seed:       .res 2
@@ -509,6 +514,7 @@ GameState_InitTable:
     .word InitSeed
 
     .include "title.asm"
+    .include "title_trans.asm"
     .include "scores.asm"
     .include "utils.asm"
     .include "seed.asm"

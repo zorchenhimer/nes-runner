@@ -21,7 +21,8 @@ CHR = runner_00.chr runner_01.chr credits_00.chr credits_01.chr
 SOURCES = $(NAME).asm nes2header.inc game.asm \
 		  background.asm utils.asm utils_ram.asm \
 		  title.asm ded.asm seed.asm scores.asm \
-		  credits.asm credits_ram.asm credits_data.i
+		  credits.asm credits_ram.asm credits_data.i \
+		  title_trans.asm
 
 # misc
 RM = rm
