@@ -181,6 +181,8 @@ framesub_next:      .res 1
 framesub_pointer:   .res 2
 nmisub_pointer:     .res 2
 
+GameFullInit:       .res 1
+
 .segment "SAVERAM"
     ; battery backed RAM
 rng_seed:       .res 2
@@ -375,10 +377,8 @@ WriteSprites:
     rts
 
 NMI:
-    pha
-    txa
-    pha
-    tya
+    ; Only backup A.  If the NMI isn't skipped, X and Y are not in the middle
+    ; of counting something (ie, the CPU is in the WaitFrame loop).
     pha
 
     ; Skip NMI if we're currently drawing the whole screen
@@ -405,10 +405,6 @@ NMI_Finished:
 NMI_skip:
     lda #0
     sta sleeping
-    pla
-    tay
-    pla
-    tax
     pla
     rti
 
