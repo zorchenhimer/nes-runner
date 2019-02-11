@@ -1,15 +1,23 @@
 
 export PATH := $(PATH):../tools/cc65/bin
 
+EXT=
+ifeq ($(OS),Windows_NT)
+EXT=.exe
+endif
+
 # Assembler and linker paths
 CA = ca65
 LD = ld65
 
-# Tool to generate credits data
-CR = go run generate-credits.go
-
 # Mapper configuration for linker
 NESCFG = nes_001.cfg
+
+# Tool that generates CHR data from Bitmap images
+BMP2CHR = bmp2chr$(EXT)
+
+# Tool that generates credits from an input CSV file
+GENCRED = generate-credits$(EXT)
 
 # Name of the main source file, minus the extension
 NAME = runner
@@ -36,7 +44,7 @@ symbols: cleanSym bin/$(NAME).mlb
 names: clrNames credits_data.i bin/$(NAME).nes
 
 clean:
-	-$(RM) bin/*.* credits_data.i *.chr
+	-$(RM) bin/*.* credits_data.i *.chr $(BMP2CHR) $(GENCRED)
 cleanSym:
 	-$(RM) bin/*.mlb
 
@@ -47,8 +55,14 @@ pal: set_pal all
 bin/:
 	mkdir bin
 
-%.chr: %.bmp
-	go run ./bmp2chr.go -i $< -o $@
+%.chr: %.bmp $(BMP2CHR)
+	./$(BMP2CHR) -i $< -o $@
+
+$(BMP2CHR): bmp2chr.go
+	go build bmp2chr.go
+
+$(GENCRED): generate-credits.go
+	go build generate-credits.go
 
 bin/$(NAME).o: bin/ $(SOURCES) $(CHR)
 	$(CA) -g \
@@ -63,6 +77,6 @@ bin/$(NAME).nes: bin/$(NAME).o $(NESCFG)
 		--dbgfile bin/$(NAME).dbg \
 		bin/$(NAME).o
 
-credits_data.i:
-	$(CR) -x zorchenhimer -o credits_data.i -i subscriber-list.csv
+credits_data.i: $(GENCRED)
+	./$(GENCRED) -x zorchenhimer -o credits_data.i -i subscriber-list.csv
 
