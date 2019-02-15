@@ -9,6 +9,8 @@ InitTitle:
     sta $2001
     inc SkipNMI
 
+    jsr ClearSprites
+
     bit $2002
     lda #$3F
     sta $2006

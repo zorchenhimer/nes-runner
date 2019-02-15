@@ -44,9 +44,9 @@ InitSeed:
     lda #$86
     sta $2006
 
-    lda #$EE
+    lda #$50
     sta $2007
-    lda #$FE
+    lda #$60
     sta $2007
 
     ; Rando button; right column
@@ -55,9 +55,9 @@ InitSeed:
     lda #$87
     sta $2006
 
-    lda #$EF
+    lda #$51
     sta $2007
-    lda #$FF
+    lda #$61
     sta $2007
 
     lda #$21
@@ -585,7 +585,7 @@ NumberAttrLookup:
 
 SeedPalette:
     ;      input box,       inputed val
-    .byte $0F,$10,$2D,$0F, $0F,$30,$10,$30, $0F,$15,$0F,$0F, $0F,$11,$11,$11
+    .byte $0F,$10,$2D,$0F, $0F,$23,$13,$13, $0F,$15,$0F,$0F, $0F,$11,$11,$11
     ;       current char    prev             next
-    .byte $0F,$30,$30,$30, $0F,$2D,$00,$10, $0F,$10,$00,$2D, $0F,$11,$11,$11
+    .byte $0F,$33,$33,$33, $0F,$2D,$00,$10, $0F,$10,$00,$2D, $0F,$11,$11,$11
     .byte $EA, $EA

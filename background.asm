@@ -187,6 +187,8 @@ bg_drawOneScreen:
 DrawBackground:
     jsr bg_loadPalette
 
+    lda #PPU_CTRL_HORIZ
+    sta $2000
     jsr bg_drawTransition
 
     jsr bg_drawOneScreen

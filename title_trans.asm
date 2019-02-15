@@ -2,7 +2,7 @@
 ;; Transition stuff
 ;;;;;;;;;;;;;;;;;;;
 
-; Start of the transition, not a frame handler.
+; Start of the transition, ends in a frame handler.
 Title_GameTrans:
     lda #95
     sta TitleScroll
@@ -15,24 +15,11 @@ Title_GameTrans:
 
     jsr LoadFrameSubPointer
 
-    lda #<Title_Trans_Frame
-    sta DoFramePointer
-    lda #>Title_Trans_Frame
-    sta DoFramePointer+1
-
-    lda #<Title_Trans_NMI
-    sta DoNMIPointer
-    lda #>Title_Trans_NMI
-    sta DoNMIPointer+1
-
     lda #PPU_CTRL_HORIZ
     sta TitlePPUCtrl
 
-Title_Trans_Frame:
-    jmp (framesub_pointer)
+    jmp (DoFramePointer)
 
-Title_Trans_NMI:
-    jmp (nmisub_pointer)
 Title_Trans_NMI_End:
     bit $2002
     lda #0
@@ -62,6 +49,24 @@ ttrans_frame_scrolling:
     inc TitleScroll
     dec framesub_next
 
+    lda #<PalBG1
+    sta TmpAddr
+    lda #>PalBG1
+    sta TmpAddr+1
+    jsr LoadPaletteBG1
+
+    lda #<PalBG2
+    sta TmpAddr
+    lda #>PalBG2
+    sta TmpAddr+1
+    jsr LoadPaletteBG2
+
+    lda #<PalSP0
+    sta TmpAddr
+    lda #>PalSP0
+    sta TmpAddr+1
+    jsr LoadPaletteSP0
+
     lda #$21
     sta TmpAddr
     lda #$80
@@ -73,25 +78,16 @@ ttrans_frame_scrolling:
     sta meta_tile_addr+1
     jmp WaitFrame
 
-ttrans_frame_00a:
-    lda #$21
-    sta TmpAddr
-    lda #$C0
-    sta TmpAddr+1
-
-    dec framesub_next
-    jmp ttrans_draw_done
+;ttrans_frame_00a:
+;    lda #$21
+;    sta TmpAddr
+;    lda #$C0
+;    sta TmpAddr+1
+;
+;    dec framesub_next
+;    jmp ttrans_draw_done
 
 ttrans_frame_00b:
-    lda #$22
-    sta TmpAddr
-    lda #$00
-    sta TmpAddr+1
-
-    lda #<Meta_Ground
-    sta meta_tile_addr
-    lda #>Meta_Ground
-    sta meta_tile_addr+1
 
     dec framesub_next
     jmp ttrans_draw_done
@@ -102,26 +98,32 @@ ttrans_frame_00c:
     lda #$40
     sta TmpAddr+1
 
+    lda #<Meta_Ground2
+    sta meta_tile_addr
+    lda #>Meta_Ground2
+    sta meta_tile_addr+1
+
     dec framesub_next
     jmp ttrans_draw_done
 
-ttrans_draw_03:
-    inc TitleScroll
+ttrans_frame_statusbar:
+    ; TODO: put stuff here, lol
     dec framesub_next
-    jmp ttrans_draw_done
 
 ttrans_draw_done:
     inc TitleScroll
+    inc TitleScroll
+
     lda TitleScroll
     cmp #$EF
-    bne :+
+    bcc :+
 
     dec framesub_next
 
     lda #0
     sta TitleScroll
     lda #PPU_CTRL_HORIZ
-    ora #$02
+    ;ora #$02
     sta TitlePPUCtrl
 
     lda #$E0
@@ -130,6 +132,8 @@ ttrans_draw_done:
 :   jmp WaitFrame
 
 ttrans_frame_load:
+    ; HERE
+    ;jsr 
     inc gamestate_changed
     jmp WaitFrame
 
@@ -215,6 +219,15 @@ ttrans_nmi_clear_02:
 ;;;;;;;;;;;;;;;;;;;
 ttrans_nmi_meta_attr:
     jsr ttrans_write_meta_row
+    lda TmpAddr+1
+    clc
+    adc #$40
+    sta TmpAddr+1
+    bcc :+
+    inc TmpAddr+0
+:
+    jsr ttrans_write_meta_row
+    jsr WritePalettes
 
     ; Draw attribute data for the playfield
     lda #$23
@@ -234,6 +247,34 @@ ttrans_nmi_meta_attr:
 
     jmp Title_Trans_NMI_End
 
+ttrans_nmi_draw_meta_row_ground:
+    lda #$22
+    sta TmpAddr
+    lda #$00
+    sta TmpAddr+1
+
+    lda #<Meta_Ground
+    sta meta_tile_addr
+    lda #>Meta_Ground
+    sta meta_tile_addr+1
+    jsr ttrans_write_meta_row
+
+    lda TmpAddr+1
+    clc
+    adc #$40
+    sta TmpAddr+1
+    bcc :+
+    inc TmpAddr+0
+:
+    lda #<Meta_Ground2
+    sta meta_tile_addr
+    lda #>Meta_Ground2
+    sta meta_tile_addr+1
+    jsr ttrans_write_meta_row
+
+    jmp Title_Trans_NMI_End
+
+
 ttrans_nmi_draw_meta_row:
     ; load up a meta tile
     ; draw one row
@@ -242,6 +283,12 @@ ttrans_nmi_draw_meta_row:
     lda TmpAddr+1
     sta $2006
     jsr ttrans_write_meta_row
+    jmp Title_Trans_NMI_End
+
+ttrans_nmi_draw_statusbar:
+    jsr WriteScoreLabel
+    jsr WriteSeedLabel
+    jsr WriteSPZeroLineNT02
     jmp Title_Trans_NMI_End
 
 ttrans_nmi_fading:
@@ -262,18 +309,18 @@ LoadFrameSubPointer:
     tax
 
     lda FrameSubHandlers, x
-    sta framesub_pointer
+    sta DoFramePointer
 
     lda NMISubHandlers, x
-    sta nmisub_pointer
+    sta DoNMIPointer
 
     inx
 
     lda FrameSubHandlers, x
-    sta framesub_pointer+1
+    sta DoFramePointer+1
 
     lda NMISubHandlers, x
-    sta nmisub_pointer+1
+    sta DoNMIPointer+1
 
     inc framesub_index
     rts
@@ -281,17 +328,20 @@ LoadFrameSubPointer:
 FrameSubHandlers:
     .word ttrans_frame_clear_00
     .word ttrans_frame_scrolling
-    .word ttrans_frame_00a
-
+    ;.word ttrans_frame_00a
     .word ttrans_frame_00b
+
     .word ttrans_frame_00c
+    .word ttrans_frame_statusbar
     .word ttrans_draw_done
     .word ttrans_frame_load
 
 NMISubHandlers:
     .word ttrans_nmi_clear_00
     .word ttrans_nmi_meta_attr
+    ;.word ttrans_nmi_draw_meta_row
+    .word ttrans_nmi_draw_meta_row_ground
+
     .word ttrans_nmi_draw_meta_row
-    .word ttrans_nmi_draw_meta_row
-    .word ttrans_nmi_draw_meta_row
+    .word ttrans_nmi_draw_statusbar
     .word Title_Trans_NMI_End

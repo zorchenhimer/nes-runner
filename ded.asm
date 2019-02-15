@@ -293,6 +293,7 @@ ReplayLastMap:
     lda #STATES::GS_GAME
     sta current_gamestate
     inc gamestate_changed
+    dec GameFullInit
     jmp dedSpriteZero
 
 DedText:

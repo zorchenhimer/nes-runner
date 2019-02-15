@@ -2,54 +2,39 @@
 ;   Fall into pitfall.
 ;   Add some more obstacle types (pit/wall combo, etc)
 
+; Game Meta Tiles
+.enum MetaTileTypes
+    BACKGROUND
+    GROUND
+    GROUND2
+    PIT_LEFT
+    PIT_RIGHT
+    PIT_LEFT_BOTTOM
+    PIT_RIGHT_BOTTOM
+    NOTHIN
+    OBS
+    PIT
+    FIREHYDRANT
+.endenum
+
 Game_Init:
-    inc SkipNMI
-
-    lda #PPU_MASK_OFF
-    sta $2001
-
     jsr MMC1_Setup_Vert
 
     lda #PPU_CTRL_HORIZ
     sta $2000
-
-    ; Clear sprites and nametables
-    jsr ClearSprites
-
     ;jsr ClearNametable0
     ;jsr ClearNametable1
 
-    jsr ClearAttrTable0
+    ;jsr ClearAttrTable0
     jsr ClearAttrTable1
 
-    lda #<GamePalette
-    sta PaletteAddr
-    lda #>GamePalette
-    sta PaletteAddr+1
-    jsr LoadPalettes
-
-    lda #BackgroundThemes::City
-    sta BGTheme
-
-    lda #$24
-    sta BGNametable
-
-    lda #$00
-    sta BGYStart
-    jsr DrawBackground
+    ;lda #<GamePalette
+    ;sta PaletteAddr
+    ;lda #>GamePalette
+    ;sta PaletteAddr+1
+    ;jsr LoadPalettes
 
     bit $2000
-    ; Update attribute data
-    lda #$23
-    sta $2006
-    lda #$D8
-    sta $2006
-
-    lda #$AA
-    jsr game_DrawAttributeRow
-    lda #$55
-    jsr game_DrawAttributeRow
-
     lda #$27
     sta $2006
     lda #$D8
@@ -62,41 +47,60 @@ Game_Init:
 
     ; Initialize a bunch of variables
     lda #0
+    sta column_ready
+    sta meta_column_offset
+    sta meta_tile_addr
+    sta TmpAttr
+    sta meta_cols_to_buffer
+    sta meta_last_buffer
+
+; Status bar stuff
+
+; Generate and draw first screen of columns (plus a few)
+    lda #PPU_CTRL_VERT
+    sta $2000
+
+    bit GameFullInit
+    bvc :+
+    lda #0
+    sta GameFullInit
+    jsr game_FullInit
+:
+
+    lda #15
+    sta meta_last_gen
+    lda #16
+    sta meta_last_buffer
+
+    lda #2
+    sta obs_countdown
+
+    lda #2
+    sta TmpZ
+@drawWholeMap:
+    lda meta_cols_to_buffer
+    bne @buffer
+    jsr generate_column
+@buffer:
+    jsr Buffer_Column
+    jsr Draw_Column
+
+    dec TmpZ
+    bne @drawWholeMap
+
+; Draw status bar stuff
+    lda #0
     sta PlayerScore0
     sta PlayerScore1
     sta PlayerScore2
     sta PlayerScore3
-    sta calc_scroll
-    sta column_ready
-    sta meta_column_offset
-    sta meta_last_buffer
-    sta meta_last_gen
-    sta meta_tile_addr
-    sta TmpAttr
     sta rngFlipFlop
-    sta meta_cols_to_buffer
+    sta calc_scroll
 
-    lda #18
-    sta obs_countdown
+@scoredone:
 
-    ; Load the RNG seed form PRG RAM and re-seed if it doesn't exist.
-    ; Check both bytes of the RNG seed.
-    lda rng_seed
-    bne @skip_rng_init
-    lda rng_seed+1
-    bne @skip_rng_init
-
-    lda #'Z'  ; $5A
-    sta rng_seed
-    lda #'o'  ; $6F
-    sta rng_seed+1
-
-@skip_rng_init:
-
-    lda rng_seed
-    sta working_seed
-    lda rng_seed+1
-    sta working_seed+1
+    ; Initialize score display
+    jsr Draw_Score
 
     ; prepare sprite zero
     lda #159
@@ -202,103 +206,24 @@ Game_Init:
     lda #$20
     sta PAUSED_PAL
 
-; Status bar stuff
-    lda #$23
-    sta $2006
-    lda #$2A
-    sta $2006
-
-    ; write the seed lable text to the screen
+    ; Init the first 16 columns
+    ; TODO: move these somewhere else
     ldx #0
-@seedloop:
-    lda SeedText, x
-    beq @seeddone
-    sta $2007
+:
+    lda #$00
+    sta meta_columns, x
     inx
-    jmp @seedloop
-
-@seeddone:
-    ; Load the seed and convert it to HEX ASCII to draw to screen.
-    lda working_seed
-    jsr BinToHex
-    lda TmpY
-    sta $2007
-    lda TmpX
-    sta $2007
-
-    lda working_seed+1
-    jsr BinToHex
-    lda TmpY
-    sta $2007
-    lda TmpX
-    sta $2007
-
-; Generate and draw first screen of columns (plus a few)
-    lda #PPU_CTRL_VERT
-    sta $2000
-
-    lda #$FF
-    sta meta_last_gen
-
-    lda #19
-    sta TmpZ
-@drawWholeMap:
-    lda meta_cols_to_buffer
-    bne @buffer
-    jsr generate_column
-@buffer:
-    jsr Buffer_Column
-    jsr Draw_Column
-
-    dec TmpZ
-    bne @drawWholeMap
-
-; Draw status bar stuff
-    lda #PPU_CTRL_HORIZ
-    sta $2000
-
-    lda #$22
-    sta $2006
-    lda #$80
-    sta $2006
-
-; Draw row for sprite zero to collide with
-    lda #$0F
-.repeat 32
-    sta $2007
-.endrepeat
-
-    lda #$26
-    sta $2006
-    lda #$80
-    sta $2006
-
-    lda #PPU_CTRL_HORIZ
-    sta $2000
-
-    ; Same as above, but for second nametable
-    lda #$0F
-.repeat 32
-    sta $2007
-.endrepeat
-
-    lda #$22
-    sta $2006
-    lda #$EA
-    sta $2006
-
-    ldx #0
-@statusLoop:
-    lda ScoreText, x
-    beq @scoredone
-    sta $2007
+    sta meta_columns, x
     inx
-    jmp @statusLoop
 
-@scoredone:
+    lda #$01
+    sta meta_columns, x
+    inx
+    sta meta_columns, x
+    inx
 
-    ; Initialize score display
-    jsr Draw_Score
+    cpx #16*4
+    bne :-
 
     ; Set frame and NMI pointers
     lda #<Game_Frame
@@ -311,6 +236,71 @@ Game_Init:
     lda #>Game_NMI
     sta DoNMIPointer+1
     rts
+
+game_FullInit:
+    inc SkipNMI
+
+    lda #PPU_MASK_OFF
+    sta $2001
+
+    lda #<GamePalette
+    sta PaletteAddr
+    lda #>GamePalette
+    sta PaletteAddr+1
+    jsr LoadPalettes
+
+    lda #BackgroundThemes::City
+    sta BGTheme
+
+    lda #$20
+    sta BGNametable
+
+    lda #$00
+    sta BGYStart
+    jsr DrawBackground
+
+    lda #BackgroundThemes::City
+    sta BGTheme
+
+    lda #$24
+    sta BGNametable
+
+    lda #$00
+    sta BGYStart
+    jsr DrawBackground
+
+    ; Update attribute data
+    lda #$23
+    sta $2006
+    lda #$D8
+    sta $2006
+
+    lda #$AA
+    jsr game_DrawAttributeRow
+    lda #$55
+    jsr game_DrawAttributeRow
+
+    lda #$FF
+    sta meta_last_gen
+
+    lda #16
+    sta obs_countdown
+    sta TmpZ
+@drawWholeMap:
+    lda meta_cols_to_buffer
+    bne @buffer
+    jsr generate_column
+@buffer:
+    jsr Buffer_Column
+    jsr Draw_Column
+
+    dec TmpZ
+    bne @drawWholeMap
+
+    jsr WriteSPZeroLineNT01
+    jsr WriteScoreLabel
+    jmp WriteSeedLabel
+    ;rts
 ;; End of Game_Init
 
 game_DrawAttributeRow:
@@ -489,13 +479,13 @@ CheckCollide:
 
     ; Layer 1: the Pit
     lda ColCache+3
-    cmp #G_MC_OBS    ; #$06
+    cmp #MetaTileTypes::OBS
     bcc @l1Right
     jmp @collide
 
 @l1Right:
     lda ColCache+7
-    cmp #G_MC_OBS    ; #$06
+    cmp #MetaTileTypes::OBS
     bcc @layer2
     jmp @collide
 
@@ -1066,19 +1056,166 @@ update_scroll:
 @done:
     rts
 
+WriteScoreLabel:
+    lda #$22
+    sta $2006
+    lda #$EA
+    sta $2006
+
+    ldy #$52
+:
+    sty $2007
+    iny
+    cpy #$57
+    bne :-
+
+    lda #' '
+    sta $2007
+
+    lda #'0'
+    sta $2007
+    sta $2007
+
+    lda #','
+    sta $2007
+
+    lda #'0'
+    sta $2007
+    sta $2007
+    sta $2007
+
+    lda #','
+    sta $2007
+
+    lda #'0'
+    sta $2007
+    sta $2007
+    sta $2007
+    rts
+
+WriteSeedLabel:
+    lda #$23
+    sta $2006
+    lda #$2A
+    sta $2006
+
+    ldy #$62
+:
+    sty $2007
+    iny
+    cpy #$6A
+    bne :-
+
+    ; Load the RNG seed form PRG RAM and re-seed if it doesn't exist.
+    ; Check both bytes of the RNG seed.
+    lda rng_seed
+    bne @skip_rng_init
+    lda rng_seed+1
+    bne @skip_rng_init
+
+    lda #'Z'  ; $5A
+    sta rng_seed
+    lda #'o'  ; $6F
+    sta rng_seed+1
+
+@skip_rng_init:
+
+    lda rng_seed
+    sta working_seed
+    lda rng_seed+1
+    sta working_seed+1
+
+    ; Load the seed and convert it to HEX ASCII to draw to screen.
+    lda working_seed
+    jsr BinToHex
+    lda TmpY
+    sta $2007
+    lda TmpX
+    sta $2007
+
+    lda working_seed+1
+    jsr BinToHex
+    lda TmpY
+    sta $2007
+    lda TmpX
+    sta $2007
+
+    rts
+
+; Draw row for sprite zero to collide with
+; During Horizontal mirroring
+WriteSPZeroLine:
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+
+    lda #$22
+    sta $2006
+    lda #$80
+    sta $2006
+
+    lda #$0F
+.repeat 32
+    sta $2007
+.endrepeat
+
+    rts
+
+; During Vertical mirroring
+WriteSPZeroLineNT01:
+    lda #$26
+    sta $2006
+    lda #$80
+    sta $2006
+
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+
+    ; Same as above, but for second nametable
+    lda #$0F
+.repeat 32
+    sta $2007
+.endrepeat
+    jmp WriteSPZeroLine
+
+WriteSPZeroLineNT02:
+    lda #$2A
+    sta $2006
+    lda #$80
+    sta $2006
+
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+
+    ; Same as above, but for second nametable
+    lda #$0F
+.repeat 32
+    sta $2007
+.endrepeat
+    jmp WriteSPZeroLine
+
 ScoreText:
     .byte "Score ", $00
 SeedText:
     .byte "Level Seed  ", $00
 
 GamePalette:
-    .byte $1A,$1C,$2B,$39, $1A,$17,$25,$35, $1A,$0A,$39,$06, $1A,$1C,$2B,$39
-    .byte $1A,$30,$2B,$39, $1A,$0F,$2B,$39, $1A,$20,$2D,$39, $1A,$1C,$2B,$39
+    ; BG
+        .byte $1A,$1C,$2B,$39
+PalBG1: .byte $1A,$07,$17,$09
+PalBG2: .byte $1A,$0A,$39,$06
+        .byte $1A,$1C,$2B,$39
+
+    ; Sprites
+PalSP0: .byte $1A,$30,$2B,$39
+        .byte $1A,$0F,$2B,$39
+        .byte $1A,$20,$2D,$39
+        .byte $1A,$1C,$2B,$39
 
 ; Meta tile IDs -> meta tile tile addresses
 MetaTiles:
     .word Meta_Sky
     .word Meta_Ground
+    .word Meta_Ground2
     .word Meta_Pit_Left
     .word Meta_Pit_Right
     .word Meta_Pit_Left_Bottom
@@ -1087,18 +1224,6 @@ MetaTiles:
     .word Meta_Obstacle
     .word Meta_Pit
     .word Meta_FireHydrant
-
-; Game Meta Tiles
-G_MC_BACKGROUND     = $00
-G_MC_GROUND         = $01
-G_MC_PIT_LEFT       = $02
-G_MC_PIT_RIGHT      = $03
-G_MC_PIT_LEFT_BOTTOM   = $04
-G_MC_PIT_RIGHT_BOTTOM  = $05
-G_MC_NOTHIN         = $06
-G_MC_OBS            = $07
-G_MC_PIT            = $08
-G_MC_FIREHYDRANT    = $09
 
 ; used for RNG
 ; TODO: Make this list 16 entries long. Use both bytes of RNG for
@@ -1125,46 +1250,48 @@ MetaColumn_Definitions:
 ; Meta tile indicies.  First byte is number of columns.
 MetaColumn_Nothin:
     .byte $01
-    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_GROUND, G_MC_GROUND
+    .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
 MetaColumn_Wall:
     .byte $01
-    .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
+    .byte MetaTileTypes::OBS, MetaTileTypes::OBS, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
 MetaColumn_DoubleWall:
     .byte $02
-    .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
-    .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
+    .byte MetaTileTypes::OBS, MetaTileTypes::OBS, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
+    .byte MetaTileTypes::OBS, MetaTileTypes::OBS, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
 MetaColumn_Pit:
     .byte $03
-    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_PIT_LEFT, G_MC_PIT_LEFT_BOTTOM
-    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_NOTHIN, G_MC_PIT
-    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_PIT_RIGHT, G_MC_PIT_RIGHT_BOTTOM
+    .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::PIT_LEFT, MetaTileTypes::PIT_LEFT_BOTTOM
+    .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::NOTHIN, MetaTileTypes::PIT
+    .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::PIT_RIGHT, MetaTileTypes::PIT_RIGHT_BOTTOM
 MetaColumn_PitWall:
     .byte $03
-    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_PIT_LEFT, G_MC_PIT_LEFT_BOTTOM
-    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_NOTHIN, G_MC_PIT
-    .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
+    .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::PIT_LEFT, MetaTileTypes::PIT_LEFT_BOTTOM
+    .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::NOTHIN, MetaTileTypes::PIT
+    .byte MetaTileTypes::OBS, MetaTileTypes::OBS, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
 MetaColumn_WallPitWide:
     .byte $04
-    .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
-    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_NOTHIN, G_MC_PIT
-    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_NOTHIN, G_MC_PIT
-    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_PIT_RIGHT, G_MC_PIT_RIGHT_BOTTOM
+    .byte MetaTileTypes::OBS, MetaTileTypes::OBS, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
+    .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::NOTHIN, MetaTileTypes::PIT
+    .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::NOTHIN, MetaTileTypes::PIT
+    .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::PIT_RIGHT, MetaTileTypes::PIT_RIGHT_BOTTOM
 MetaColumn_PitWallWide:
     .byte $05
-    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_PIT_LEFT, G_MC_PIT_LEFT_BOTTOM
-    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_NOTHIN, G_MC_PIT
-    .byte G_MC_OBS, G_MC_OBS, G_MC_GROUND, G_MC_GROUND
-    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_NOTHIN, G_MC_PIT
-    .byte G_MC_BACKGROUND, G_MC_BACKGROUND, G_MC_PIT_RIGHT, G_MC_PIT_RIGHT_BOTTOM
+    .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::PIT_LEFT, MetaTileTypes::PIT_LEFT_BOTTOM
+    .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::NOTHIN, MetaTileTypes::PIT
+    .byte MetaTileTypes::OBS, MetaTileTypes::OBS, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
+    .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::NOTHIN, MetaTileTypes::PIT
+    .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::PIT_RIGHT, MetaTileTypes::PIT_RIGHT_BOTTOM
 MetaColumn_HalfWall:
     .byte $01
-    .byte G_MC_BACKGROUND, G_MC_FIREHYDRANT, G_MC_GROUND, G_MC_GROUND
+    .byte MetaTileTypes::BACKGROUND, MetaTileTypes::FIREHYDRANT, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
 
 ; Tile indicies
 Meta_Sky:
     .byte $80, $90, $81, $91
 Meta_Ground:
     .byte $A0, $B0, $A1, $B1
+Meta_Ground2:
+    .byte $C0, $D0, $C1, $D1
 Meta_Obstacle:
     .byte $82, $92, $83, $93
 Meta_Pit:
@@ -1174,9 +1301,9 @@ Meta_Pit_Left:
 Meta_Pit_Right:
     .byte $A5, $B5, $A1, $B1
 Meta_Pit_Left_Bottom:
-    .byte $A0, $B0, $A2, $B2
+    .byte $C0, $D0, $A2, $B2
 Meta_Pit_Right_Bottom:
-    .byte $A3, $B3, $A1, $B1
+    .byte $A3, $B3, $C1, $D1
 Meta_Nothing:
     .byte $00, $00, $00, $00
 Meta_FireHydrant:

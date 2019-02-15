@@ -73,6 +73,54 @@ ReadControllers:
     bne @player2
     rts
 
+; Load a single four-byte palette into RAM.  Palette address
+; is expected in TmpAddr.
+LoadPaletteBG0:
+    ldx #31
+    jmp loadSinglePalLoop
+
+LoadPaletteBG1:
+    ldx #27
+    jmp loadSinglePalLoop
+
+LoadPaletteBG2:
+    ldx #23
+    jmp loadSinglePalLoop
+
+LoadPaletteBG3:
+    ldx #19
+    jmp loadSinglePalLoop
+
+LoadPaletteSP0:
+    ldx #15
+    jmp loadSinglePalLoop
+
+LoadPaletteSP1:
+    ldx #11
+    jmp loadSinglePalLoop
+
+LoadPaletteSP2:
+    ldx #7
+    jmp loadSinglePalLoop
+
+LoadPaletteSP3:
+    ldx #3
+    ;jmp loadSinglePalLoop  ; jmp not really needed.
+
+loadSinglePalLoop:
+    ldy #0
+:
+    lda (TmpAddr), y
+    sta PaletteRAM, x
+    dex
+    iny
+    cpy #4
+    bne :-
+    rts
+
+; Load a full set of eight palettes into RAM.  Palette address is
+; expected in PaletteAddr.
+; TODO: Change this to use TmpAddr
 LoadPalettes:
     ldx #31
     ldy #0
