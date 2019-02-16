@@ -78,15 +78,6 @@ ttrans_frame_scrolling:
     sta meta_tile_addr+1
     jmp WaitFrame
 
-;ttrans_frame_00a:
-;    lda #$21
-;    sta TmpAddr
-;    lda #$C0
-;    sta TmpAddr+1
-;
-;    dec framesub_next
-;    jmp ttrans_draw_done
-
 ttrans_frame_00b:
 
     dec framesub_next
@@ -107,8 +98,15 @@ ttrans_frame_00c:
     jmp ttrans_draw_done
 
 ttrans_frame_statusbar:
-    ; TODO: put stuff here, lol
     dec framesub_next
+    jmp ttrans_draw_done
+
+ttrans_draw_wait:
+    lda TitleScroll
+    cmp #$AC
+    bcc :+
+    dec framesub_next
+:   jmp ttrans_draw_done
 
 ttrans_draw_done:
     inc TitleScroll
@@ -294,12 +292,20 @@ ttrans_nmi_draw_meta_row:
 ttrans_nmi_draw_statusbar:
     jsr WriteScoreLabel
     jsr WriteSeedLabel
-    jsr WriteSPZeroLineNT02
     jmp Title_Trans_NMI_End
 
 ttrans_nmi_fading:
     jsr WritePalettes
     jsr WriteSprites
+    jmp Title_Trans_NMI_End
+
+ttrans_frame_nt2:
+    dec framesub_next
+    jmp ttrans_draw_done
+
+ttrans_nmi_draw_nt2:
+    jsr WriteSPZeroLineNT01
+    jsr WriteSPZeroLineNT02
     jmp Title_Trans_NMI_End
 
 LoadFrameSubPointer:
@@ -334,20 +340,24 @@ LoadFrameSubPointer:
 FrameSubHandlers:
     .word ttrans_frame_clear_00
     .word ttrans_frame_scrolling
-    ;.word ttrans_frame_00a
     .word ttrans_frame_00b
-
     .word ttrans_frame_00c
+
     .word ttrans_frame_statusbar
+    .word ttrans_draw_wait
+    .word ttrans_frame_nt2
     .word ttrans_draw_done
+
     .word ttrans_frame_load
 
 NMISubHandlers:
     .word ttrans_nmi_clear_00
     .word ttrans_nmi_meta_attr
-    ;.word ttrans_nmi_draw_meta_row
     .word ttrans_nmi_draw_meta_row_ground
-
     .word ttrans_nmi_draw_meta_row
+
     .word ttrans_nmi_draw_statusbar
+    .word Title_Trans_NMI_End
+    .word ttrans_nmi_draw_nt2
+
     .word Title_Trans_NMI_End

@@ -1146,7 +1146,7 @@ WriteSeedLabel:
 
 ; Draw row for sprite zero to collide with
 ; During Horizontal mirroring
-WriteSPZeroLine:
+WriteSPZeroLineNT00:
     lda #PPU_CTRL_HORIZ
     sta $2000
 
@@ -1177,7 +1177,7 @@ WriteSPZeroLineNT01:
 .repeat 32
     sta $2007
 .endrepeat
-    jmp WriteSPZeroLine
+    rts
 
 WriteSPZeroLineNT02:
     lda #$2A
@@ -1193,7 +1193,7 @@ WriteSPZeroLineNT02:
 .repeat 32
     sta $2007
 .endrepeat
-    jmp WriteSPZeroLine
+    rts
 
 ScoreText:
     .byte "Score ", $00
