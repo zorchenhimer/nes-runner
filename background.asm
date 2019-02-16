@@ -85,9 +85,6 @@ bg_drawTransition:
     rts
 
 bg_drawOneScreen:
-    lda #0
-    sta bg_current_column
-
     lda #PPU_CTRL_VERT
     sta $2000
 
@@ -131,7 +128,6 @@ bg_drawOneScreen:
 
     lda #0
     sta bg_odd
-    sta TmpY
 
 ; load a column. loop this 32 times
 @loadLoop:
@@ -179,7 +175,7 @@ bg_drawOneScreen:
 :
 
     lda bg_current_column
-    cmp #32     ; only draw 32 columns
+    cmp bg_drawcolumn_cmp     ; only draw 32 columns
     bne @loadLoop
     rts
 
@@ -190,6 +186,12 @@ DrawBackground:
     lda #PPU_CTRL_HORIZ
     sta $2000
     jsr bg_drawTransition
+
+    lda #0
+    sta bg_current_column
+    sta TmpY
+    lda #32
+    sta bg_drawcolumn_cmp
 
     jsr bg_drawOneScreen
 

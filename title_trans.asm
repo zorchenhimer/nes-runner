@@ -305,10 +305,39 @@ ttrans_nmi_fading:
     jmp Title_Trans_NMI_End
 
 ttrans_frame_nt2:
+    lda #BackgroundThemes::City
+    sta BGTheme
+    lda #$28
+    sta BGNametable
+    lda #$00
+    sta BGYStart
+
+    lda #0
+    sta bg_current_column
+    lda #16
+    sta TmpY
+    lda #2
+    sta bg_drawcolumn_cmp
+
     dec framesub_next
     jmp ttrans_draw_done
 
 ttrans_nmi_draw_nt2:
+    jsr bg_drawOneScreen
+    jmp Title_Trans_NMI_End
+
+ttrans_frame_skylinecheck:
+    inc bg_drawcolumn_cmp
+    inc bg_drawcolumn_cmp
+
+    lda bg_drawcolumn_cmp
+    cmp #32
+    bne :+
+    dec framesub_next
+:   jmp ttrans_draw_done
+
+ttrans_nmi_skylinedraw:
+    jsr bg_drawOneScreen
     jmp Title_Trans_NMI_End
 
 LoadFrameSubPointer:
@@ -347,10 +376,12 @@ FrameSubHandlers:
     .word ttrans_frame_00c
 
     .word ttrans_frame_statusbar
-    .word ttrans_draw_wait
+    ;.word ttrans_draw_wait
     .word ttrans_frame_nt2
-    .word ttrans_draw_done
 
+    .word ttrans_frame_skylinecheck
+
+    .word ttrans_draw_done
     .word ttrans_frame_load
 
 NMISubHandlers:
@@ -360,7 +391,9 @@ NMISubHandlers:
     .word ttrans_nmi_draw_meta_row
 
     .word ttrans_nmi_draw_statusbar
-    .word Title_Trans_NMI_End
+    ;.word Title_Trans_NMI_End
     .word ttrans_nmi_draw_nt2
+
+    .word ttrans_nmi_skylinedraw
 
     .word Title_Trans_NMI_End
