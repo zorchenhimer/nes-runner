@@ -282,6 +282,18 @@ game_FullInit:
     lda #$55
     jsr game_DrawAttributeRow
 
+    lda #$27
+    sta $2006
+    lda #$D8
+    sta $2006
+
+    lda #$AA
+    jsr game_DrawAttributeRow
+    lda #$55
+    jsr game_DrawAttributeRow
+
+    jsr WriteSPZeroLineNT00
+
     lda #$FF
     sta meta_last_gen
 
