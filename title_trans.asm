@@ -132,8 +132,14 @@ ttrans_draw_done:
 :   jmp WaitFrame
 
 ttrans_frame_load:
-    ; HERE
-    ;jsr 
+    lda #2
+    sta obs_countdown
+    lda #15
+    sta meta_last_gen
+    sta meta_last_buffer
+
+    jsr generate_column
+
     inc gamestate_changed
     jmp WaitFrame
 

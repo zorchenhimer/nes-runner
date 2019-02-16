@@ -26,7 +26,7 @@ Game_Init:
     ;jsr ClearNametable1
 
     ;jsr ClearAttrTable0
-    jsr ClearAttrTable1
+    ;jsr ClearAttrTable1
 
     ;lda #<GamePalette
     ;sta PaletteAddr
@@ -51,7 +51,7 @@ Game_Init:
     sta meta_column_offset
     sta meta_tile_addr
     sta TmpAttr
-    sta meta_cols_to_buffer
+    ;sta meta_cols_to_buffer
     sta meta_last_buffer
 
 ; Status bar stuff
@@ -67,12 +67,12 @@ Game_Init:
     jsr game_FullInit
 :
 
-    lda #15
+    lda #16
     sta meta_last_gen
     lda #16
     sta meta_last_buffer
 
-    lda #2
+    lda #1
     sta obs_countdown
 
     lda #2
@@ -88,8 +88,14 @@ Game_Init:
     dec TmpZ
     bne @drawWholeMap
 
-; Draw status bar stuff
+    ; Scroll to the start of the first screen
     lda #0
+    sta $2005
+    sta $2005
+    ldx #PPU_CTRL_VERT
+    stx $2000
+
+; More init stuff
     sta PlayerScore0
     sta PlayerScore1
     sta PlayerScore2
@@ -98,10 +104,6 @@ Game_Init:
     sta calc_scroll
 
 @scoredone:
-
-    ; Initialize score display
-    jsr Draw_Score
-
     ; prepare sprite zero
     lda #159
     sta spritezero
