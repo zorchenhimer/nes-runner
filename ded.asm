@@ -98,6 +98,13 @@ Ded_Frame:
     lda #PPU_MASK_OFF
     sta $2001
 
+    ; Update a single palette.  We don't care about the others.
+    lda #<DedSolidPalette
+    sta TmpAddr
+    lda #>DedSolidPalette
+    sta TmpAddr+1
+    jsr LoadPaletteBG0
+
     jsr ClearAttrTable0
 
     ; Clear out the tile column draw buffer
@@ -115,14 +122,6 @@ Ded_Frame:
     jsr ClearAttrTable1
 
     jsr ClearSprites
-
-    ; update palettes. just reuse the title palettes
-    lda #<TitlePalette
-    sta PaletteAddr
-    lda #>TitlePalette
-    sta PaletteAddr+1
-    jsr LoadPalettes
-    ;jsr WritePalettes
 
     lda #$21
     sta $2006
@@ -301,6 +300,9 @@ DedText:
 
 DedStart:
     .byte "Press Start", $00
+
+DedSolidPalette:
+    .byte $0F,$30,$30,$30
 
 DedStartPal:
     .byte $2D,$00,$10,$20,$10,$00
