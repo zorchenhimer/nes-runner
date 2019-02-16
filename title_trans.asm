@@ -249,6 +249,11 @@ ttrans_nmi_meta_attr:
     sta $2007
 .endrepeat
 
+    lda #$00
+.repeat 16
+    sta $2007
+.endrepeat
+
     jmp Title_Trans_NMI_End
 
 ttrans_nmi_draw_meta_row_ground:
@@ -304,8 +309,6 @@ ttrans_frame_nt2:
     jmp ttrans_draw_done
 
 ttrans_nmi_draw_nt2:
-    jsr WriteSPZeroLineNT01
-    jsr WriteSPZeroLineNT02
     jmp Title_Trans_NMI_End
 
 LoadFrameSubPointer:

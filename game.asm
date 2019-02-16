@@ -105,7 +105,7 @@ Game_Init:
 
 @scoredone:
     ; prepare sprite zero
-    lda #159
+    lda #158
     sta spritezero
 
     lda #$0F
@@ -114,7 +114,7 @@ Game_Init:
     lda #%00100001
     sta spritezero+2
 
-    lda #8
+    lda #254
     sta spritezero+3
 
     ; Setup the player sprite
@@ -281,6 +281,8 @@ game_FullInit:
     jsr game_DrawAttributeRow
     lda #$55
     jsr game_DrawAttributeRow
+    lda #$00
+    jsr game_DrawAttributeRow
 
     lda #$27
     sta $2006
@@ -291,8 +293,6 @@ game_FullInit:
     jsr game_DrawAttributeRow
     lda #$55
     jsr game_DrawAttributeRow
-
-    jsr WriteSPZeroLineNT00
 
     lda #$FF
     sta meta_last_gen
@@ -311,7 +311,9 @@ game_FullInit:
     dec TmpZ
     bne @drawWholeMap
 
-    jsr WriteSPZeroLineNT01
+    lda #PPU_CTRL_HORIZ
+    sta $2000
+
     jsr WriteScoreLabel
     jmp WriteSeedLabel
     ;rts
@@ -610,9 +612,9 @@ BufferScoreDisplay: ; this label is used in scores.asm
 @exitLoop:
     clc
     ldx #0
-@ascii:
+@ascii: ; not quite ASCII anymore
     lda PlayerScoreText, x
-    adc #$30
+    adc #$F0
     sta PlayerScoreText, x
     inx
     cpx #8
@@ -633,7 +635,7 @@ Draw_Score:
     sta $2007
     lda PlayerScoreText+1
     sta $2007
-    lda #','
+    lda #$0E
     sta $2007
 
     lda PlayerScoreText+2
@@ -642,7 +644,7 @@ Draw_Score:
     sta $2007
     lda PlayerScoreText+4
     sta $2007
-    lda #','
+    lda #$0E
     sta $2007
 
     lda PlayerScoreText+5
@@ -1089,25 +1091,25 @@ WriteScoreLabel:
     cpy #$57
     bne :-
 
-    lda #' '
+    lda #$00
     sta $2007
 
-    lda #'0'
-    sta $2007
-    sta $2007
-
-    lda #','
-    sta $2007
-
-    lda #'0'
-    sta $2007
+    lda #$F0
     sta $2007
     sta $2007
 
-    lda #','
+    lda #$0E
     sta $2007
 
-    lda #'0'
+    lda #$F0
+    sta $2007
+    sta $2007
+    sta $2007
+
+    lda #$0E
+    sta $2007
+
+    lda #$F0
     sta $2007
     sta $2007
     sta $2007
@@ -1125,6 +1127,12 @@ WriteSeedLabel:
     iny
     cpy #$6A
     bne :-
+
+    lda #$00
+    sta $2007
+    sta $2007
+    sta $2007
+    sta $2007
 
     ; Load the RNG seed form PRG RAM and re-seed if it doesn't exist.
     ; Check both bytes of the RNG seed.
@@ -1147,70 +1155,32 @@ WriteSeedLabel:
 
     ; Load the seed and convert it to HEX ASCII to draw to screen.
     lda working_seed
-    jsr BinToHex
-    lda TmpY
+    and #$F0
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    ora #$F0
     sta $2007
-    lda TmpX
+
+    lda working_seed
+    and #$0F
+    ora #$F0
     sta $2007
 
     lda working_seed+1
-    jsr BinToHex
-    lda TmpY
+    and #$F0
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    ora #$F0
     sta $2007
-    lda TmpX
+
+    lda working_seed+1
+    and #$0F
+    ora #$F0
     sta $2007
-
-    rts
-
-; Draw row for sprite zero to collide with
-; During Horizontal mirroring
-WriteSPZeroLineNT00:
-    lda #PPU_CTRL_HORIZ
-    sta $2000
-
-    lda #$22
-    sta $2006
-    lda #$80
-    sta $2006
-
-    lda #$0F
-.repeat 32
-    sta $2007
-.endrepeat
-
-    rts
-
-; During Vertical mirroring
-WriteSPZeroLineNT01:
-    lda #$26
-    sta $2006
-    lda #$80
-    sta $2006
-
-    lda #PPU_CTRL_HORIZ
-    sta $2000
-
-    ; Same as above, but for second nametable
-    lda #$0F
-.repeat 32
-    sta $2007
-.endrepeat
-    rts
-
-WriteSPZeroLineNT02:
-    lda #$2A
-    sta $2006
-    lda #$80
-    sta $2006
-
-    lda #PPU_CTRL_HORIZ
-    sta $2000
-
-    ; Same as above, but for second nametable
-    lda #$0F
-.repeat 32
-    sta $2007
-.endrepeat
     rts
 
 ScoreText:
