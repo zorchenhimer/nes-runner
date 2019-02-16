@@ -925,15 +925,21 @@ Buffer_Column:
     sta tile_column_buffer, y
 
     inc meta_tile_addr
-    lda (meta_tile_addr, x)
+    bne :+  ; Check for overflow
+    inc meta_tile_addr+1
+:   lda (meta_tile_addr, x)
     sta tile_column_buffer+1, y
 
     inc meta_tile_addr
-    lda (meta_tile_addr, x)
+    bne :+
+    inc meta_tile_addr+1
+:   lda (meta_tile_addr, x)
     sta tile_column_buffer+8, y
 
     inc meta_tile_addr
-    lda (meta_tile_addr, x)
+    bne :+
+    inc meta_tile_addr+1
+:   lda (meta_tile_addr, x)
     sta tile_column_buffer+9, y
 
     inc map_meta_tmp
