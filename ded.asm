@@ -123,39 +123,50 @@ Ded_Frame:
 
     jsr ClearSprites
 
+    ; Draw "Game Over"
     lda #$21
     sta $2006
     lda #$8B
     sta $2006
 
-    ldx #0
-@textLoop:
-    lda DedText, x
-    beq @txtEnd
-    sta $2007
+    ldx #$C2
+:
+    stx $2007
     inx
-    jmp @textLoop
+    cpx #$CA
+    bne :-
 
-@txtEnd:
-
+    ; Draw "Press Start"
     lda #$22
     sta $2006
-    lda #$CB
+    lda #$0A
     sta $2006
 
-    ldx #0
-@startLoop:
-    lda DedStart, x
-    beq @startEnd
-    sta $2007
+    ldx #$D0
+:
+    stx $2007
     inx
-    jmp @startLoop
+    cpx #$DA
+    bne :-
+
+    ; Draw "Select to Restart"
+    lda #$22
+    sta $2006
+    lda #$89
+    sta $2006
+
+    ldx #$E0
+:
+    stx $2007
+    inx
+    cpx #$EC
+    bne :-
 
 @startEnd:
     ; attributes for "Press Start"
     lda #$23
     sta $2006
-    lda #$EA
+    lda #$E2
     sta $2006
 
     lda #$55
@@ -177,42 +188,6 @@ Ded_Frame:
     sta TmpX    ; current color index
     lda #2
     sta TmpY    ; countdown to next switch
-
-    ; Sprite zero stuff
-    lda #$03
-    sta SPZ_IDX
-    lda #0
-    sta SPZ_ATT
-    lda #8
-    sta SPZ_X
-    lda #127
-    sta SPZ_Y
-
-    ; non-transparent "black" for sprite zero
-    lda #$1D
-    sta DED_SPZ_PAL
-
-    lda #$1D
-    sta DED_SPZ_BG_PAL
-
-    ; BG tile for sprite zero
-    lda #$22
-    sta $2006
-    lda #$00
-    sta $2006
-
-    lda #$03
-    sta $2007
-    sta $2007
-
-    ; Attribute byte for BG tile for sprite zero
-    lda #$23
-    sta $2006
-    lda #$E0
-    sta $2006
-
-    lda #$AA
-    sta $2007
 
     lda #0
     sta SkipNMI
@@ -259,7 +234,7 @@ GameOverWait:
     lda #BUTTON_START
     jsr ButtonPressedP1
     bne @gotoTitle
-    jmp dedSpriteZero
+    jmp WaitFrame
 
 @gotoTitle:
     ; save the last working seed
@@ -271,20 +246,6 @@ GameOverWait:
     lda #STATES::GS_TITLE
     sta current_gamestate
     inc gamestate_changed
-    ;jmp dedSpriteZero
-
-dedSpriteZero:
-    bit $2002
-    bvs dedSpriteZero
-
-@loop:
-    bit $2002
-    bvc @loop
-
-    lda #4
-    sta $2005
-    lda #PPU_CTRL_TITLE
-    sta $2000
     jmp WaitFrame
 
 ReplayLastMap:
@@ -293,7 +254,7 @@ ReplayLastMap:
     sta current_gamestate
     inc gamestate_changed
     dec GameFullInit
-    jmp dedSpriteZero
+    jmp WaitFrame
 
 DedText:
     .byte "Game Over!", $00
@@ -302,7 +263,7 @@ DedStart:
     .byte "Press Start", $00
 
 DedSolidPalette:
-    .byte $0F,$30,$30,$30
+    .byte $0F,$30,$00,$30
 
 DedStartPal:
     .byte $2D,$00,$10,$20,$10,$00
