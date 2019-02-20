@@ -610,11 +610,10 @@ BufferScoreDisplay: ; this label is used in scores.asm
 
 ; Make the numbers ASCII
 @exitLoop:
-    clc
     ldx #0
 @ascii: ; not quite ASCII anymore
     lda PlayerScoreText, x
-    adc #$F0
+    ora #$F0
     sta PlayerScoreText, x
     inx
     cpx #8

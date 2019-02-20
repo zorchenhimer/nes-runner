@@ -252,7 +252,7 @@ Scores_Draw_Page:
 
     ldx #0
 @outer:
-    ; start address for name/seed
+    ; start PPU address for name/seed
     lda sc_ppu_high_byte, x
     sta $2006
     lda sc_ppu_low_byte, x
@@ -262,20 +262,17 @@ Scores_Draw_Page:
     ; to get the correct byte offsets in the page for the current entry.
     ; (entries are 16 bytes wide)
     txa
-    asl a
 
-    ; finish multiplying by 16
+    ; multiply by 16
+    asl a
     asl a
     asl a
     asl a
     tay
 
-    ; Store the end condition for the name loop in TmpX
-    adc #12
-    sta TmpX
-
     ; Store the end condition for the score loop in TmpY
-    adc #4
+    clc
+    adc #2
     sta TmpY
 
     ; Check for empty name
@@ -286,17 +283,28 @@ Scores_Draw_Page:
     ; name loop
 @inner:
     lda (TmpAddr), y
-    sta $2007
-    iny
-    cpy TmpX
-    bne @inner
 
-    lda #' '
-    sta $2007
+    lsr a
+    lsr a
+    lsr a
+    lsr a
+    ora #$F0
     sta $2007
 
     ; score "loop"
     ; Read score into the player score variables
+    ora #$F0
+    sta $2007
+
+    iny
+    cpy TmpY
+    bne @inner
+
+    tya
+    clc
+    adc #10
+    tay
+
     lda (TmpAddr), y
     sta PlayerScore3
     iny
@@ -330,38 +338,29 @@ Scores_Draw_Page:
     lda sc_ppu_low_byte_odd, x
     sta $2006
 
-    clc
 
     ; Draw the score to screen
     lda PlayerScoreText+0
-    adc #$90
     sta $2007
     lda PlayerScoreText+1
-    adc #$90
     sta $2007
     lda #$2D    ; altertate ','
     sta $2007
 
     lda PlayerScoreText+2
-    adc #$90
     sta $2007
     lda PlayerScoreText+3
-    adc #$90
     sta $2007
     lda PlayerScoreText+4
-    adc #$90
     sta $2007
     lda #$2D
     sta $2007
 
     lda PlayerScoreText+5
-    adc #$90
     sta $2007
     lda PlayerScoreText+6
-    adc #$90
     sta $2007
     lda PlayerScoreText+7
-    adc #$90
     sta $2007
 
     inx
@@ -489,28 +488,16 @@ Scores_InsertNewScore:
 
     ; Get the ASCII values for the seed, and store them in the correct entry.
     lda rng_seed
-    jsr BinToHex
-
-    lda TmpX
     sta (TmpAddr), y
-    iny
-    lda TmpY
-    sta (TmpAddr), y
-    iny
 
+    iny
     lda rng_seed+1
-    jsr BinToHex
-
-    lda TmpX
-    sta (TmpAddr), y
-    iny
-    lda TmpY
     sta (TmpAddr), y
 
     ; Move offset to the start of the base100 score
     tya
     clc
-    adc #9
+    adc #11
     tay
 
     lda #4
