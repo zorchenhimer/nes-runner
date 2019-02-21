@@ -65,6 +65,7 @@ Game_Init:
     lda #0
     sta GameFullInit
     jsr game_FullInit
+    jmp @skip_gen
 :
 
     lda #16
@@ -88,6 +89,7 @@ Game_Init:
     dec TmpZ
     bne @drawWholeMap
 
+@skip_gen:
     ; Scroll to the start of the first screen
     lda #0
     sta $2005
@@ -284,21 +286,14 @@ game_FullInit:
     lda #$00
     jsr game_DrawAttributeRow
 
-    lda #$27
-    sta $2006
-    lda #$D8
-    sta $2006
-
-    lda #$AA
-    jsr game_DrawAttributeRow
-    lda #$55
-    jsr game_DrawAttributeRow
-
     lda #$FF
     sta meta_last_gen
+    lda #$00
+    sta meta_cols_to_buffer
 
-    lda #16
+    lda #18
     sta obs_countdown
+
     sta TmpZ
 @drawWholeMap:
     lda meta_cols_to_buffer
