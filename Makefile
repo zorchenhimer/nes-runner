@@ -40,13 +40,10 @@ TVFORMAT = -D NTSC
 
 default: all
 all: bin/$(NAME).nes
-symbols: cleanSym bin/$(NAME).mlb
 names: clrNames credits_data.i bin/$(NAME).nes
 
 clean:
 	-$(RM) bin/*.* credits_data.i *.chr $(BMP2CHR) $(GENCRED)
-cleanSym:
-	-$(RM) bin/*.mlb
 
 set_pal:
 	$(eval export TVFORMAT=-D PAL)
