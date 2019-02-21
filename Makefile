@@ -50,7 +50,7 @@ set_pal:
 pal: set_pal all
 
 bin/:
-	mkdir bin
+	-mkdir bin
 
 %.chr: %.bmp $(BMP2CHR)
 	./$(BMP2CHR) -i $< -o $@
