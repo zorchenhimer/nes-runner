@@ -105,6 +105,12 @@ Game_Init:
     sta rngFlipFlop
     sta calc_scroll
 
+    lda #$F0
+    ldx #7
+:   sta PlayerScoreText, x
+    dex
+    bpl :-
+
 @scoredone:
     ; prepare sprite zero
     lda #158
