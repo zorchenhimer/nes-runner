@@ -557,7 +557,7 @@ scores_MoveEntryDown:
     rts
 
 ; Tile constants
-SC_TILE_BACKGROUND  = $0F
+SC_TILE_BACKGROUND  = $03
 SC_TILE_ROLL_TOP    = $11
 SC_TILE_ROLL_BOTTOM = $16
 
@@ -582,23 +582,33 @@ Scores_Header:
     .byte "High Scores Thing?", $00
 
 Scores_BG_RowH1:
-    .byte $0F,$0F,$0F,$0F,$0F,$0F
-    .byte " High scores"; for seed"
-    .byte $00,$00,$00,$00,$00,$00,$00,$00 ;,$00 ;,$00
+    .byte SC_TILE_BACKGROUND,SC_TILE_BACKGROUND,SC_TILE_BACKGROUND
+    .byte SC_TILE_BACKGROUND,SC_TILE_BACKGROUND,SC_TILE_BACKGROUND
+    .byte $00,$00,$00,$00,$00,$00 ;,$00,$00,$00,$00,$00
+    .byte $30, $31, $32, $33, $34, $35, $36, $37, $38, $39; for seed"
+    .byte $00,$00,$00,$00 ;,$00,$00,$00 ;,$00 ;,$00
     ;.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-    .byte $0F,$0F,$0F,$0F,$0F,$0F
+    .byte SC_TILE_BACKGROUND,SC_TILE_BACKGROUND,SC_TILE_BACKGROUND
+    .byte SC_TILE_BACKGROUND,SC_TILE_BACKGROUND,SC_TILE_BACKGROUND
+
 Scores_BG_RowH2:
-    .byte $0F,$0F,$0F,$0F,$0F,$0F
-    .byte "      for seed FFFF"
-    .byte $00 ;,$00,$00,$00,$00 ;,$00,$00 ;,$00,$00 ;,$00
+    .byte SC_TILE_BACKGROUND,SC_TILE_BACKGROUND,SC_TILE_BACKGROUND
+    .byte SC_TILE_BACKGROUND,SC_TILE_BACKGROUND,SC_TILE_BACKGROUND
+    .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+    ;.byte "      for seed FFFF"
+    ;.byte $00 ;,$00,$00,$00,$00 ;,$00,$00 ;,$00,$00 ;,$00
     ;.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-    .byte $0F,$0F,$0F,$0F,$0F,$0F
+    .byte SC_TILE_BACKGROUND,SC_TILE_BACKGROUND,SC_TILE_BACKGROUND
+    .byte SC_TILE_BACKGROUND,SC_TILE_BACKGROUND,SC_TILE_BACKGROUND
 
 Scores_BG_Row:
-    .byte $0F,$0F,$0F,$0F,$0F,$0F
+    .byte SC_TILE_BACKGROUND,SC_TILE_BACKGROUND,SC_TILE_BACKGROUND
+    .byte SC_TILE_BACKGROUND,SC_TILE_BACKGROUND,SC_TILE_BACKGROUND
     .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
     .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-    .byte $0F,$0F,$0F,$0F,$0F,$0F
+    .byte SC_TILE_BACKGROUND,SC_TILE_BACKGROUND,SC_TILE_BACKGROUND
+    .byte SC_TILE_BACKGROUND,SC_TILE_BACKGROUND,SC_TILE_BACKGROUND
 
 Scores_Palette:
     .byte $37,$0F,$17,$07, $37,$05,$15,$13, $37,$0A,$1A,$13, $37,$11,$21,$13
