@@ -116,7 +116,7 @@ Game_Init:
     lda #%00100001
     sta spritezero+2
 
-    lda #254
+    lda #240
     sta spritezero+3
 
     ; Setup the player sprite
@@ -309,10 +309,36 @@ game_FullInit:
     lda #PPU_CTRL_HORIZ
     sta $2000
 
+    jsr game_ClearStatusBar
     jsr WriteScoreLabel
     jmp WriteSeedLabel
     ;rts
 ;; End of Game_Init
+
+game_ClearStatusBar:
+    lda #$22
+    sta $2006
+    lda #$80
+    sta $2006
+
+    ldx #10
+    ldy #$10
+@loop:
+.repeat 32
+    sty $2007
+.endrepeat
+    dex
+    bne @loop
+
+    lda #$26
+    sta $2006
+    lda #$80
+    sta $2006
+
+.repeat 32
+    sty $2007
+.endrepeat
+    rts
 
 game_DrawAttributeRow:
 .repeat 8

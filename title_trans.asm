@@ -295,6 +295,7 @@ ttrans_nmi_draw_meta_row:
     jmp Title_Trans_NMI_End
 
 ttrans_nmi_draw_statusbar:
+    jsr game_ClearStatusBar
     jsr WriteScoreLabel
     jsr WriteSeedLabel
     jmp Title_Trans_NMI_End
