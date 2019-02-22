@@ -291,8 +291,7 @@ Scores_Draw_Page:
     ora #$F0
     sta $2007
 
-    ; score "loop"
-    ; Read score into the player score variables
+    lda (TmpAddr), y
     ora #$F0
     sta $2007
 
