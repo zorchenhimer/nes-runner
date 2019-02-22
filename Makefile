@@ -45,6 +45,9 @@ names: clrNames credits_data.i bin/$(NAME).nes
 clean:
 	-$(RM) bin/*.* credits_data.i *.chr $(BMP2CHR) $(GENCRED)
 
+clrNames:
+	-$(RM) credits_data.i
+
 set_pal:
 	$(eval export TVFORMAT=-D PAL)
 pal: set_pal all

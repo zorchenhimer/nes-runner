@@ -346,9 +346,9 @@ func main() {
                     // Twitch logo row one
                     NewGenericData(CR_OP_INC_BYTE, 3, []byte{0x10}),
                     // "Twitch.tv/"
-                    NewGenericData(CR_OP_INC_BYTE, 6, []byte{0x02}),
+                    NewGenericData(CR_OP_INC_BYTE, 7, []byte{0x02}),
                     // padding
-                    NewGenericData(CR_OP_RLE, 23, []byte(" ")),
+                    NewGenericData(CR_OP_RLE, 22, []byte(" ")),
                     // Twitch logo row two
                     NewGenericData(CR_OP_INC_BYTE, 3, []byte{0x13}),
                     // top of "Zorchenhimer"
