@@ -1,6 +1,5 @@
 ; TODO:
 ;   Fall into pitfall.
-;   Add some more obstacle types (pit/wall combo, etc)
 
 ; Game Meta Tiles
 .enum MetaTileTypes
@@ -1242,8 +1241,8 @@ MetaTiles:
     .word Meta_FireHydrant
 
 ; used for RNG
-; TODO: Make this list 16 entries long. Use both bytes of RNG for
-;       index (update RNG every four generates).
+; This list is 16 entries long. Use both nibbles of low byte
+; of RNG for index.
 MetaColumn_Definitions:
     .word MetaColumn_Nothin
     .word MetaColumn_Wall

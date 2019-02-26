@@ -1,8 +1,3 @@
-; FIXME:
-; Attribute write is miss-aligned with the
-; tile updates on reload of this screen.
-; Prolly something not getting init()'d correctly.
-
 CLEAR_TILE_ID   = 0
 CR_T2_SPEED     = 8     ; color cycle speed (in frames) for the tier two names
 
@@ -198,7 +193,6 @@ cr_Decode_Opcode_IncAddr:
 
 ; Call this with a JSR
 Credits_LoadChunk:
-    ; TODO: use the constants here
     lda #CR_UPDATE_TILE
     sta cr_UpdateReady
 
@@ -464,7 +458,6 @@ cr_op_Attr:
 cr_op_EndOfData:
     rts
 
-; FIXME: i broke this.  whoops.
 cr_op_Name:
     ; Clear the row, prefix spaces, suffix spaces, attribute, name data
     jsr cr_ClearRow

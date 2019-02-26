@@ -1,9 +1,7 @@
 ; TODO
 ;   High Scores table
 ;       new high score notification
-;       scores for a given seed?
 ;   Better map generation
-;   Game states and substates
 ;   Player Sprite
 ;   more Background art (mountains or some shit.  happy little trees?)
 ;   Sound engine

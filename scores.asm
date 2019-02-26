@@ -1,6 +1,3 @@
-; TODO:
-;   Record the last 8 or so runs with seed and score.
-
 ;   Individual scores - 16 bytes/score = 511 scores (-1 for current seed; other metadata)
 ; Seed      2 bytes
 ; Score     4 bytes - base100

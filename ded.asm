@@ -1,6 +1,3 @@
-; TODO:
-;   goto enter new high score if applicable
-
 DedInit:
     jsr MMC1_Setup_Vert
 
