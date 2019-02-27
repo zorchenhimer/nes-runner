@@ -191,8 +191,8 @@ InitTitle:
     sta $2006
     lda #$BF
     sta $2006
-    ;lda #$0F
-    lda #$20
+    lda #$0F
+    ;lda #$20
     sta $2007
 
     lda #$29
@@ -406,15 +406,15 @@ Title_BG6:
 
 TitlePalette:
     ; Background
-    .byte $1A,$04,$34,$0F
-    .byte $1A,$17,$25,$0F
-    .byte $1A,$0A,$39,$06
-    .byte $1A,$30,$21,$15
+    .byte $0F,$0F,$0F,$0F
+    .byte $0F,$17,$25,$09
+    .byte $0F,$16,$39,$06
+    .byte $0F,$30,$21,$15
 
     ; Sprites
-    .byte $1A,$10,$00,$30
-    .byte $1A,$05,$05,$05
-    .byte $1A,$0A,$0A,$0A
-    .byte $1A,$0F,$11,$11
+    .byte $0F,$10,$00,$30
+    .byte $0F,$05,$05,$05
+    .byte $0F,$0A,$0A,$0A
+    .byte $0F,$0F,$11,$11
 
     .byte $EA, $EA
