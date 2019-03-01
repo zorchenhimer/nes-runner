@@ -21,37 +21,15 @@ Game_Init:
 
     lda #PPU_CTRL_HORIZ
     sta $2000
-    ;jsr ClearNametable0
-    ;jsr ClearNametable1
-
-    ;jsr ClearAttrTable0
-    ;jsr ClearAttrTable1
-
-    ;lda #<GamePalette
-    ;sta PaletteAddr
-    ;lda #>GamePalette
-    ;sta PaletteAddr+1
-    ;jsr LoadPalettes
-
-    bit $2000
-    lda #$27
-    sta $2006
-    lda #$D8
-    sta $2006
-
-    lda #$AA
-    jsr game_DrawAttributeRow
-    lda #$55
-    jsr game_DrawAttributeRow
 
     ; Initialize a bunch of variables
     lda #0
     sta column_ready
-    sta meta_column_offset
+    ;sta meta_column_offset
     sta meta_tile_addr
     sta TmpAttr
     ;sta meta_cols_to_buffer
-    sta meta_last_buffer
+    ;sta meta_last_buffer
 
 ; Status bar stuff
 
@@ -67,26 +45,26 @@ Game_Init:
     jmp @skip_gen
 :
 
-    lda #16
-    sta meta_last_gen
-    lda #16
-    sta meta_last_buffer
+    ;lda #16
+    ;sta meta_last_gen
+    ;lda #16
+    ;sta meta_last_buffer
 
-    lda #1
-    sta obs_countdown
+    ;lda #1
+    ;sta obs_countdown
 
-    lda #2
-    sta TmpZ
-@drawWholeMap:
-    lda meta_cols_to_buffer
-    bne @buffer
-    jsr generate_column
-@buffer:
-    jsr Buffer_Column
-    jsr Draw_Column
-
-    dec TmpZ
-    bne @drawWholeMap
+;    lda #2
+;    sta TmpZ
+;@drawWholeMap:
+;    lda meta_cols_to_buffer
+;    bne @buffer
+;    jsr generate_column
+;@buffer:
+;    jsr Buffer_Column
+;    jsr Draw_Column
+;
+;    dec TmpZ
+;    bne @drawWholeMap
 
 @skip_gen:
     ; Scroll to the start of the first screen
@@ -295,6 +273,8 @@ game_FullInit:
     sta meta_last_gen
     lda #$00
     sta meta_cols_to_buffer
+    sta meta_last_buffer
+    sta meta_column_offset
 
     lda #18
     sta obs_countdown

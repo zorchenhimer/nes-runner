@@ -253,8 +253,11 @@ ttrans_frame_waitforcolumndraw:
     dec TmpX
     bne :+
     dec framesub_next
-    lda #1
+
+    ; Set number of columns to generate
+    lda #2
     sta TmpZ
+
 :   jmp ttrans_frame_done
 
 ; Frame 07
@@ -310,11 +313,15 @@ ttrans_frame_done:
 ttrans_frame_load:
     lda #2
     sta obs_countdown
-    lda #15
-    sta meta_last_gen
-    sta meta_last_buffer
 
-    jsr generate_column
+    ; These two values cannot be the same
+    lda #18
+    sta meta_last_buffer
+    lda #17
+    sta meta_last_gen
+
+    lda #0
+    sta column_ready
 
     inc gamestate_changed
     jmp WaitFrame
