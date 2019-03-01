@@ -256,7 +256,7 @@ bg_DrawColumn:
 
 ; Table of palettes.
 bg_table_palettes:
-    .byte $1A,$04,$34,$16 ;$24
+    .byte $1A,$04,$34,$06 ;$24
 
 ; Table of transition tile start IDs
 bg_table_transitions:
