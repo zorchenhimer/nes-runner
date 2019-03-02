@@ -270,18 +270,34 @@ ttrans_frame_columnbuffer:
     dec TmpZ    ; number of columns to generate
     bne :+
     dec framesub_next
+
+    ; Correct the address for the attribute write. The
+    ; second nametable is on the bottom during the transition.
+    lda #$2B
+    sta attr_address+1
+    lda #$D8
+    sta attr_address
+
 :
     jmp ttrans_frame_done
 
 ; NMI 07
 ; Write the playfield meta column buffer to the PPU
 ttrans_nmi_drawbuffer:
-    lda #$29
+    lda #$29    ; Correct the nametable address for the third nametable.
     sta tile_column_addr_high
     jsr Draw_Column
-    lda #$25
+    lda #$25    ; Set it back to not break things.
     sta tile_column_addr_high
-    jmp Title_Trans_NMI_End
+
+    ; Piggyback off of this variable to deterimne the
+    ; second write.  Draw the attributes after the second
+    ; meta column is drawn.
+    bit framesub_next
+    bvc :+
+    jsr Draw_Attribute
+
+:   jmp Title_Trans_NMI_End
 
 ; Frame 08 (plus all the others)
 ; Increment the scroll value, and check to see if we have
