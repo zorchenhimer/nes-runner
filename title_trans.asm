@@ -257,6 +257,7 @@ ttrans_frame_waitforcolumndraw:
     ; Set number of columns to generate
     lda #2
     sta TmpZ
+    sta obs_countdown   ; init the obstacle countdown
 
 :   jmp ttrans_frame_done
 
@@ -266,7 +267,6 @@ ttrans_frame_columnbuffer:
     jsr generate_column
     jsr Buffer_Column
 
-    ; FIXME: this is borked
     dec TmpZ    ; number of columns to generate
     bne :+
     dec framesub_next
@@ -311,8 +311,6 @@ ttrans_frame_done:
 ; Frame 09 (the last one)
 ; Initialize some variables and trigger a gamestate switch.
 ttrans_frame_load:
-    lda #2
-    sta obs_countdown
 
     ; These two values cannot be the same
     lda #18
