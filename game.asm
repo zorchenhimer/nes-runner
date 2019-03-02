@@ -45,27 +45,6 @@ Game_Init:
     jmp @skip_gen
 :
 
-    ;lda #16
-    ;sta meta_last_gen
-    ;lda #16
-    ;sta meta_last_buffer
-
-    ;lda #1
-    ;sta obs_countdown
-
-;    lda #2
-;    sta TmpZ
-;@drawWholeMap:
-;    lda meta_cols_to_buffer
-;    bne @buffer
-;    jsr generate_column
-;@buffer:
-;    jsr Buffer_Column
-;    jsr Draw_Column
-;
-;    dec TmpZ
-;    bne @drawWholeMap
-
 @skip_gen:
     ; Scroll to the start of the first screen
     lda #0
@@ -74,7 +53,7 @@ Game_Init:
     ldx #PPU_CTRL_VERT
     stx $2000
 
-; More init stuff
+    ; More init stuff
     sta PlayerScore0
     sta PlayerScore1
     sta PlayerScore2
@@ -212,6 +191,13 @@ Game_Init:
     cpx #16*4
     bne :-
 
+    ; Clear the buffer and buffer addresses for the attributes
+    lda #0
+    sta attr_buffer
+    sta attr_buffer+1
+    sta attr_address
+    sta attr_address+1
+
     ; Set frame and NMI pointers
     lda #<Game_Frame
     sta DoFramePointer
@@ -269,12 +255,30 @@ game_FullInit:
     lda #$00
     jsr game_DrawAttributeRow
 
+    ; Attributes for the first two columns on
+    ; the second nametable
+    lda #$27
+    sta $2006
+    lda #$D8
+    sta $2006
+    lda #$AA
+    sta $2007
+
+    lda #$27
+    sta $2006
+    lda #$E0
+    sta $2006
+    lda #$55
+    sta $2007
+
     lda #$FF
     sta meta_last_gen
     lda #$00
     sta meta_cols_to_buffer
     sta meta_last_buffer
     sta meta_column_offset
+    sta column_ready
+    sta attr_odd
 
     lda #18
     sta obs_countdown
@@ -338,9 +342,17 @@ Game_NMI:
     ; Check to see if a column is buffered.  If so, draw it
     ; to the screen.
     bit column_ready
-    bvc @noDraw
+    bvc @noDraw     ; check if $40 is set
     jsr Draw_Column
 @noDraw:
+
+    bit column_ready
+    bpl @noAttr
+    jsr Draw_Attribute
+@noAttr:
+
+    lda #0
+    sta column_ready
 
     jsr Draw_Score
     jsr update_scroll
@@ -877,7 +889,8 @@ Buffer_Column:
     dec meta_cols_to_buffer
 
     ; Set this to trigger Draw_Column during next NMI
-    lda #$FF
+    lda column_ready
+    ora #COLUMN_READY
     sta column_ready
 
     ; Multiply by four.  Each column is four meta tiles.
@@ -892,18 +905,42 @@ Buffer_Column:
     cmp #16
     bcs @secondNT
 
+    ; First nametable
     lda #$21
     sta tile_column_addr_high
+    lda #$23
+    sta attr_address+1
+
     lda meta_last_buffer
+    lsr a   ; get offset for attribute column lookup
+    tax     ; attr column lookup in X
+    lda AttrAddrLowByte, x
+    sta attr_address
+
+    lda meta_last_buffer
+
     jmp @addrLow
 
 @secondNT:
+    ; Second nametable
     lda #$25
     sta tile_column_addr_high
+    lda #$27
+    sta attr_address+1
+
     lda meta_last_buffer
     ; Subtract 16 to get it back to the start of the nametable
     sec
     sbc #16
+
+    tay     ; save for later
+    lsr a   ; get offset for attribute column lookup
+    tax     ; attr column lookup in X
+    lda AttrAddrLowByte, x
+    sta attr_address
+
+    ;lda meta_last_buffer
+    tya     ; restore from before
 
 @addrLow:
     ; low byte = (meta_last_draw * 2) + $80
@@ -949,11 +986,94 @@ Buffer_Column:
 :   lda (meta_tile_addr, x)
     sta tile_column_buffer+9, y
 
+    ; ======== Attribute stuff
+    ; Figure out where to write attribute column
+    ; Y is vertical position of the last *tile* written (0 is top)
+    tya     ; y is in range 0-7.  will always be even. it's the start of the
+            ; first tile in the meta tile.
+    lsr a   ; divide by two, range 0-3.  A is now the meta tile position.
+    cmp #2
+    bcs @bottomAttrByte
+    ; upper byte
+
+    lsr a   ; Odd or even?
+    bcs @topBottomHalf
+    ldx #0
+    jmp :+
+
+@topBottomHalf:
+    ldx #1
+:
+    ; figure out if it's the left or right
+    bit attr_odd
+    bmi @attrOddTop
+    ; even (left), top
+    lda AttrMaskLeft, x  ; mask byte is loaded
+    jmp @attrTopMask
+
+@attrOddTop:
+    ; odd (right), top
+    lda AttrMaskRight, x  ; mask byte is loaded
+
+; mask is loaded. OR it with the data
+@attrTopMask:
+    ldx #0
+    ; Attribute data
+    inc meta_tile_addr
+    bne :+
+    inc meta_tile_addr+1
+:   and (meta_tile_addr, x)
+    ; Attr data is in A, on the correct bits.
+
+    ; Or it with the current buffer data
+    ora attr_buffer
+    sta attr_buffer
+
+    jmp @nextMetaTile
+
+@bottomAttrByte:
+    ; lower byte
+    lsr a   ; Odd or even?
+    bcs @bottomBottomHalf
+    ldx #0
+    jmp :+
+
+@bottomBottomHalf:
+    ldx #1
+:
+    ; figure out if it's the left or right
+    bit attr_odd
+    bmi @attrOddBottom
+    ; even (left), top
+    lda AttrMaskLeft, x  ; mask byte is loaded
+    jmp @attrBottomMask
+
+@attrOddBottom:
+    ; odd (right), top
+    lda AttrMaskRight, x  ; mask byte is loaded
+
+; mask is loaded. OR it with the data
+@attrBottomMask:
+    ldx #0
+    ; Attribute data
+    inc meta_tile_addr
+    bne :+
+    inc meta_tile_addr+1
+:   and (meta_tile_addr, x)
+    ; Attr data is in A, on the correct bits.
+
+    ; Or it with the current buffer data
+    ora attr_buffer+1
+    sta attr_buffer+1
+
+@nextMetaTile:
     inc map_meta_tmp
     iny
     iny
     cpy #8
-    bne @tileLoop
+    beq @tileNoLoop
+    jmp @tileLoop
+@tileNoLoop:
 
     ; find the current meta column
     inc meta_last_buffer    ; probably wrong
@@ -966,6 +1086,24 @@ Buffer_Column:
     lda #$00
     sta meta_last_buffer
 @noWrap:
+
+    ; Check for left/right of attribute bytes
+    bit attr_odd
+    bvc @attrEven
+; Even
+    lda #$00
+    sta attr_odd
+    ;inc attr_odd
+    lda #$FF
+    sta column_ready
+    jmp @notEven
+
+@attrEven:
+    lda #$FF
+    sta attr_odd
+    ;dec attr_odd
+@notEven:
+
     rts
 
 ; Turn on "Paused" sprites
@@ -998,12 +1136,41 @@ g_PausedSprites_Off:
     bne @loop
     rts
 
+; Draw the attribute buffer to the screen
+Draw_Attribute:
+    bit $2002
+    ; Write address top byte
+    lda attr_address+1
+    sta $2006
+    ldx attr_address
+    stx $2006
+
+    ; Write top byte
+    lda attr_buffer
+    sta $2007
+
+    ; Write address of second byte
+    lda attr_address+1
+    sta $2006
+
+    ; Add 8 first
+    lda attr_address
+    clc
+    adc #8
+    sta $2006
+
+    ; Write lower byte
+    lda attr_buffer+1
+    sta $2007
+
+    ; Clear the buffer so it's ready for the next write.
+    lda #$00
+    sta attr_buffer
+    sta attr_buffer+1
+    rts
+
 ; Draw the column that is buffered in RAM.
 Draw_Column:
-
-    lda #0
-    sta column_ready
-
     lda #PPU_CTRL_VERT
     sta $2000
 
@@ -1282,27 +1449,30 @@ MetaColumn_HalfWall:
 
 ; Tile indicies
 Meta_Sky:
-    .byte $80, $90, $81, $91
+    .byte $80, $90, $81, $91, $AA
 Meta_Ground:
-    .byte $A0, $B0, $A1, $B1
+    .byte $A0, $B0, $A1, $B1, $55
 Meta_Ground2:
-    .byte $C0, $D0, $C1, $D1
+    .byte $C0, $D0, $C1, $D1, $55
+
 Meta_Obstacle:
-    .byte $82, $92, $83, $93
+    .byte $82, $92, $83, $93, $00
+
 Meta_Pit:
-    .byte $A3, $B3, $A2, $B2
+    .byte $A3, $B3, $A2, $B2, $FF
 Meta_Pit_Left:
-    .byte $A0, $B0, $A4, $B4
+    .byte $A0, $B0, $A4, $B4, $FF
 Meta_Pit_Right:
-    .byte $A5, $B5, $A1, $B1
+    .byte $A5, $B5, $A1, $B1, $FF
 Meta_Pit_Left_Bottom:
-    .byte $C0, $D0, $A2, $B2
+    .byte $C0, $D0, $A2, $B2, $FF
 Meta_Pit_Right_Bottom:
-    .byte $A3, $B3, $C1, $D1
+    .byte $A3, $B3, $C1, $D1, $FF
+
 Meta_Nothing:
-    .byte $00, $00, $00, $00
+    .byte $00, $00, $00, $00, $AA
 Meta_FireHydrant:
-    .byte $84, $94, $85, $95
+    .byte $84, $94, $85, $95, $55
 
 PAUSED_X    = 112
 PAUSED_Y    = 25
@@ -1326,6 +1496,15 @@ JumpFrameEnd:
 FallFrames:
     .byte $7D ; and go down from here
 FallFrameEnd:
+
+; For a single attribute byte
+AttrMaskLeft:
+    .byte $03, $30
+AttrMaskRight:
+    .byte $0C, $C0
+
+AttrAddrLowByte:
+    .byte $D8, $D9, $DA, $DB, $DC, $DD, $DE, $DF
 
     nop ; to separate the data label from DedInit
 

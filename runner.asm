@@ -45,8 +45,13 @@ nes2end
     .include "credits_ram.asm"
 
 sleeping:       .res 1
-column_ready:   .res 1
+column_ready:   .res 1      ; $40 = tiles ready
+                            ; $80 = attr ready
+attr_odd:       .res 1
 frame_odd:      .res 1
+
+COLUMN_READY    = $40
+ATTRIBUTE_READY = $80
 
 meta_tile_addr:     .res 2  ; tiles that make up the meta tile (eg Meta_Sky, Meta_Ground, etc)
 obs_countdown:      .res 1  ; obstacle countdown
@@ -193,6 +198,8 @@ meta_columns:       .res 128
 tile_column_buffer: .res 16
 PaletteRAM:         .res 32
 TileBuffer:         .res 64
+attr_buffer:        .res 2      ; Single attribute column
+attr_address:       .res 2      ; PPU address of the first attribute byte in the column
 
 ; Start address to draw the tile_column_buffer
 tile_column_addr_high:  .res 1
