@@ -38,14 +38,12 @@ Game_Init:
     sta $2000
 
     bit GameFullInit
-    bvc :+
+    bvc @skip_fullinit
     lda #0
     sta GameFullInit
     jsr game_FullInit
-    jmp @skip_gen
-:
 
-@skip_gen:
+@skip_fullinit:
     ; Scroll to the start of the first screen
     lda #0
     sta $2005
@@ -197,6 +195,7 @@ Game_Init:
     sta attr_buffer+1
     sta attr_address
     sta attr_address+1
+    sta attr_odd
 
     ; Set frame and NMI pointers
     lda #<Game_Frame
@@ -278,7 +277,6 @@ game_FullInit:
     sta meta_last_buffer
     sta meta_column_offset
     sta column_ready
-    sta attr_odd
 
     lda #18
     sta obs_countdown
@@ -297,6 +295,9 @@ game_FullInit:
 
     lda #PPU_CTRL_HORIZ
     sta $2000
+
+    lda #0
+    sta column_ready
 
     jsr game_ClearStatusBar
     jsr WriteScoreLabel
@@ -1507,4 +1508,3 @@ AttrAddrLowByte:
     .byte $D8, $D9, $DA, $DB, $DC, $DD, $DE, $DF
 
     nop ; to separate the data label from DedInit
-
