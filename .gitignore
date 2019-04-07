@@ -10,3 +10,7 @@ bin/
 *.chr
 *.exe
 *.aseprite
+
+# linux binaries
+bmp2chr
+generate-credits
