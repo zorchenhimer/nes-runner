@@ -22,6 +22,12 @@ Game_Init:
     lda #PPU_CTRL_HORIZ
     sta $2000
 
+    lda #<PalBG3
+    sta TmpAddr
+    lda #>PalBG3
+    sta TmpAddr+1
+    jsr LoadPaletteBG3
+
     ; Initialize a bunch of variables
     lda #0
     sta column_ready
@@ -1361,10 +1367,10 @@ SeedText:
 
 GamePalette:
     ; BG
-        .byte $0F,$1C,$2B,$39
+        .byte $0F,$00,$00,$00
 PalBG1: .byte $0F,$07,$17,$09
 PalBG2: .byte $0F,$06,$39,$15
-        .byte $0F,$1C,$2B,$39
+PalBG3: .byte $0F,$30,$10,$07
 
     ; Sprites
 PalSP0: .byte $0F,$30,$2B,$39
@@ -1460,13 +1466,13 @@ Meta_Obstacle:
 Meta_Pit:
     .byte $A3, $B3, $A2, $B2, $FF
 Meta_Pit_Left:
-    .byte $A0, $B0, $A4, $B4, $FF
+    .byte $C2, $D2, $A4, $B4, $FF
 Meta_Pit_Right:
-    .byte $A5, $B5, $A1, $B1, $FF
+    .byte $A5, $B5, $C3, $D3, $FF
 Meta_Pit_Left_Bottom:
-    .byte $C0, $D0, $A2, $B2, $FF
+    .byte $C4, $D4, $A2, $B2, $FF
 Meta_Pit_Right_Bottom:
-    .byte $A3, $B3, $C1, $D1, $FF
+    .byte $A3, $B3, $C5, $D5, $FF
 
 Meta_Nothing:
     .byte $00, $00, $00, $00, $AA
