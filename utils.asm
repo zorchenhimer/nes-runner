@@ -304,3 +304,13 @@ BinToHex:
 @xnoletter:
     sta TmpX
     rts
+
+; Draw a number of tiles.
+; Start value is in X
+; Length in Y
+DrawSequential:
+    stx $2007
+    inx
+    dey
+    bne DrawSequential
+    rts

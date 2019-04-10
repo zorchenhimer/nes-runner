@@ -127,11 +127,8 @@ Ded_Frame:
     sta $2006
 
     ldx #$C2
-:
-    stx $2007
-    inx
-    cpx #$CA
-    bne :-
+    ldy #($CA - $C2)
+    jsr DrawSequential
 
     ; Draw "Press Start"
     lda #$22
@@ -140,11 +137,8 @@ Ded_Frame:
     sta $2006
 
     ldx #$D0
-:
-    stx $2007
-    inx
-    cpx #$DA
-    bne :-
+    ldy #($DA - $D0)
+    jsr DrawSequential
 
     ; Draw "Select to Restart"
     lda #$22
@@ -153,11 +147,8 @@ Ded_Frame:
     sta $2006
 
     ldx #$E0
-:
-    stx $2007
-    inx
-    cpx #$EC
-    bne :-
+    ldy #12
+    jsr DrawSequential
 
 @startEnd:
     ; attributes for "Press Start"

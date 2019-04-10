@@ -1257,16 +1257,16 @@ WriteScoreLabel:
     lda #$EA
     sta $2006
 
-    ldy #$52
-:
-    sty $2007
-    iny
-    cpy #$57
-    bne :-
+    ; label
+    ldx #$52
+    ldy #($57 - $52)
+    jsr DrawSequential
 
+    ; Singel padding space
     lda #$00
     sta $2007
 
+    ; Initial value of 00,000,000
     lda #$F0
     sta $2007
     sta $2007
@@ -1294,13 +1294,11 @@ WriteSeedLabel:
     lda #$2A
     sta $2006
 
-    ldy #$62
-:
-    sty $2007
-    iny
-    cpy #$6A
-    bne :-
+    ldx #$62
+    ldy #($6A - $62)
+    jsr DrawSequential
 
+    ; "Initial" value
     lda #$00
     sta $2007
     sta $2007
