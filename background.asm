@@ -256,7 +256,7 @@ bg_DrawColumn:
 
 ; Table of palettes.
 bg_table_palettes:
-    .byte $1A,$04,$34,$06 ;$24
+    .byte $0F,$04,$34,$06 ;$24
 
 ; Table of transition tile start IDs
 bg_table_transitions:
@@ -280,21 +280,21 @@ bg_table_column_lookups:
 bg_meta_city_screen_a:
     .byte $01, $23, $41, $BC
     .byte $01, $23, $41, $56
-    .byte $BC, $D3, $41, $56
+    .byte $BC, $D3, $41, $EF
     .byte $01, $23, $47, $89
 
 bg_meta_city_screen_b:
-    .byte $A2, $13, $41, $56
+    .byte $A2, $13, $41, $EF
     .byte $34, $01, $21, $BC
-    .byte $01, $23, $41, $56
+    .byte $01, $23, $41, $EF
     .byte $BC, $D3, $41, $BC
 
 ; pointed to by bg_lookup_data_pointer
 bg_meta_City_A_Left:    .byte $10, $00, $01, $AB, $23, $AB
 bg_meta_City_A_Right:   .byte $20, $00, $01, $AB, $23, $AB
-bg_meta_City_03:        .byte $10, $00, $00, $15, $45, $45 ;, [...]
-bg_meta_City_B_Left:    .byte $10, $06, $78, $98, $98, $98
-bg_meta_City_B_Right:   .byte $20, $06, $78, $98, $98, $98
+bg_meta_City_03:        .byte $10, $00, $00, $15, $45, $45
+bg_meta_City_B_Left:    .byte $10, $00, $08, $98, $98, $98
+bg_meta_City_B_Right:   .byte $20, $00, $08, $98, $98, $98
 bg_meta_City_C_Left:    .byte $10, $67, $89, $89, $89, $89
 bg_meta_City_C_Right:   .byte $20, $67, $89, $89, $89, $89
 bg_meta_City_D_Left:    .byte $30, $00, $00, $00, $12, $12
@@ -304,6 +304,8 @@ bg_meta_City_E_Right:   .byte $40, $00, $00, $00, $21, $21
 bg_meta_City_F_Left:    .byte $10, $00, $00, $32, $32, $32
 bg_meta_City_F_Right:   .byte $20, $00, $00, $32, $32, $32
 bg_meta_City_G:         .byte $20, $00, $00, $03, $23, $23
+bg_meta_City_H_Left:    .byte $10, $00, $89, $89, $89, $89
+bg_meta_City_H_Right:   .byte $20, $00, $89, $89, $89, $89
 
 ; pointed to by bg_lookup_pointer
 bg_meta_City_Lookup:
@@ -323,4 +325,6 @@ bg_meta_City_Lookup:
     .word bg_meta_City_F_Left
     .word bg_meta_City_F_Right
     .word bg_meta_City_G
+    .word bg_meta_City_H_Left
+    .word bg_meta_City_H_Right
 
