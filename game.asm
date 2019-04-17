@@ -87,15 +87,19 @@ Game_Init:
 
     ; Setup the player sprite
     ; Y, idx, attr, X
-    ; first sprite column
-    lda #$04    ; sprite tile index
-    sta TmpCounter
+
+    lda #<PlayerSprite_Frame0
+    sta TmpAddr
+    lda #>PlayerSprite_Frame0
+    sta TmpAddr+1
 
     lda #$5E
-    sta TmpY
+    sta TmpY    ; Y coordinate
     lda #$10
-    sta TmpX
-    ldx #0
+    sta TmpX    ; X coordinate
+    ldx #0      ; byte offset in sprite memory
+    ldy #0      ; Tile index for sprite definition
+    sty TmpCounter
 @spLoop:
     ; y
     lda TmpY
@@ -106,13 +110,18 @@ Game_Init:
     sta TmpY
 
     ; idx
-    lda TmpCounter
+    lda (TmpAddr), y
     sta sprites, x
     inx
+    inc TmpAddr
+    ; Handle overflow
+    bne:+
+    inc TmpAddr+1
+:
     inc TmpCounter
 
     ; attr
-    lda TmpAttr
+    lda #$00
     sta sprites, x
     inx
 
@@ -123,14 +132,11 @@ Game_Init:
 
     ; test for second column
     lda TmpCounter
-    cmp #$08
-    bcc @noTmpWrap
+    cmp #$04
+    bne @noTmpWrap
 
     lda #$04
     sta TmpCounter
-
-    lda #%01000000
-    sta TmpAttr
 
     lda #$5E
     sta TmpY
@@ -144,6 +150,11 @@ Game_Init:
     cpx #32
     bne @spLoop
     ; end of player sprite
+
+    lda #PlayerSprite_AnimSpeed
+    sta PlayerNextFrameIn
+    lda #$FF
+    sta PlayerSpriteFrame
 
     ; Prepare "Paused" sprites. Position them and give them attributes,
     ; but set the tiles to a blank space.
@@ -421,6 +432,31 @@ Game_Frame:
     jmp WaitSpriteZero
 
 @game_not_paused:
+    ; Is it time for the next frame?
+    dec PlayerNextFrameIn
+    bne @noAnimFrame
+
+    ; Prep the countdown to the next frame
+    lda #PlayerSprite_AnimSpeed
+    sta PlayerNextFrameIn
+
+    ; Inc frame id index
+    inc PlayerSpriteFrame
+    ; Check for wrap around
+    lda PlayerSpriteFrame
+    cmp #PlayerSprite_FrameCount
+    bne :+
+
+    ; Wrapped around, load first frame
+    lda #0
+    sta PlayerSpriteFrame
+:
+
+    ; Load the frame
+    jsr UpdatePlayerAnimation
+
+@noAnimFrame:
+
     ; increment the screen position
     inc calc_scroll
     jsr UpdatePlayer
@@ -741,6 +777,14 @@ UpdatePlayer:
     sbc #8
     sta sprites+16
     sta sprites+0
+
+    lda PlayerJumpFrame
+    beq :+
+
+    lda #0
+    sta PlayerSpriteFrame
+    jsr UpdatePlayerAnimation
+:
     rts
 
 prng:
@@ -1360,6 +1404,36 @@ WriteSeedLabel:
     sta $2007
     rts
 
+; Load a frame.  The index is expected in PlayreSpriteFrame
+UpdatePlayerAnimation:
+    ; Load the index, and shift it to index a word
+    ; table
+    lda PlayerSpriteFrame
+    asl a
+    tax
+
+    ; Load the frame's address
+    lda PlayerSprite_Frames, X
+    sta TmpAddr
+    lda PlayerSprite_Frames+1, X
+    sta TmpAddr+1
+
+    ldy #0
+    ldx #1
+@loop:
+    lda (TmpAddr), y
+    sta sprites, x
+
+    inx
+    inx
+    inx
+    inx
+
+    iny
+    cpy #8
+    bne @loop
+    rts
+
 ScoreText:
     .byte "Score ", $00
 SeedText:
@@ -1373,7 +1447,7 @@ PalBG2: .byte $0F,$06,$39,$15
 PalBG3: .byte $0F,$30,$10,$07
 
     ; Sprites
-PalSP0: .byte $0F,$30,$2B,$39
+PalSP0: .byte $0F,$30,$0F,$27
         .byte $0F,$0F,$2B,$39
         .byte $0F,$20,$2D,$39
         .byte $0F,$1C,$2B,$39
@@ -1510,5 +1584,26 @@ AttrMaskRight:
 
 AttrAddrLowByte:
     .byte $D8, $D9, $DA, $DB, $DC, $DD, $DE, $DF
+
+PlayerSprite_FrameCount = (PlayerSprite_Frame0 - PlayerSprite_Frames) / 2
+PlayerSprite_AnimSpeed = 7
+
+PlayerSprite_Frames:
+    .word PlayerSprite_Frame0
+    .word PlayerSprite_Frame1
+    .word PlayerSprite_Frame2
+    .word PlayerSprite_Frame1
+
+PlayerSprite_Frame0:
+    .byte $40, $50, $60, $70
+    .byte $41, $51, $61, $71
+
+PlayerSprite_Frame1:
+    .byte $42, $52, $62, $72
+    .byte $43, $53, $63, $73
+
+PlayerSprite_Frame2:
+    .byte $40, $54, $64, $70
+    .byte $41, $55, $65, $71
 
     nop ; to separate the data label from DedInit

@@ -187,6 +187,9 @@ nmisub_pointer:     .res 2
 
 GameFullInit:       .res 1
 
+PlayerSpriteFrame:  .res 1  ; current frame index
+PlayerNextFrameIn:  .res 1  ; countdown to next frame
+
 .segment "SAVERAM"
     ; battery backed RAM
 rng_seed:       .res 2
