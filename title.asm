@@ -150,27 +150,30 @@ InitTitle:
     lda TmpAddr+1
     sta $2006
 
-    ; next letter
-@menuLoopText:
     lda TitleData, x
-    beq @textDone
+    beq @menuDone   ; null terminated table (in the index column)
 
-    sta $2007
+    sta TmpX    ; start tile index
     inx
-    jmp @menuLoopText
-
-@textDone:
-    ; Load gamestate into array in RAM
+    lda TitleData, x
+    sta TmpY
     inx
     lda TitleData, x
     sta TitleGameStates, y
+    inx
     iny
 
-    ; peek next byte for NUL byte
-    inx
-    lda TitleData, x
-    beq @menuDone
+    ; next letter
+@menuLoopText:
+    lda TmpX
+    sta $2007
+    inc TmpX
+    dec TmpY
+    bne @menuLoopText
 
+    ;jmp @menuLoopTop
+
+@textDone:
     ; go to the next line of text on screen
     lda TmpAddr+1
     clc
@@ -384,10 +387,11 @@ TitleSeedText:
     .byte "Current seed: ", $00
 
 TitleData:
-    .byte "Start Game", $00, STATES::GS_GAME
-    .byte "Enter Seed", $00, STATES::GS_SEED
-    .byte "High Scores", $00, STATES::GS_HIGHSCORE
-    .byte "Credits", $00, STATES::GS_CREDITS
+    ; Start tile id, length, game state
+    .byte $56, 9, STATES::GS_GAME  ; Start Game
+    .byte $44, 9, STATES::GS_SEED
+    .byte $30, 9, STATES::GS_HIGHSCORE
+    .byte $1A, 6, STATES::GS_CREDITS
     .byte $00
 
 Title_BG1:
