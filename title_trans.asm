@@ -295,6 +295,11 @@ ttrans_nmi_drawbuffer:
     ; meta column is drawn.
     bit framesub_next
     bvc :+
+
+    ; The lower byte isn't always correct.  Make it correct.
+    lda #$55
+    sta attr_buffer+1
+
     jsr Draw_Attribute
 
 :   jmp Title_Trans_NMI_End
