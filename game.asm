@@ -115,7 +115,7 @@ Game_Init:
     inx
     inc TmpAddr
     ; Handle overflow
-    bne:+
+    bne :+
     inc TmpAddr+1
 :
     inc TmpCounter
@@ -728,7 +728,16 @@ UpdatePlayer:
     cmp JumpFrameLength
     bcs @setPeak
 
+    ; Load the frame's address
+    lda #<PlayerSprite_Frame0
+    sta TmpAddr
+    lda #>PlayerSprite_Frame0
+    sta TmpAddr+1
+
+    jsr UpdatePlayerAnimationFrame
+
     ; Load the next jump frame
+    lda PlayerJumpFrame
     clc
     adc #1
     sta PlayerJumpFrame
@@ -748,7 +757,16 @@ UpdatePlayer:
     lda PlayerJumpFrame
     beq @ground
 
+    ; Load the frame's address
+    lda #<PlayerSprite_Frame3
+    sta TmpAddr
+    lda #>PlayerSprite_Frame3
+    sta TmpAddr+1
+
+    jsr UpdatePlayerAnimationFrame
+
     ; Load the previous jump frame (cuz we fallin')
+    lda PlayerJumpFrame
     sec
     sbc #1
     sta PlayerJumpFrame
@@ -780,10 +798,6 @@ UpdatePlayer:
 
     lda PlayerJumpFrame
     beq :+
-
-    lda #0
-    sta PlayerSpriteFrame
-    jsr UpdatePlayerAnimation
 :
     rts
 
@@ -1418,6 +1432,7 @@ UpdatePlayerAnimation:
     lda PlayerSprite_Frames+1, X
     sta TmpAddr+1
 
+UpdatePlayerAnimationFrame:
     ldy #0
     ldx #1
 @loop:
@@ -1605,5 +1620,10 @@ PlayerSprite_Frame1:
 PlayerSprite_Frame2:
     .byte $40, $54, $64, $70
     .byte $41, $55, $65, $71
+
+; The jump falling frame
+PlayerSprite_Frame3:
+    .byte $66, $76, $68, $78
+    .byte $67, $77, $69, $79
 
     nop ; to separate the data label from DedInit
