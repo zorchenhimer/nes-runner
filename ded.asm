@@ -40,6 +40,7 @@ Ded_NMI:
     bit $2002
     lda #0
     sta $2005
+    lda #16
     sta $2005
 
     lda #PPU_CTRL_TITLE
@@ -123,7 +124,7 @@ Ded_Frame:
     ; Draw "Game Over"
     lda #$21
     sta $2006
-    lda #$8B
+    lda #$8C
     sta $2006
 
     ldx #$C2
@@ -133,7 +134,7 @@ Ded_Frame:
     ; Draw "Press Start"
     lda #$22
     sta $2006
-    lda #$0A
+    lda #$0B
     sta $2006
 
     ldx #$D0
@@ -143,7 +144,7 @@ Ded_Frame:
     ; Draw "Select to Restart"
     lda #$22
     sta $2006
-    lda #$89
+    lda #$8A
     sta $2006
 
     ldx #$E0
