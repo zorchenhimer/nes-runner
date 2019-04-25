@@ -1,3 +1,5 @@
+;; ca65 ;;
+
 ; Load the palette with ID BGTheme into RAM
 bg_loadPalette:
     lda BGTheme

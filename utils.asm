@@ -1,3 +1,5 @@
+;; ca65 ;;
+
 CLEAR_ATTR_ID = $00
 
 ; Was a button pressed this frame?
