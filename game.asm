@@ -16,6 +16,14 @@
     OBS
     PIT
     FIREHYDRANT
+
+    TRUCK00
+    TRUCK01
+    TRUCK02
+    TRUCK03
+
+    GARBO00
+    GARBO01
 .endenum
 
 Game_Init:
@@ -1460,7 +1468,7 @@ GamePalette:
     ; BG
         .byte $0F,$00,$00,$00
 PalBG1: .byte $0F,$07,$17,$09
-PalBG2: .byte $0F,$06,$39,$15
+PalBG2: .byte $0F,$27,$10,$06
 PalBG3: .byte $0F,$30,$10,$07
 
     ; Sprites
@@ -1482,6 +1490,14 @@ MetaTiles:
     .word Meta_Obstacle
     .word Meta_Pit
     .word Meta_FireHydrant
+
+    .word Meta_Truck00
+    .word Meta_Truck01
+    .word Meta_Truck02
+    .word Meta_Truck03
+
+    .word Meta_Garbo00
+    .word Meta_Garbo01
 
 ; used for RNG
 ; This list is 16 entries long. Use both nibbles of low byte
@@ -1511,11 +1527,11 @@ MetaColumn_Nothin:
     .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
 MetaColumn_Wall:
     .byte $01
-    .byte MetaTileTypes::OBS, MetaTileTypes::OBS, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
+    .byte MetaTileTypes::GARBO00, MetaTileTypes::GARBO01, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
 MetaColumn_DoubleWall:
     .byte $02
-    .byte MetaTileTypes::OBS, MetaTileTypes::OBS, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
-    .byte MetaTileTypes::OBS, MetaTileTypes::OBS, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
+    .byte MetaTileTypes::TRUCK00, MetaTileTypes::TRUCK01, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
+    .byte MetaTileTypes::TRUCK02, MetaTileTypes::TRUCK03, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
 MetaColumn_Pit:
     .byte $03
     .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::PIT_LEFT, MetaTileTypes::PIT_LEFT_BOTTOM
@@ -1525,10 +1541,10 @@ MetaColumn_PitWall:
     .byte $03
     .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::PIT_LEFT, MetaTileTypes::PIT_LEFT_BOTTOM
     .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::NOTHIN, MetaTileTypes::PIT
-    .byte MetaTileTypes::OBS, MetaTileTypes::OBS, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
+    .byte MetaTileTypes::GARBO00, MetaTileTypes::GARBO01, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
 MetaColumn_WallPitWide:
     .byte $04
-    .byte MetaTileTypes::OBS, MetaTileTypes::OBS, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
+    .byte MetaTileTypes::GARBO00, MetaTileTypes::GARBO01, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
     .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::NOTHIN, MetaTileTypes::PIT
     .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::NOTHIN, MetaTileTypes::PIT
     .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::PIT_RIGHT, MetaTileTypes::PIT_RIGHT_BOTTOM
@@ -1536,7 +1552,7 @@ MetaColumn_PitWallWide:
     .byte $05
     .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::PIT_LEFT, MetaTileTypes::PIT_LEFT_BOTTOM
     .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::NOTHIN, MetaTileTypes::PIT
-    .byte MetaTileTypes::OBS, MetaTileTypes::OBS, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
+    .byte MetaTileTypes::GARBO00, MetaTileTypes::GARBO01, MetaTileTypes::GROUND, MetaTileTypes::GROUND2
     .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::NOTHIN, MetaTileTypes::PIT
     .byte MetaTileTypes::BACKGROUND, MetaTileTypes::BACKGROUND, MetaTileTypes::PIT_RIGHT, MetaTileTypes::PIT_RIGHT_BOTTOM
 MetaColumn_HalfWall:
@@ -1545,7 +1561,7 @@ MetaColumn_HalfWall:
 
 ; Tile indicies
 Meta_Sky:
-    .byte $80, $90, $81, $91, $AA
+    .byte $80, $90, $81, $91, $00
 Meta_Ground:
     .byte $A0, $B0, $A1, $B1, $55
 Meta_Ground2:
@@ -1566,9 +1582,23 @@ Meta_Pit_Right_Bottom:
     .byte $A3, $B3, $C5, $D5, $FF
 
 Meta_Nothing:
-    .byte $00, $00, $00, $00, $AA
+    .byte $00, $00, $00, $00, $00
 Meta_FireHydrant:
     .byte $84, $94, $85, $95, $55
+
+Meta_Truck00:
+    .byte $86, $96, $87, $97, $FF
+Meta_Truck01:
+    .byte $A6, $B6, $A7, $B7, $FF
+Meta_Truck02:
+    .byte $88, $98, $89, $99, $FF
+Meta_Truck03:
+    .byte $A8, $B8, $A9, $B9, $FF
+
+Meta_Garbo00:
+    .byte $8A, $9A, $8B, $9B, $AA
+Meta_Garbo01:
+    .byte $AA, $BA, $AB, $BB, $AA
 
 PAUSED_X    = 112
 PAUSED_Y    = 25

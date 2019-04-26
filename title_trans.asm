@@ -131,13 +131,13 @@ ttrans_nmi_meta_attr:
     sta $2006
 
     ; Above ground
-    lda #$AA
+    lda Meta_Sky+4
 .repeat 8
     sta $2007
 .endrepeat
 
     ; Ground
-    lda #$55
+    lda Meta_Ground+4
 .repeat 8
     sta $2007
 .endrepeat
