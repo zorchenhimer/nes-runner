@@ -107,8 +107,8 @@ TmpCounter:     .res 1
 TmpAttr:        .res 1
 TmpAddr:        .res 2
 TmpAddr2:       .res 2
-TmpY:           .res 1
 TmpX:           .res 1
+TmpY:           .res 1
 TmpZ:           .res 1
 
 JumpPeak:       .res 1
@@ -214,6 +214,22 @@ tile_column_addr_low:   .res 1
 BGNametable:    .res 1  ; High byte of nametable: $20, $24, $28, or $2C
 BGYStart:       .res 1  ; Number of rows down the screen to draw
 BGTheme:        .res 1  ; Theme ID of the background
+
+FireSpriteY     = $0240
+FireSpriteIdx   = $0241
+FireSpriteAttr  = $0242
+FireSpriteX     = $0243
+
+FireAnimX:      .res 8  ; X position of the garbage cans
+FireAnimFrame:  .res 8  ; Animation frame (0 = bg, 1 = sprite)
+
+; TODO: implement this
+; Starts at $FF.
+; Is set to ~16 when a 1x2 obstacle is draw.
+; N-2 each frame
+; when N = 0, add a $FF to the end of FireAnimX and toggle
+; the same byte index in FireAnimFrame
+NewFireIn:      .res 8  ; New fire metasprite in N frames
 
 ; ID's (indexes) for themes
 .enum BackgroundThemes

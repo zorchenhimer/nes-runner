@@ -224,6 +224,10 @@ Game_Init:
     sta attr_address+1
     sta attr_odd
 
+    ; Clear the new fire metasprite countdown
+    lda #$FF
+    sta NewFireIn
+
     ; Set frame and NMI pointers
     lda #<Game_Frame
     sta DoFramePointer
@@ -406,6 +410,7 @@ Game_Frame:
     sta TmpY    ; Frames until next update
 
     dec game_paused  ; set pause state
+    jsr UpdateFire
     jmp WaitSpriteZero
 
 ; Unpause the game, hide "Paused" sprites
@@ -439,6 +444,7 @@ Game_Frame:
     stx TmpX
 
 @noColor:
+    jsr UpdateFire
     jmp WaitSpriteZero
 
 @game_not_paused:
@@ -517,6 +523,7 @@ Game_Frame:
     ; TODO: fall in pit
 
 @safe:
+    jsr UpdateFire
     jmp WaitSpriteZero
 
 CheckCollide:
@@ -928,6 +935,14 @@ generate_column:
     ; TmpAddr is the metacolumn definition
     lda (TmpAddr), y
     sta meta_columns, x
+
+    ; Is it the top of the garbage can?
+    cmp #MetaTileTypes::GARBO0
+    bne :+
+    ; Trigger new fire meta sprite in N frames
+    lda #16
+    sta NewFireIn
+:
     iny
     inx
     dec TmpX
@@ -1459,6 +1474,135 @@ UpdatePlayerAnimationFrame:
     bne @loop
     rts
 
+; This will read FireAnimX and FireAnimFrames and update
+; the sprite ram as needed.
+UpdateFire:
+    ; TODO: Add NewFireIn decrement, and handle on 0
+    bit NewFireIn
+    bvc @noNewFire
+
+    ; New fire is waiting.  Is it time yet?
+    dec NewFireIn
+    bpl @noNewFire
+
+    ; Find the first empty cell
+    ldx #$FF
+:
+    inx
+    lda FireAnimX, x
+    bne :-
+
+    ; Light the fire
+    lda #$FF
+    sta FireInimX, x
+
+@noNewFire:
+    ; Clear fire sprites from ram
+    ldx #0
+    lda #0
+:
+.repeat 4
+    sta FireSpriteY, x
+    inx
+.endrepeat
+    cpx #96
+    bne :-
+
+    ; Load new fire sprites into ram
+
+    lda #<FireSpriteY
+    sta TmpAddr
+    lda #>FireSpriteY
+    sta TmpAddr+1
+
+    ldx #0  ; metasprite ID
+@OuterLoop:
+    lda FireAnimFrame, x
+    beq @SkipSprite
+
+    lda FireAnimX, x
+    sta TmpZ    ; X offset
+
+    ; 1st Sprite
+    ldy #0
+    lda #FireSprite_BaseY
+    sta (TmpAddr), y
+
+    lda #FireSprite_BaseId
+    inc TmpAddr
+    sta (TmpAddr), y
+
+    lda #FireSprite_Attribute
+    inc TmpAddr
+    sta (TmpAddr), y
+
+    lda TmpZ
+    inc TmpAddr
+    sta (TmpAddr), y
+
+    ; 2nd column
+    lda TmpZ
+    clc
+    adc #8
+    ; Don't draw sprites off screen
+    bcs @NoCol2
+    sta TmpZ
+
+    ; 2nd Sprite
+    lda #FireSprite_BaseY
+    inc TmpAddr
+    sta (TmpAddr), y
+
+    lda #FireSprite_BaseId+1
+    inc TmpAddr
+    sta (TmpAddr), y
+
+    lda #FireSprite_Attribute
+    inc TmpAddr
+    sta (TmpAddr), y
+
+    lda TmpZ
+    inc TmpAddr
+    sta (TmpAddr), y
+
+    ; 3rd sprite
+    lda #FireSprite_BaseY+8
+    inc TmpAddr
+    sta (TmpAddr), y
+
+    lda #FireSprite_BaseId+2
+    inc TmpAddr
+    sta (TmpAddr), y
+
+    lda #FireSprite_Attribute
+    inc TmpAddr
+    sta (TmpAddr), y
+
+    lda TmpZ
+    inc TmpAddr
+    sta (TmpAddr), y
+
+@NoCol2:
+    inc TmpAddr
+
+@SkipSprite:
+    inx
+    cpx #8
+    beq :+
+    jmp @OuterLoop
+:
+    rts
+
+FireSprite_Tiles:
+    ; Three tile ID, then the attribute value
+    .byte $27, $28, $29
+
+FireSprite_BaseId = $27
+; Base value for Y.  Third sprite will add 8 to this.
+FireSprite_BaseY = $5F
+; Attribute value for all fire sprites
+FireSprite_Attribute = $01
+
 ScoreText:
     .byte "Score ", $00
 SeedText:
@@ -1473,7 +1617,7 @@ PalBG3: .byte $0F,$30,$10,$07
 
     ; Sprites
 PalSP0: .byte $0F,$30,$0F,$27
-        .byte $0F,$0F,$2B,$39
+PalSP1: .byte $0F,$27,$27,$27
         .byte $0F,$20,$2D,$39
         .byte $0F,$1C,$2B,$39
 

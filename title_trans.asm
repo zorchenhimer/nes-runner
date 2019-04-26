@@ -91,6 +91,12 @@ ttrans_frame_scrolling:
     sta TmpAddr+1
     jsr LoadPaletteSP0
 
+    lda #<PalSP1
+    sta TmpAddr
+    lda #>PalSP1
+    sta TmpAddr+1
+    jsr LoadPaletteSP1
+
     ; Load start address for first meta tile row.
     ; Used in ttrans_write_meta_row
     lda #$21
