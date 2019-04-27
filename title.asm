@@ -1,4 +1,4 @@
-;; ca65 ;;
+; asmsyntax=ca65
 
 TITLE_SPTOP     = $48
 

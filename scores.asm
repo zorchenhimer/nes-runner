@@ -1,4 +1,4 @@
-;; ca65 ;;
+; asmsyntax=ca65
 
 ;   Individual scores - 16 bytes/score = 511 scores (-1 for current seed; other metadata)
 ; Seed      2 bytes

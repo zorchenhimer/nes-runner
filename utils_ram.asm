@@ -1,4 +1,4 @@
-;; ca65 ;;
+; asmsyntax=ca65
 
 controller1:     .res 1
 controller1_Old: .res 1

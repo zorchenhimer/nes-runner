@@ -1,4 +1,4 @@
-;; ca65 ;;
+; asmsyntax=ca65
 
 CLEAR_ATTR_ID = $00
 

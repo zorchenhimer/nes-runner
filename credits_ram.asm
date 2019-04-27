@@ -1,4 +1,4 @@
-;; ca65 ;;
+; asmsyntax=ca65
 
 ;cr_nameIdx      .rs 1  ; character index in a name
 cr_chunkCurrent: .res 1  ; current name

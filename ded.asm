@@ -1,4 +1,4 @@
-;; ca65 ;;
+; asmsyntax=ca65
 
 DedInit:
     jsr MMC1_Setup_Vert

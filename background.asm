@@ -1,4 +1,4 @@
-;; ca65 ;;
+; asmsyntax=ca65
 
 ; Load the palette with ID BGTheme into RAM
 bg_loadPalette:
