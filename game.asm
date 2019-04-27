@@ -231,6 +231,9 @@ Game_Init:
     lda #0
     sta FireAnimIdx
     sta FireAnimCount
+    sta calc_scroll
+    sta meta_column_offset
+    sta last_meta_offset
 
     lda #FIRE_ANIM_SPEED
     sta FireAnimNext

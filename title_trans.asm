@@ -22,9 +22,6 @@ Title_GameTrans:
     lda #15
     sta meta_last_gen
 
-    lda #1
-    sta obs_countdown
-
     jsr LoadFrameSubPointer
 
     lda #PPU_CTRL_HORIZ
