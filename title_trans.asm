@@ -301,6 +301,8 @@ ttrans_nmi_drawbuffer:
     bit framesub_next
     bvc :+
 
+    lda #$AA
+    sta attr_buffer
     ; The lower byte isn't always correct.  Make it correct.
     lda #$55
     sta attr_buffer+1
