@@ -2,6 +2,7 @@
 
 ; TODO:
 ;   Fall into pitfall.
+FIRE_SPAWN_DELAY = 8
 
 ; Game Meta Tiles
 .enum MetaTileTypes
@@ -227,6 +228,21 @@ Game_Init:
     ; Clear the new fire metasprite countdown
     lda #$FF
     sta NewFireIn
+    lda #0
+    sta FireAnimIdx
+    sta FireAnimCount
+
+    lda #FIRE_ANIM_SPEED
+    sta FireAnimNext
+
+    ; Clear drawing old fire sprites
+    lda #$FF
+    ldx #0
+:
+    sta FireAnimFrame, x
+    inx
+    cpx #8
+    bne :-
 
     ; Set frame and NMI pointers
     lda #<Game_Frame
@@ -391,6 +407,8 @@ Game_NMI:
     jmp NMI_Finished
 
 Game_Frame:
+    jsr UpdateFire
+
     ; Check for start button presse.  Pause if it has been.
     lda #BUTTON_START
     jsr ButtonPressedP1
@@ -410,7 +428,6 @@ Game_Frame:
     sta TmpY    ; Frames until next update
 
     dec game_paused  ; set pause state
-    jsr UpdateFire
     jmp WaitSpriteZero
 
 ; Unpause the game, hide "Paused" sprites
@@ -444,7 +461,6 @@ Game_Frame:
     stx TmpX
 
 @noColor:
-    jsr UpdateFire
     jmp WaitSpriteZero
 
 @game_not_paused:
@@ -523,7 +539,6 @@ Game_Frame:
     ; TODO: fall in pit
 
 @safe:
-    jsr UpdateFire
     jmp WaitSpriteZero
 
 CheckCollide:
@@ -937,7 +952,7 @@ generate_column:
     sta meta_columns, x
 
     ; Is it the top of the garbage can?
-    cmp #MetaTileTypes::GARBO0
+    cmp #MetaTileTypes::GARBO00
     bne :+
     ; Trigger new fire meta sprite in N frames
     lda #16
@@ -1044,6 +1059,14 @@ Buffer_Column:
     ; Load meta tile index
     ldx map_meta_tmp
     lda meta_columns, x
+    cmp #MetaTileTypes::GARBO00
+    bne :+
+    ; spawn new fire
+    pha
+    lda #FIRE_SPAWN_DELAY
+    sta NewFireIn
+    pla
+:
     asl a
     tax
 
@@ -1477,39 +1500,123 @@ UpdatePlayerAnimationFrame:
 ; This will read FireAnimX and FireAnimFrames and update
 ; the sprite ram as needed.
 UpdateFire:
-    ; TODO: Add NewFireIn decrement, and handle on 0
-    bit NewFireIn
-    bvc @noNewFire
-
-    ; New fire is waiting.  Is it time yet?
-    dec NewFireIn
-    bpl @noNewFire
-
-    ; Find the first empty cell
-    ldx #$FF
-:
-    inx
-    lda FireAnimX, x
-    bne :-
-
-    ; Light the fire
-    lda #$FF
-    sta FireInimX, x
-
-@noNewFire:
     ; Clear fire sprites from ram
     ldx #0
     lda #0
-:
+@clearLoop:
 .repeat 4
     sta FireSpriteY, x
     inx
 .endrepeat
     cpx #96
-    bne :-
+    bne @clearLoop
 
+    ; Don't change anything if paused
+    bit game_paused
+    bvc :+
+    jmp @animCheck
+:
+
+    ; Move all sprites over and remove
+    ; sprites that scroll off screen
+    ldx #0  ; number of sprites
+    cpx FireAnimCount
+    lda FireAnimCount
+    sta TmpX
+    beq @exitMove
+    ldy FireAnimIdx ; index of sprite
+@updateLoop:
+    cpy #8
+    bne :+
+    ldy #0
+:
+    lda FireAnimX, y
+    sec
+    sbc #2
+    bcc @removeSprite
+    sta FireAnimX, y
+
+@nextSprite:
+    iny
+    inx
+    cpx TmpX    ; Original FireAnimCount
+    bcs @exitMove
+    jmp @updateLoop
+
+@removeSprite:
+    lda #$FF
+    sta FireAnimFrame, y    ; Removes from screen
+
+    inc FireAnimIdx
+    dec FireAnimCount
+    lda FireAnimIdx
+    cmp #8
+    bne @nextSprite
+    lda #0
+    sta FireAnimIdx
+    jmp @nextSprite
+
+@exitMove:
+
+    bit NewFireIn
+    bvs @noNewFire
+
+    ; New fire is waiting.  Is it time yet?
+    dec NewFireIn
+    bpl @noNewFire
+    ; Light new fire
+
+    ; Where do we need to put it?
+    lda FireAnimIdx
+    clc
+    adc FireAnimCount
+
+    ; Check for wrap
+    cmp #8
+    bne :+
+    sec
+    sbc #8
+:
+    tax
+    lda #$FE
+    sta FireAnimX, x
+    lda #0
+    sta FireAnimFrame, x
+    inc FireAnimCount
+
+@noNewFire:
+    lda FireAnimCount
+    bne :+
+    rts
+:
+
+@animCheck:
+    dec FireAnimNext
+    beq :+
+    jmp @noAnimation
+:
+    lda #FIRE_ANIM_SPEED
+    sta FireAnimNext
+
+    ldx #0
+@Animate:
+    lda FireAnimFrame, x
+    bmi @nextAnimate  ; $FF isn't animated
+    ; it's animated
+    beq :+
+    lda #0
+    sta FireAnimFrame, x
+    jmp @nextAnimate
+:
+    lda #1
+    sta FireAnimFrame, x
+@nextAnimate:
+    inx
+    cpx #8
+    bne @Animate
+
+@noAnimation:
     ; Load new fire sprites into ram
-
     lda #<FireSpriteY
     sta TmpAddr
     lda #>FireSpriteY
@@ -1518,10 +1625,17 @@ UpdateFire:
     ldx #0  ; metasprite ID
 @OuterLoop:
     lda FireAnimFrame, x
-    beq @SkipSprite
+    bmi @SkipSprite ; $FF sprite doesn't exist
+    beq @SkipSprite ; $00 sprite exists, but isn't drawn
 
     lda FireAnimX, x
     sta TmpZ    ; X offset
+
+    bit game_paused
+    bvc :+
+    inc TmpZ
+    inc TmpZ
+:
 
     ; 1st Sprite
     ldy #0
@@ -1617,7 +1731,8 @@ PalBG3: .byte $0F,$30,$10,$07
 
     ; Sprites
 PalSP0: .byte $0F,$30,$0F,$27
-PalSP1: .byte $0F,$27,$27,$27
+;PalSP1: .byte $0F,$30,$0F,$06
+PalSP1: .byte $0F,$27,$0F,$06
         .byte $0F,$20,$2D,$39
         .byte $0F,$1C,$2B,$39
 

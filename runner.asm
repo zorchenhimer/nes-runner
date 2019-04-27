@@ -220,8 +220,16 @@ FireSpriteIdx   = $0241
 FireSpriteAttr  = $0242
 FireSpriteX     = $0243
 
+; Ring buffers
 FireAnimX:      .res 8  ; X position of the garbage cans
 FireAnimFrame:  .res 8  ; Animation frame (0 = bg, 1 = sprite)
+
+; Ring buffer info
+FireAnimIdx:    .res 1  ; Current index in above arrays
+FireAnimCount:  .res 1  ; Items in the arrays
+
+FireAnimNext:   .res 1  ; Count to next fire animation
+FIRE_ANIM_SPEED = 15
 
 ; TODO: implement this
 ; Starts at $FF.
@@ -229,7 +237,7 @@ FireAnimFrame:  .res 8  ; Animation frame (0 = bg, 1 = sprite)
 ; N-2 each frame
 ; when N = 0, add a $FF to the end of FireAnimX and toggle
 ; the same byte index in FireAnimFrame
-NewFireIn:      .res 8  ; New fire metasprite in N frames
+NewFireIn:      .res 1  ; New fire metasprite in N frames
 
 ; ID's (indexes) for themes
 .enum BackgroundThemes
