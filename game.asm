@@ -1846,7 +1846,7 @@ Meta_Pit_Right_Bottom:
 Meta_Nothing:
     .byte $00, $00, $00, $00, $00
 Meta_FireHydrant:
-    .byte $84, $94, $85, $95, $55
+    .byte $84, $94, $85, $95, $AA
 
 Meta_Truck00:
     .byte $86, $96, $87, $97, $FF
