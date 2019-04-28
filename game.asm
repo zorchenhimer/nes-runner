@@ -544,6 +544,9 @@ Game_Frame:
 @safe:
     jmp WaitSpriteZero
 
+; FIXME: Improve this (again).  Allow the player sprite to overlap
+; the obstacle metatile by ~2 or so pixels.  In other words, give
+; each obstacle metatile a ~2 pixel no-kill border.
 CheckCollide:
     ; Find byte offset for current metacolumn to check for collide
     lda meta_column_offset
@@ -604,7 +607,7 @@ CheckCollide:
     ; Lower obstacle on the ground
 @layer2:
     lda SP_COLLIDE_Y
-    cmp #$67
+    cmp #$6A
     bcc @layer3
 
     lda ColCache+1
@@ -619,7 +622,7 @@ CheckCollide:
     ; Upper obstacle on the ground
 @layer3:
     lda SP_COLLIDE_Y
-    cmp #$57
+    cmp #$5A
     bcc @done
 
     lda ColCache+0
