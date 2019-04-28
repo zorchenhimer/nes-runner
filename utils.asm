@@ -6,6 +6,14 @@ CLEAR_ATTR_ID = $00
 ButtonPressedP1:
     sta btnPressedMask
 
+    lda IgnoreInput
+    beq :+
+    dec IgnoreInput
+    lda #0
+    rts
+:
+
+    lda btnPressedMask
     and controller1
     sta controllerTmp
 
@@ -21,6 +29,14 @@ ButtonPressedP1:
 ButtonPressedP2:
     sta btnPressedMask
 
+    lda IgnoreInput
+    beq :+
+    dec IgnoreInput
+    lda #0
+    rts
+:
+
+    lda btnPressedMask
     and controller2
     sta controllerTmp
 

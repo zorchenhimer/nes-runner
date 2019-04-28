@@ -239,6 +239,8 @@ FIRE_ANIM_SPEED = 15
 ; the same byte index in FireAnimFrame
 NewFireIn:      .res 1  ; New fire metasprite in N frames
 
+IgnoreInput:    .res 1  ; Number of frames to ignore input.
+
 ; ID's (indexes) for themes
 .enum BackgroundThemes
     City

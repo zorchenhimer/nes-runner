@@ -3,6 +3,11 @@
 TITLE_SPTOP     = $48
 
 InitTitle:
+
+    ; Ignore input the next five frames (that it is checked)
+    lda #5
+    sta IgnoreInput
+
     ; set the draw orientation
     lda #PPU_CTRL_TITLE
     sta $2000
