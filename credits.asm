@@ -49,11 +49,16 @@ Credits_Init:
     sta cr_AttrTmp
     sta cr_AttributeReady
     sta cr_UpdateReady
-    sta cr_chunkCurrent
+    ;sta cr_chunkCurrent
     sta cr_currentPPULine
     sta cr_scroll
     sta cr_tileBufferOffset
     sta cr_AttributeAddress+1
+
+    lda #<credits_data_chunks
+    sta cr_chunkAddress
+    lda #>credits_data_chunks
+    sta cr_chunkAddress+1
 
     lda #$23
     sta cr_AttributeAddress
@@ -159,15 +164,15 @@ Credits_WriteBuffer:
     bne @loop
 
     ; increment and rollover the count
-    inc cr_chunkCurrent
-    lda cr_chunkCurrent
-    cmp #Credits_NameCount
-    bcc @noRollover
+    ;inc cr_chunkCurrent
+    ;lda cr_chunkCurrent
+    ;cmp #Credits_NameCount
+    ;bcc @noRollover
 
-    lda #0
-    sta cr_chunkCurrent
+    ;lda #0
+    ;sta cr_chunkCurrent
 
-@noRollover:
+;@noRollover:
 
     ;dec cr_nextAttrWait
     ;bne @noAttr
@@ -193,6 +198,16 @@ cr_Decode_Opcode_IncAddr:
     sta cr_chunkAddress+1
     rts
 
+cr_OPCodes:
+    .word cr_op_EndOfChunk
+    .word cr_op_ClearRow
+    .word cr_op_IncrementByte
+    .word cr_op_RunLength
+    .word cr_op_ByteList
+    .word cr_op_Attr
+    .word cr_op_Name
+    .word cr_op_EndOfData
+
 ; Call this with a JSR
 Credits_LoadChunk:
     lda #CR_UPDATE_TILE
@@ -201,16 +216,16 @@ Credits_LoadChunk:
     lda #0
     sta cr_tileBufferOffset
 
-    lda cr_chunkCurrent
+    ;lda cr_chunkCurrent
 
     asl a
     tax
 
-    lda credits_data_chunks, x
-    sta cr_chunkAddress
+    ;lda credits_data_chunks, x
+    ;sta cr_chunkAddress
 
-    lda credits_data_chunks+1, x
-    sta cr_chunkAddress+1
+    ;lda credits_data_chunks+1, x
+    ;sta cr_chunkAddress+1
 
     ;jmp cr_Decode_Opcode
 
@@ -222,13 +237,13 @@ cr_Decode_Opcode:
     tax
 
     ; load address of op code subroutine
-    lda cr_OPCodes+1, x
-    pha
     lda cr_OPCodes, x
-    pha
+    sta TmpAddr
+    lda cr_OPCodes+1, x
+    sta TmpAddr+1
 
-    ; jump to op code subroutine
-    rts
+    ; jump to it
+    jmp (TmpAddr)
 
 cr_ClearRow:
     ldx cr_tileBufferOffset
@@ -388,7 +403,7 @@ cr_op_Attr:
     sta cr_AttrTmp
 
     inc cr_AttrSecondWrite
-    rts
+    jmp cr_op_EndOfChunk
 
 @secondWrite:
 
@@ -420,7 +435,7 @@ cr_op_Attr:
     lda #0
     sta cr_AttrSecondWrite
     sta cr_AttrTmp
-    rts
+    jmp cr_op_EndOfChunk
 
 @lastRow:
     lda cr_AttrTmp
@@ -457,8 +472,16 @@ cr_op_Attr:
     lda #$FF
     sta cr_AttributeReady
 
+cr_op_EndOfChunk:
+    lda #1
+    jmp cr_Decode_Opcode_IncAddr
+
 cr_op_EndOfData:
-    rts
+    lda #<credits_data_chunks
+    sta cr_chunkAddress
+    lda #>credits_data_chunks
+    sta cr_chunkAddress+1
+    jmp Credits_LoadChunk
 
 cr_op_Name:
     ; Clear the row, prefix spaces, suffix spaces, attribute, name data
@@ -467,7 +490,10 @@ cr_op_Name:
     ; Metadata byte.  bits 7-6 are attribute, rest are length.
     ldy #0
     lda (cr_chunkAddress), y
-    pha         ; store byte for later
+    and #$3F
+    sta cr_nameLength
+
+    lda (cr_chunkAddress), y
     and #$C0    ; get Attribute bits
 
     ; Rotate bits 7-6 to bits 1-0
@@ -488,9 +514,7 @@ cr_op_Name:
     jsr cr_op_Attr
 
     ; Length
-    pla     ; retrieve byte for length
-    and #$3F
-    pha     ; store length for later
+    lda cr_nameLength
     lsr a   ; divide by two
 
     sta TmpY
@@ -509,8 +533,8 @@ cr_op_Name:
     cpy cr_loopCounter
     bne :-
 
-    ldy #1
-    pla ; grab length again
+    ldy #0
+    lda cr_nameLength
     sta cr_loopCounter
     sta TmpY
 
@@ -529,17 +553,8 @@ cr_op_Name:
     cpx #64     ; 32 is end of row, 64 is end of second row.
     bne :-
 
-    ; increment address isn't needed
-    rts
-
-cr_OPCodes:
-    .word cr_op_EndOfData-1
-    .word cr_op_ClearRow-1
-    .word cr_op_IncrementByte-1
-    .word cr_op_RunLength-1
-    .word cr_op_ByteList-1
-    .word cr_op_Attr-1
-    .word cr_op_Name-1
+    lda cr_nameLength
+    jmp cr_Decode_Opcode_IncAddr
 
     ; padding to fix the dissassembly in the debugger
     .byte $EA, $EA

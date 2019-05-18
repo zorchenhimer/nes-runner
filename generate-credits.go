@@ -23,13 +23,14 @@ type DataChunk interface {
 
 type OP_CODE int
 const (
-    CR_OP_EOD       OP_CODE = iota
+    CR_OP_EOC       OP_CODE = iota
     CR_OP_CLEAR_ROW // Clear 32 tiles
     CR_OP_INC_BYTE  // Increment byte N times given the start value
     CR_OP_RLE       // Run Length Encoded
     CR_OP_BYTE_LIST // List of bytes, NULL terminated
     CR_OP_ATTR      // One bite value for the row, as well as End of Data
     CR_OP_NAME
+    CR_OP_EOD
 )
 
 type GenericChunk struct {
@@ -120,6 +121,9 @@ func (c *GenericData) AsmString() string {
     switch c.OpCode {
         case CR_OP_EOD:
             return ".byte CR_OP_EOD"
+
+		case CR_OP_EOC:
+			return ".byte CR_OP_EOC"
 
         case CR_OP_CLEAR_ROW:
             return ".byte CR_OP_CLEAR_ROW"
@@ -334,6 +338,7 @@ func main() {
             OpCodes:    []*GenericData{
                     NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
                     NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
+                    NewGenericData(CR_OP_ATTR, 0, []byte{0x0}),
                 },
         },
         // top half of header
@@ -410,6 +415,7 @@ func main() {
                 NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
                 // attribute
                 NewGenericData(CR_OP_ATTR, 0, []byte{0x0}),
+				NewGenericData(CR_OP_EOD, 0, []byte{0x0}),
             },
         },
     }
@@ -424,10 +430,10 @@ func main() {
     }
 
     fmt.Fprintln(outFile, "credits_data_chunks:")
-    for i, _ := range allChunks {
-        fmt.Fprintf(outFile, "    .word cr_data_chunk_%02d\n", i)
-    }
-    fmt.Fprintln(outFile, "credits_data_chunks_end:\n")
+    //for i, _ := range allChunks {
+    //    fmt.Fprintf(outFile, "    .word cr_data_chunk_%02d\n", i)
+    //}
+    //fmt.Fprintln(outFile, "credits_data_chunks_end:\n")
 
     count := 0
     //attr := uint(0)
