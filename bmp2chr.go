@@ -2,13 +2,12 @@ package main
 
 import (
 	"encoding/binary"
-	"path/filepath"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
-
 
 //const inputFilename string = "before.bmp"
 var doubleHigh bool
@@ -32,7 +31,7 @@ func main() {
 	if len(outputFilename) == 0 {
 		outputFilename = inputFilename
 		ext := filepath.Ext(inputFilename)
-		outputFilename = outputFilename[0: len(outputFilename) - len(ext)] + ".chr"
+		outputFilename = outputFilename[0:len(outputFilename)-len(ext)] + ".chr"
 	}
 
 	if doubleHigh {
@@ -102,7 +101,7 @@ func main() {
 		if doubleHigh {
 			// From SlashLife for 8x16 tiles: lookupTileId = (tileId / 32) * 32 + (tileId % 32) / 2 + (tileId % 2) * 16
 			// TODO: this isn't tested
-			startOffset = (tileID / 32) * 32 + (tileID % 32) / 2 + (tileID % 2) * 16
+			startOffset = (tileID/32)*32 + (tileID%32)/2 + (tileID%2)*16
 		}
 
 		tileBytes := []byte{}
@@ -192,7 +191,7 @@ func ParseImageHeader(input []byte) (*ImageHeader, error) {
 }
 
 type RawTile struct {
-	Data       []byte // IDs of colors in palette
+	Data []byte // IDs of colors in palette
 	//DoubleHigh bool   // 8x16 tile?
 }
 
@@ -220,13 +219,13 @@ func (t *RawTile) ToChr() []byte {
 
 		// Get the byte for the given row
 		// The 8 here isn't row, it's column
-		for _, d := range t.Data[rowNum * 8:((rowNum+1) * 8)] {
+		for _, d := range t.Data[rowNum*8 : ((rowNum + 1) * 8)] {
 			// Normalize index to be between 0 and 3, inclusively
 			d = d % 4
 
 			// Get the bit for each plane and shift it onto their bytes
-			a = a << 0x1 | byte(d) & 0x1
-			b = b << 0x1 | byte(d) >> 1
+			a = a<<0x1 | byte(d)&0x1
+			b = b<<0x1 | byte(d)>>1
 		}
 
 		// Add the bytes to their respective planes
