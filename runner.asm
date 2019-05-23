@@ -192,6 +192,8 @@ GameFullInit:       .res 1
 PlayerSpriteFrame:  .res 1  ; current frame index
 PlayerNextFrameIn:  .res 1  ; countdown to next frame
 
+.include "sound_zp.asm"
+
 .segment "SAVERAM"
     ; battery backed RAM
 rng_seed:       .res 2
@@ -249,6 +251,8 @@ IgnoreInput:    .res 1  ; Number of frames to ignore input.
 DED_START_PAL   = $03AA
 DED_SPZ_PAL     = $039E
 DED_SPZ_BG_PAL  = $03A6 ; for the BG tile under sprite zero
+
+.include "sound_bss.asm"
 
 .segment "OAM"
     ; sprite stuff
@@ -368,6 +372,8 @@ WaitSpriteZero:
     ; first nametable
     lda #PPU_CTRL_VERT
     sta $2000
+
+    jsr Sound_RunFrame
 
 WaitFrame:
     lda #1
@@ -552,3 +558,13 @@ GameState_InitTable:
     .include "utils.asm"
     .include "seed.asm"
     .include "credits.asm"
+    .include "sound.asm"
+
+    .ifdef PAL
+        .include "note_table_pal.i"
+    .else
+        .include "note_table.i"
+    .endif
+
+    ; This will probably go into it's own bank at some point
+    .include "music_data.asm"
