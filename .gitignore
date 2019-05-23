@@ -1,5 +1,9 @@
 credits_data.i
 bin/
+chr/
+sprite/
+dumps/
+
 *.nes
 *.cdl
 *.fns
