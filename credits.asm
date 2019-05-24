@@ -705,7 +705,7 @@ PPU_AttrLookup_Low:
     .byte $C0, $C8, $D0, $D8, $E0, $E8, $F0, $F8
 
 Credits_Palette:
-    .byte $0F,$30,$13,$33, $0F,$05,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F
+    .byte $0F,$30,$13,$23, $0F,$05,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F
     .byte $0F,$30,$13,$0F, $0F,$05,$15,$0F, $0F,$0A,$1A,$0F, $0F,$11,$21,$0F
 
 Credits_Tier2:

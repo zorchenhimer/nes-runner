@@ -386,6 +386,91 @@ func main() {
 				NewGenericData(CR_OP_ATTR, 0, []byte{0x0}),
 			},
 		},
+
+		&GenericChunk{
+			Comment:   "Blank row before header",
+			Attribute: uint(0),
+			OpCodes: []*GenericData{
+				NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
+				NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
+				NewGenericData(CR_OP_ATTR, 0, []byte{0x0}),
+			},
+		},
+
+		// Special thanks
+		&GenericChunk{
+			Comment:   "Special thanks for MihaBrumecArt",
+			Attribute: uint(0),
+			OpCodes: []*GenericData{
+				// First Row
+				NewGenericData(CR_OP_RLE, 8, []byte(" ")),
+				NewGenericData(CR_OP_INC_BYTE, 16, []byte{0xA0}),
+				NewGenericData(CR_OP_RLE, 16, []byte(" ")),
+
+				// Second row
+				NewGenericData(CR_OP_INC_BYTE, 16, []byte{0xB0}),
+				NewGenericData(CR_OP_RLE, 8, []byte(" ")),
+				// attribute
+				NewGenericData(CR_OP_ATTR, 0, []byte{0x0F}),
+			},
+		},
+		&GenericChunk{
+			Comment:   "Second chunk",
+			Attribute: uint(0),
+			OpCodes: []*GenericData{
+				// First Row
+				NewGenericData(CR_OP_RLE, 8, []byte(" ")),
+				NewGenericData(CR_OP_INC_BYTE, 16, []byte{0xC0}),
+				NewGenericData(CR_OP_RLE, 16, []byte(" ")),
+
+				// Second row
+				NewGenericData(CR_OP_INC_BYTE, 16, []byte{0xD0}),
+				NewGenericData(CR_OP_RLE, 8, []byte(" ")),
+				//NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
+				// attribute
+				NewGenericData(CR_OP_ATTR, 0, []byte{0xF}),
+			},
+		},
+
+		&GenericChunk{
+			Comment:   "Blank row before header",
+			Attribute: uint(0),
+			OpCodes: []*GenericData{
+				NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
+				NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
+				NewGenericData(CR_OP_ATTR, 0, []byte{0x0}),
+			},
+		},
+
+
+		// Special thanks for music
+		&GenericChunk{
+			Comment:   "Special thanks for music",
+			Attribute: uint(0),
+			OpCodes: []*GenericData{
+				// First Row
+				NewGenericData(CR_OP_RLE, 13, []byte(" ")),
+				NewGenericData(CR_OP_INC_BYTE, 7, []byte{0x09}),
+				NewGenericData(CR_OP_RLE, 27, []byte(" ")),
+
+				// Second row
+				NewGenericData(CR_OP_INC_BYTE, 3, []byte{0xE0}),
+				NewGenericData(CR_OP_RLE, 14, []byte(" ")),
+				// attribute
+				NewGenericData(CR_OP_ATTR, 0, []byte{0xF0}),
+			},
+		},
+
+		&GenericChunk{
+			Comment:   "Blank row before header",
+			Attribute: uint(0),
+			OpCodes: []*GenericData{
+				NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
+				NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
+				NewGenericData(CR_OP_ATTR, 0, []byte{0x0}),
+			},
+		},
+
 	}
 
 	footerChunks := []DataChunk{
