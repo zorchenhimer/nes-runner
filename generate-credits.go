@@ -336,7 +336,7 @@ func main() {
 	headerChunks := []DataChunk{
 		// a blank row (two tile rows)
 		&GenericChunk{
-			Comment:   "Blank row before header",
+			Comment:   "Blank row before special thanks",
 			Attribute: uint(0),
 			OpCodes: []*GenericData{
 				NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
@@ -388,7 +388,7 @@ func main() {
 		},
 
 		&GenericChunk{
-			Comment:   "Blank row before header",
+			Comment:   "Blank row before Miha's credit",
 			Attribute: uint(0),
 			OpCodes: []*GenericData{
 				NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
@@ -415,7 +415,7 @@ func main() {
 			},
 		},
 		&GenericChunk{
-			Comment:   "Second chunk",
+			Comment:   "Special thanks for MihaBrumecArt",
 			Attribute: uint(0),
 			OpCodes: []*GenericData{
 				// First Row
@@ -433,7 +433,7 @@ func main() {
 		},
 
 		&GenericChunk{
-			Comment:   "Blank row before header",
+			Comment:   "Blank row before music credit",
 			Attribute: uint(0),
 			OpCodes: []*GenericData{
 				NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
@@ -462,7 +462,7 @@ func main() {
 		},
 
 		&GenericChunk{
-			Comment:   "Blank row before header",
+			Comment:   "Blank row before names",
 			Attribute: uint(0),
 			OpCodes: []*GenericData{
 				NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
