@@ -4,6 +4,9 @@ snd_lookup_instruments:
     .word snd_inst_Voice
     .word snd_inst_lead
     .word snd_inst_Perc
+
+    .word sfxInstrument_00
+    .word sfxInstrument_01
     ;.word snd_inst_Useless
     ;.word snd_inst_LongLead
     ;.word snd_inst_lead2
@@ -30,6 +33,11 @@ snd_inst_Perc:
     .byte $FF
     .byte $FF
     .byte $FF
+
+; INST2A03 "Jump Up"
+sfxInstrument_00: .byte $01, $00, $ff, $ff, $ff
+; INST2A03 "Fall Down"
+sfxInstrument_01: .byte $01, $01, $ff, $ff, $ff
 
 snd_macros_Volume_count = snd_macros_Volume - snd_macros_Volume_00
 snd_macros_Volume:
@@ -81,6 +89,9 @@ snd_macros_Duty_09_end:
 
 ; List of sequences
 Song_A:
+    .word sfx_jump
+    .word sfx_fall
+
     .word Seq_A
     .word Seq_B
     .word Seq_Noise
@@ -184,8 +195,9 @@ Seq_B:
     .byte MIDI_END
 
 Seq_Noise:
+    .byte MIDI_SET_INSTR|0
+    .byte MIDI_NOISE|$00 ;  0-# 00 . ... 
     .byte MIDI_SET_INSTR|2
-    .byte MIDI_NOISE|$02 ;  2-# 02 . ... 
     .byte MIDI_WAIT|1
     .byte MIDI_NOISE|$0B ;  B-# 02 . ... 
     .byte MIDI_NOISE|$0B ;  B-# 02 . ... 
@@ -248,7 +260,14 @@ Seq_Noise:
     .byte MIDI_NOISE|$02 ;  2-# 02 . ... 
     .byte MIDI_WAIT|1
     .byte MIDI_NOISE|$02 ;  2-# 02 . ... 
-
     .byte MIDI_END
 
-; [...]
+sfx_jump:
+    .byte MIDI_SET_INSTR|0
+    .byte MIDI_PLAY_NOTE, A3 ;  E-3 00 . ... 
+    .byte MIDI_END
+
+sfx_fall:
+    .byte MIDI_SET_INSTR|1
+    .byte MIDI_PLAY_NOTE, E3 ;  E-3 01 . ... 
+    .byte MIDI_END

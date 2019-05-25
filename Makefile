@@ -30,7 +30,8 @@ SOURCES = $(NAME).asm nes2header.inc game.asm \
 		  background.asm utils.asm utils_ram.asm \
 		  title.asm ded.asm seed.asm scores.asm \
 		  credits.asm credits_ram.asm credits_data.i \
-		  title_trans.asm
+		  title_trans.asm sound.asm sound_bss.asm \
+		  sound_zp.asm music_data.asm
 
 # misc
 RM = rm

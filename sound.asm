@@ -35,14 +35,13 @@ Sound_Init:
     sta $4013
 
     lda #TICKS_PER_BEAT
-    sta SndBeat
+    sta SndBeat ; for music
+    sta SfxBeat ; for sound effects
 
     ; Clear indexes and stuff
     ldx #3
     lda #0
 @clr_loop:
-    sta Notes, x
-
     sta Instr_Volumes, x
     sta Instr_Arpeggio, x
     sta Instr_Pitch, x
@@ -151,65 +150,31 @@ Sound_WriteBuffers:
     rts
 
 Sound_RunFrame:
-    ; Start sample on A press
-    lda #BUTTON_A
+    ; TODO: remove this
+    lda #BUTTON_SELECT
     jsr ButtonPressedP1
-    beq @noA
+    beq :+
 
-    ; Load a sequence
-    lda #0
-    ldy #0
+    lda #2
+    ldy #1
     jsr LoadSequence
 
-    lda #0
+    lda #2
     ldy #2
     jsr LoadSequence
 
-    lda #2
+    lda #4
     ldy #3
     jsr LoadSequence
 
-@noA:
-
-    ; Stop sample on B press
-    lda #BUTTON_B
-    jsr ButtonPressedP1
-    beq @noB
-    lda #0
-    sta Pulse1_TimerLow
-    sta Pulse1_TimerHigh
-    sta Pulse2_TimerLow
-    sta Pulse2_TimerHigh
-
-    sta Triangle_Counter
-    sta Triangle_TimerLow
-    sta Triangle_TimerHigh
-
-    ldx #0
+    ;lda #2
+    ;ldy #2
+    ;jsr LoadSequence
 :
-    sta SndSeq_Active, x
-    inx
-    cpx #4
-    bne :-
+    ; TODO: let the SFX skip this and start on the frame it
+    ;       was loaded on.
 
-    lda #$FF
-    sta SndPulseFlags
-    sta SndTriNoiseFlags
-@noB:
-
-    ; Check for start
-    lda #BUTTON_START
-    jsr ButtonPressedP1
-    beq @noStart
-
-    lda #2
-    ldy #3
-    jsr LoadSequence
-
-@noStart:
-    ;; Run enigne
-
-    ; Check for beat
+    ; Check for music beat
     dec SndBeat
     bne @noBeat
     ; Load next command if beat triggers
@@ -233,13 +198,29 @@ Sound_RunFrame:
 
 @noBeat:
 
+    lda SndSeq_Active+4 ; SFX channel
+    beq @noSfx
+
+    ; decrement beat. counter
+    dec SfxBeat
+    bpl :+
+
+    ldy #4
+    jsr DecodeSequenceCommand
+
+    jmp :+
+@noSfx:
+    ; Reset beat if sfx is not playing
+    lda #0
+    sta SfxBeat
+:
     ldx #0  ; Channel ID
-@RunPulseLoop:
+@RunEnvelopeLoop:
     ; Check length of volume macro
     lda Instr_VolLengths, x
     sec
     sbc Instr_VolSteps, x
-    beq @loopNext    ; don't read data past the end
+    bmi @loopNext    ; don't read data past the end
 
     ; Load volume macro pointer
     stx TmpChanId    ; Save orig value for later
@@ -258,6 +239,39 @@ Sound_RunFrame:
     lda #$F0
     and Pulse1_DutyVolume, x
 
+    cpx #2
+    bne @notTri
+
+    ; Triangle specific stuff
+    ldy Instr_VolSteps+2
+    inc Instr_VolSteps+2
+
+    ; Triangle has no volume, only on/off
+    lda (TmpAddress), y
+    beq :+
+
+    ; Channel is on
+    jmp @loopNext
+:
+    ; Mute channel
+    lda #$00
+    sta Triangle_Counter
+
+    ; Set triangle update flags
+    lda SndTriNoiseFlags
+    ora #%00000001
+    sta SndTriNoiseFlags
+
+@notTri:
+    cpy #3
+    bne @notNoise
+
+    ; Set noise update flags
+    lda SndTriNoiseFlags
+    ora #%00010000
+    sta SndTriNoiseFlags
+
+@notNoise:
     ldy Instr_VolSteps, x
     ; OR volume bits onto DutyVolume variable
     ora (TmpAddress), y
@@ -271,62 +285,9 @@ Sound_RunFrame:
 
 @loopNext:
     inx
-    cpx #2  ; only two channels for now
-    bne @RunPulseLoop
+    cpx #4  ; only two channels for now
+    bne @RunEnvelopeLoop
 
-    ; Triangle stuff
-
-    ; Chack length of volume macro
-    lda Instr_VolLengths+2
-    sec
-    sbc Instr_VolSteps+2
-    beq @runNoise
-
-    lda SndPointer_VolMacro+4
-    sta TmpAddress
-    lda SndPointer_VolMacro+5
-    sta TmpAddress+1
-
-    ldy Instr_VolSteps+2
-    inc Instr_VolSteps+2
-
-    lda (TmpAddress), y
-    beq :+
-
-    ; Channel is on
-    rts
-:
-    ; Mute channel
-    lda #$00
-    sta Triangle_Counter
-
-    lda #%00000001
-    ora SndTriNoiseFlags
-    sta SndTriNoiseFlags
-
-@runNoise:
-    ; Check length of volume macro
-    lda Instr_VolLengths+3
-    sec
-    sbc Instr_VolSteps+3
-    beq @allDone
-
-    lda SndPointer_VolMacro+6
-    sta TmpAddress
-    lda SndPointer_VolMacro+7
-    sta TmpAddress+1
-
-    ldy Instr_VolSteps+3
-    inc Instr_VolSteps+3
-
-    lda (TmpAddress), y
-    sta Noise_EnvVolume
-
-    lda SndTriNoiseFlags
-    ora #%00010000
-    sta SndTriNoiseFlags
-
-@allDone:
     rts
 
 ; Sequence ID in A
@@ -358,7 +319,6 @@ LoadSequence:
 ; Channel ID in Y
 DecodeSequenceCommand:
     ldy TmpChanId
-    sty TmpId
 
     ; ID -> word offset
     tya
@@ -400,7 +360,7 @@ IncrSequencePointer:
     rts
 
 DecodePlayNote:
-    ldy TmpId
+    ldy TmpChanId
     ldx Instr_Id, y
     jsr LoadInstrument
 
@@ -408,7 +368,7 @@ DecodePlayNote:
 
     ldx TmpChanOffset
     lda (SndPointer_Sequence, x)
-    ldy TmpId
+    ldy TmpChanId
 
     jsr LoadNote
     jmp IncrSequencePointer
@@ -418,7 +378,7 @@ DecodeSetInstrument:
     lda (SndPointer_Sequence, x)
     and #$0F
 
-    ldx TmpId
+    ldx TmpChanId
     sta Instr_Id, x
 
     jsr IncrSequencePointer
@@ -431,7 +391,7 @@ DecodeMute:
     jmp IncrSequencePointer
 
 DecodeEnd:
-    ldx TmpId
+    ldx TmpChanId
     lda #0
     sta SndSeq_Active, x
     jmp IncrSequencePointer
@@ -509,6 +469,8 @@ LoadInstrument:
 
     ;lda (SndPointer_VolMacro, x)
     lda (TmpAddress), y
+    sec
+    sbc #1
     sta Instr_VolLengths, x
 
     ; move the pointer to the start of the data
@@ -552,7 +514,6 @@ LoadInstrument:
 ; A holds the note
 LoadNote:
     ; Store the note ID for later
-    sta Notes, y
     asl a   ; Note ID -> word offset
     tax
 

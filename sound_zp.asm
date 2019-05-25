@@ -36,19 +36,20 @@ Pulse1_4001:        .res 1
 Pulse2_4005:        .res 1
 
 
-SndPointer_Instrument:  .res 8
-SndPointer_VolMacro:    .res 8
+SndPointer_Instrument:  .res 10
+SndPointer_VolMacro:    .res 10
 
-SndPointer_Sequence:    .res 8
-SndSeq_Index:           .res 4
+SndPointer_Sequence:    .res 10
+SndSeq_Index:           .res 5
 
 ; Ticks until next beat
 SndBeat:    .res 1
+SfxBeat:    .res 1
+sfxPlaying: .res 1  ; flag to start SFX
 TICKS_PER_BEAT = 8
 
 ; Used in LoadInstrument
 TmpOffset:  .res 1
-TmpId:      .res 1
 
 TmpChanOffset:  .res 1
 TmpChanId:      .res 1

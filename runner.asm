@@ -254,6 +254,9 @@ DED_SPZ_BG_PAL  = $03A6 ; for the BG tile under sprite zero
 
 .include "sound_bss.asm"
 
+sfxStart_Fall: .res 1
+sfxStart_Jump: .res 1
+
 .segment "OAM"
     ; sprite stuff
 spritezero:         .res 4
@@ -349,6 +352,8 @@ RESET:
     sta current_gamestate
     jsr ChangeGameState
 
+    jsr Sound_Init
+
     lda #0
     sta SkipNMI
 
@@ -373,9 +378,9 @@ WaitSpriteZero:
     lda #PPU_CTRL_VERT
     sta $2000
 
+WaitFrame:
     jsr Sound_RunFrame
 
-WaitFrame:
     lda #1
     sta sleeping
     ;inc sleeping
@@ -442,6 +447,9 @@ NMI:
     jmp (DoNMIPointer)
 
 NMI_Finished:
+
+    jsr Sound_WriteBuffers
+
     lda #0
     sta SkipNMI
 

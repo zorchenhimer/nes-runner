@@ -47,6 +47,8 @@ Game_Init:
     sta TmpAttr
     ;sta meta_cols_to_buffer
     ;sta meta_last_buffer
+    sta sfxStart_Fall
+    sta sfxStart_Jump
 
 ; Status bar stuff
 
@@ -761,6 +763,17 @@ UpdatePlayer:
     lda JumpPeak
     bne @noJump
 
+    lda sfxStart_Jump
+    bne :+
+
+    lda #$FF
+    sta sfxStart_Jump
+
+    lda #0
+    lda #0
+    jsr LoadSequence
+:
+
     ; Has the player hit the peak of the jump? (have we run out of jump frames?)
     lda PlayerJumpFrame
     cmp JumpFrameLength
@@ -784,6 +797,7 @@ UpdatePlayer:
     jmp @done
 
 @setPeak:
+
     lda #1
     sta JumpPeak
 
@@ -794,6 +808,16 @@ UpdatePlayer:
     ; Are we on the first jump frame?
     lda PlayerJumpFrame
     beq @ground
+
+    lda sfxStart_Fall
+    bne :+
+    lda #$FF
+    sta sfxStart_Fall
+    ; Start playing the fall sfx
+    lda #1
+    ldy #0
+    jsr LoadSequence
+:
 
     ; Load the frame's address
     lda #<PlayerSprite_Frame3
@@ -815,6 +839,8 @@ UpdatePlayer:
 @ground:
     lda #0
     sta JumpPeak
+    sta sfxStart_Fall
+    sta sfxStart_Jump
 
     lda JumpFrames
     ;lda #$76
