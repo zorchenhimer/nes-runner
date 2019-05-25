@@ -359,6 +359,7 @@ RESET:
 
 DoFrame:
     jsr ReadControllers
+
     jmp (DoFramePointer)
 
 WaitSpriteZero:
@@ -380,7 +381,6 @@ WaitSpriteZero:
 
 WaitFrame:
     jsr Sound_RunFrame
-
     lda #1
     sta sleeping
     ;inc sleeping

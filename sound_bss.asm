@@ -1,5 +1,8 @@
 ; asmsyntax=ca65
 
+; Current note for each channel
+Notes:          .res 5
+
 ; High and low bytes for notes for Pluse and
 ; Triangle channels. Fourth byte is ignored, lol.
 Notes_LowByte:  .res 5
@@ -23,3 +26,4 @@ Instr_Duty:     .res 5
 Instr_Id:   .res 5
 
 SndSeq_Active:  .res 5
+SndSeq_Waiting: .res 5

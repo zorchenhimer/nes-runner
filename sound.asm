@@ -39,9 +39,11 @@ Sound_Init:
     sta SfxBeat ; for sound effects
 
     ; Clear indexes and stuff
-    ldx #3
+    ldx #4
     lda #0
 @clr_loop:
+    sta Notes, x
+
     sta Instr_Volumes, x
     sta Instr_Arpeggio, x
     sta Instr_Pitch, x
@@ -53,6 +55,7 @@ Sound_Init:
     ;sta Instr_Macro_Frame, x
 
     sta SndSeq_Active, x
+    sta SndSeq_Waiting, x
 
     dex
     bpl @clr_loop
@@ -65,6 +68,7 @@ Sound_WriteBuffers:
     lsr SndPulseFlags
     bcc :+
     lda Pulse1_DutyVolume
+    ora #$30
     sta $4000
 
 :   lsr SndPulseFlags
@@ -86,6 +90,7 @@ Sound_WriteBuffers:
 :   lsr SndPulseFlags
     bcc :+
     lda Pulse2_DutyVolume
+    ora #$30
     sta $4004
 
 :   lsr SndPulseFlags
@@ -127,6 +132,7 @@ Sound_WriteBuffers:
     lsr SndTriNoiseFlags
     bcc :+
     lda Noise_EnvVolume
+    ora #$30
     sta $400C
 :
 
@@ -155,21 +161,22 @@ Sound_RunFrame:
     jsr ButtonPressedP1
     beq :+
 
-    lda #2
+    lda #5
+    ldy #0
+    jsr LoadSequence
+
+    lda #6
     ldy #1
     jsr LoadSequence
 
-    lda #2
+    lda #7
     ldy #2
     jsr LoadSequence
 
-    lda #4
+    lda #8
     ldy #3
     jsr LoadSequence
 
-    ;lda #2
-    ;ldy #2
-    ;jsr LoadSequence
 :
     ; TODO: let the SFX skip this and start on the frame it
     ;       was loaded on.
@@ -187,10 +194,17 @@ Sound_RunFrame:
 
 @seqDecodeLoop:
     lda SndSeq_Active, y
-    beq :+
+    beq @notActive
     sty TmpChanId
-    jsr DecodeSequenceCommand
+
+    lda SndSeq_Waiting, y
+    beq :+
+    ldx TmpChanId
+    dec SndSeq_Waiting, x
+    jmp @notActive
 :
+    jsr DecodeSequenceCommand
+@notActive:
     inc TmpY
     ldy TmpY
     cpy #4
@@ -198,22 +212,23 @@ Sound_RunFrame:
 
 @noBeat:
 
-    lda SndSeq_Active+4 ; SFX channel
-    beq @noSfx
-
-    ; decrement beat. counter
-    dec SfxBeat
-    bpl :+
-
-    ldy #4
-    jsr DecodeSequenceCommand
-
-    jmp :+
-@noSfx:
-    ; Reset beat if sfx is not playing
-    lda #0
-    sta SfxBeat
-:
+;    lda SndSeq_Active+4 ; SFX channel
+;    beq @noSfx
+;
+;    ; decrement beat. counter
+;    dec SfxBeat
+;    bpl :+
+;
+;    ldy #4
+;    sty TmpChanId
+;    jsr DecodeSequenceCommand
+;
+;    jmp :+
+;@noSfx:
+;    ; Reset beat if sfx is not playing
+;    lda #0
+;    sta SfxBeat
+;:
     ldx #0  ; Channel ID
 @RunEnvelopeLoop:
     ; Check length of volume macro
@@ -263,7 +278,7 @@ Sound_RunFrame:
     sta SndTriNoiseFlags
 
 @notTri:
-    cpy #3
+    cpx #3
     bne @notNoise
 
     ; Set noise update flags
@@ -285,7 +300,7 @@ Sound_RunFrame:
 
 @loopNext:
     inx
-    cpx #4  ; only two channels for now
+    cpx #4
     bne @RunEnvelopeLoop
 
     rts
@@ -348,6 +363,18 @@ DecodeSequenceCommand:
     jmp (TmpAddress)
 
 DecodeWait:
+    ldx TmpChanOffset
+    lda (SndPointer_Sequence, X)
+    and #$0F
+    sec
+    sbc #1
+
+    ; Check for underflow
+    bpl :+
+    lda #0
+:
+    ldy TmpChanId
+    sta SndSeq_Waiting, y
     jmp IncrSequencePointer
 
 ; Increment a sequence's pointer
@@ -510,10 +537,24 @@ LoadInstrument:
     sta SndTriNoiseFlags
     rts
 
+; Incoming channel ID in Y
+; Normalized to 0-3
+sndGetRealChannel:
+    cpy #4
+    bcc :+
+    dey
+    dey
+    dey
+    dey
+    jmp sndGetRealChannel
+:
+    rts
+
 ; Y holds the channel ID: 0- Pulse 1, 1- Pulse 2, etc
 ; A holds the note
 LoadNote:
     ; Store the note ID for later
+    sta Notes, y
     asl a   ; Note ID -> word offset
     tax
 
@@ -528,12 +569,17 @@ LoadNote:
 
     ; Save value
     sta Notes_LowByte, y
+
+    jsr sndGetRealChannel
     sta Pulse1_TimerLow, y ; TODO: move this to engine run loop
 
+    ldy TmpChanId
     lda Pulse1_TimerHigh, y
     and #$F8
     ora note_table+1, x
     sta Notes_HighByte, y
+
+    jsr sndGetRealChannel
     sta Pulse1_TimerHigh, y ; TODO: move this to engine run loop
 
     cpy #2
