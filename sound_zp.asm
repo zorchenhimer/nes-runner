@@ -53,6 +53,7 @@ TmpOffset:  .res 1
 
 TmpChanOffset:  .res 1
 TmpChanId:      .res 1
+TmpChanIdReal:      .res 1
 
 TmpAddress: .res 2
 

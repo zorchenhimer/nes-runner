@@ -809,15 +809,15 @@ UpdatePlayer:
     lda PlayerJumpFrame
     beq @ground
 
-;    lda sfxStart_Fall
-;    bne :+
-;    lda #$FF
-;    sta sfxStart_Fall
-;    ; Start playing the fall sfx
-;    lda #1
-;    ldy #0
-;    jsr LoadSequence
-;:
+    lda sfxStart_Fall
+    bne :+
+    lda #$FF
+    sta sfxStart_Fall
+    ; Start playing the fall sfx
+    lda #1
+    ldy #4
+    jsr LoadSequence
+:
 
     ; Load the frame's address
     lda #<PlayerSprite_Frame3

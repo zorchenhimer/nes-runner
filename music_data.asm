@@ -35,9 +35,9 @@ snd_inst_Perc:
     .byte $FF
 
 ; INST2A03 "Jump Up"
-sfxInstrument_00: .byte $01, $00, $ff, $ff, $ff
+sfxInstrument_00: .byte $02, $00, $ff, $ff, $ff
 ; INST2A03 "Fall Down"
-sfxInstrument_01: .byte $01, $01, $ff, $ff, $ff
+sfxInstrument_01: .byte $02, $01, $ff, $ff, $ff
 
 snd_macros_Volume_count = snd_macros_Volume - snd_macros_Volume_00
 snd_macros_Volume:
@@ -205,12 +205,12 @@ Seq_Noise:
     .byte MIDI_END
 
 sfx_jump:
-    .byte MIDI_SET_INSTR|0
+    .byte MIDI_SET_INSTR|3
     .byte MIDI_PLAY_NOTE, A3 ;  E-3 00 . ... 
     .byte MIDI_END
 
 sfx_fall:
-    .byte MIDI_SET_INSTR|1
+    .byte MIDI_SET_INSTR|4
     .byte MIDI_PLAY_NOTE, E3 ;  E-3 01 . ... 
     .byte MIDI_END
 

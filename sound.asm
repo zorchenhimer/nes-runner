@@ -212,24 +212,25 @@ Sound_RunFrame:
 
 @noBeat:
 
-;    lda SndSeq_Active+4 ; SFX channel
-;    beq @noSfx
-;
-;    ; decrement beat. counter
-;    dec SfxBeat
-;    bpl :+
-;
-;    ldy #4
-;    sty TmpChanId
-;    jsr DecodeSequenceCommand
-;
-;    jmp :+
-;@noSfx:
-;    ; Reset beat if sfx is not playing
-;    lda #0
-;    sta SfxBeat
-;:
+    lda SndSeq_Active+4 ; SFX channel
+    beq @noSfx
+
+    ; decrement beat. counter
+    dec SfxBeat
+    bpl :+
+
+    ldy #4
+    sty TmpChanId
+    jsr DecodeSequenceCommand
+
+    jmp :+
+@noSfx:
+    ; Reset beat if sfx is not playing
+    lda #0
+    sta SfxBeat
+:
     ldx #0  ; Channel ID
+    stx TmpChanId
 @RunEnvelopeLoop:
     ; Check length of volume macro
     lda Instr_VolLengths, x
@@ -249,10 +250,12 @@ Sound_RunFrame:
     sta TmpAddress+1
 
     ldx TmpChanId
+    ldy TmpChanId
+    jsr sndGetRealChannel
 
     ; Clear volume bits, keeping Duty and Constant Volume bits
     lda #$F0
-    and Pulse1_DutyVolume, x
+    and Pulse1_DutyVolume, y
 
     cpx #2
     bne @notTri
@@ -287,20 +290,26 @@ Sound_RunFrame:
     sta SndTriNoiseFlags
 
 @notNoise:
+    ldy TmpChanId
+    jsr sndGetRealChannel
+    sty TmpChanIdReal
+
     ldy Instr_VolSteps, x
+    inc Instr_VolSteps, x
+
     ; OR volume bits onto DutyVolume variable
     ora (TmpAddress), y
+    ldx TmpChanIdReal
     sta Pulse1_DutyVolume, x
-
-    inc Instr_VolSteps, x
 
     lda SndPulseFlags
     ora #SND_PULSE1_UPDATE_DV|SND_PULSE2_UPDATE_DV
     sta SndPulseFlags
 
 @loopNext:
-    inx
-    cpx #4
+    inc TmpChanId
+    ldx TmpChanId
+    cpx #5
     bne @RunEnvelopeLoop
 
     rts
@@ -509,11 +518,13 @@ LoadInstrument:
     lda #0
     sta Instr_VolSteps, y
 
+    jsr sndGetRealChannel
     cpy #2
     bcs @triNoiseFlags
 
     ; Word offset -> mask offset
-    lda TmpChanOffset
+    tya
+    asl a
     asl a
     tax
 
