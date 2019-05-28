@@ -178,9 +178,13 @@ Sound_RunFrame:
     jsr LoadSequence
 
 :
-    ; TODO: let the SFX skip this and start on the frame it
-    ;       was loaded on.
+    jsr RunBeat
+    jsr RunSfxBeat
+    jsr RunVolumeEnvelope
 
+    rts
+
+RunBeat:
     ; Check for music beat
     dec SndBeat
     bne @noBeat
@@ -211,24 +215,27 @@ Sound_RunFrame:
     bne @seqDecodeLoop
 
 @noBeat:
+    rts
 
+RunSfxBeat:
     lda SndSeq_Active+4 ; SFX channel
-    beq @noSfx
+    bne :+
 
-    ; decrement beat. counter
-    dec SfxBeat
-    bpl :+
-
-    ldy #4
-    sty TmpChanId
-    jsr DecodeSequenceCommand
-
-    jmp :+
-@noSfx:
     ; Reset beat if sfx is not playing
     lda #0
     sta SfxBeat
+    rts
 :
+    ; decrement beat. counter
+    dec SfxBeat
+    bmi :+
+    rts
+
+:   ldy #4
+    sty TmpChanId
+    jmp DecodeSequenceCommand
+
+RunVolumeEnvelope:
     ldx #0  ; Channel ID
     stx TmpChanId
 @RunEnvelopeLoop:
@@ -311,7 +318,6 @@ Sound_RunFrame:
     ldx TmpChanId
     cpx #5
     bne @RunEnvelopeLoop
-
     rts
 
 ; Sequence ID in A
