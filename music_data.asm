@@ -7,11 +7,6 @@ snd_lookup_instruments:
 
     .word sfxInstrument_00
     .word sfxInstrument_01
-    ;.word snd_inst_Useless
-    ;.word snd_inst_LongLead
-    ;.word snd_inst_lead2
-    ;.word snd_inst_Useless2
-    ;.word snd_inst_Perc2
 
 snd_inst_Voice:
     .byte 0     ; Volume
@@ -35,15 +30,26 @@ snd_inst_Perc:
     .byte $FF
 
 ; INST2A03 "Jump Up"
-sfxInstrument_00: .byte $02, $00, $ff, $ff, $ff
-; INST2A03 "Fall Down"
-sfxInstrument_01: .byte $02, $01, $ff, $ff, $ff
+sfxInstrument_00:
+    .byte $03
+    .byte $00
+    .byte $FF
+    .byte $FF
+    .byte $FF
 
-snd_macros_Volume_count = snd_macros_Volume - snd_macros_Volume_00
+; INST2A03 "Fall Down"
+sfxInstrument_01:
+    .byte $03
+    .byte $01
+    .byte $FF
+    .byte $FF
+    .byte $FF
+
 snd_macros_Volume:
     .word snd_macros_Volume_00
     .word snd_macros_Volume_01
     .word snd_macros_Perc
+    .word sfxMacro_00
 
 snd_macros_Volume_00:
     ; Length of the following byte list, excluding the stored length value
@@ -51,13 +57,13 @@ snd_macros_Volume_00:
 
     .byte 15, 15, 14, 14, 13, 13, 12, 12, 12, 12, 11
     .byte 11, 10, 10, 9, 9, 9, 8, 8, 7, 6, 5, 5, 4, 4
-    .byte 3, 2, 1, 1, 0
+    .byte 3, 2, 1, 1, 0, 0
 snd_macros_Volume_00_end:
 
 snd_macros_Volume_01:
     .byte (snd_macros_Volume_01_end - snd_macros_Volume_01) - 1
 
-    .byte 15, 15, 15, 15, 15, 12, 10, 9, 7, 4, 0
+    .byte 15, 15, 15, 15, 15, 12, 10, 9, 7, 4, 0, 0
 snd_macros_Volume_01_end:
 
 snd_macros_Perc:
@@ -66,26 +72,23 @@ snd_macros_Perc:
     .byte $05, $04, $03, $02, $00, $00, $00, $00, $00, $00, $00
     .byte $00, $00, $00, $00, $00, $00, $00
 
-snd_macros_Duty_count = snd_macros_Duty - snd_macros_Duty_00
-snd_macros_Duty:
-    .word snd_macros_Duty_00
-    .word snd_macros_Duty_01
-    .word snd_macros_Duty_09
+; Volume macro for the SFX
+sfxMacro_00:
+    .byte 10
+    .byte $01, $04, $07, $09, $0B, $0D, $0E, $0F, $0F, $00
 
-snd_macros_Duty_00:
-    .byte (snd_macros_Duty_00_end - *) - 1
-    .byte 1, 2
-snd_macros_Duty_00_end:
+snd_macros_Arpeggio:
+    .word sfxMacro_01
+    .word sfxMacro_02
 
-snd_macros_Duty_01:
-    .byte (snd_macros_Duty_01_end - *) - 1
-    .byte 0
-snd_macros_Duty_01_end:
+; Arpeggio macros for the SFX
+sfxMacro_01:
+    .byte 11
+    .byte $00, $01, $02, $03, $04, $05, $06, $07, $08, $09, $0A
+sfxMacro_02:
+    .byte 11
+    .byte $00, $FF, $FE, $FD, $FC, $FB, $FA, $F9, $F8, $F7, $F6
 
-snd_macros_Duty_09:
-    .byte (snd_macros_Duty_09_end - *) - 1
-    .byte 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0
-snd_macros_Duty_09_end:
 
 ; List of sequences
 Song_A:
