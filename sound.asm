@@ -178,9 +178,9 @@ Sound_RunFrame:
 
 :
     jsr RunBeat
-    ;jsr RunSfxBeat
+    jsr RunSfxBeat
     jsr RunVolumeEnvelope
-    ;jsr RunArpeggio
+    jsr RunArpeggio
 
     rts
 
@@ -329,12 +329,13 @@ RunVolumeEnvelope:
 
 RunArpeggio:
     ldy #0
+    sty TmpChanId
 @loop:
     ; Check length of macro
     lda Instr_ArpLengths, y
     sec
     sbc Instr_ArpSteps, y
-    bmi @loopNext
+    bmi @loopSkip
 
     tya
     tax
@@ -349,10 +350,12 @@ RunArpeggio:
     clc
     adc (SndPointer_ArpMacro, x)
     inc SndPointer_ArpMacro, x
-    tax ; new note ID
+    asl a
+    tax ; new note offset
 
     ; Determine if it's a noise channel
     jsr sndGetRealChannel
+
     cpy #3
     beq @itsNoise
 
@@ -368,8 +371,13 @@ RunArpeggio:
     sta Pulse1_TimerHigh, y
 
 @loopNext:
-    iny
-    cpy #4
+    lda #$0D
+    jsr UpdateChannelFlags
+
+@loopSkip:
+    inc TmpChanId
+    ldy TmpChanId
+    cpy #5
     bne @loop
     rts
 
@@ -378,6 +386,42 @@ RunArpeggio:
     and #$0F
     sta Noise_Period
     jmp @loopNext
+
+; Flags in A's low bits
+; Channel ID in Y
+UpdateChannelFlags:
+    and #$0F
+
+    cpy #2
+    bcc @pulse
+
+    ; Noise
+    asl a
+    asl a
+    asl a
+    asl a
+
+@notNoise:
+    ; Triangle (+ noise)
+    ora SndTriNoiseFlags
+    sta SndTriNoiseFlags
+    rts
+
+@pulse:
+    cpy #1
+    bne @pulse0
+
+    ; Pulse 2
+    asl a
+    asl a
+    asl a
+    asl a
+
+@pulse0:
+    ; Pulse 1 (+ pulse 2)
+    ora SndPulseFlags
+    sta SndPulseFlags
+    rts
 
 ; Sequence ID in A
 ; Channel ID in Y
@@ -595,7 +639,8 @@ LoadInstrument:
     cmp #$FF
     beq @noArpeggio
 
-    tax
+    asl a
+    tax ; instrument offset
     ldy TmpChanOffset
 
     ; Load arpeggio pointer
@@ -606,6 +651,7 @@ LoadInstrument:
 
 
     ; Load the macro length and reset steps
+    ldx TmpChanOffset
     lda (SndPointer_ArpMacro, x)
     ldy TmpChanId
     sta Instr_ArpLengths, y
