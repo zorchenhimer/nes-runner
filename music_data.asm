@@ -214,7 +214,7 @@ sfx_jump:
 
 sfx_fall:
     .byte MIDI_SET_INSTR|4
-    .byte MIDI_PLAY_NOTE, E3 ;  E-3 01 . ... 
+    .byte MIDI_PLAY_NOTE, G4 ;  E-3 01 . ... 
     .byte MIDI_END
 
 pattern04_ch00:
