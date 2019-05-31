@@ -40,22 +40,21 @@ Sound_Init:
 
     ; Clear indexes and stuff
     ldx #4
-    lda #0
 @clr_loop:
+    lda #0
     sta Notes, x
 
-    sta Instr_Volumes, x
-    sta Instr_Arpeggio, x
-    sta Instr_Pitch, x
-    sta Instr_HiPitch, x
-    sta Instr_Duty, x
+    sta Instr_VolLengths, x
+    sta Instr_VolSteps, x
 
-    ;sta Instr_Macro, x
-    ;sta Instr_MacroLen, x
-    ;sta Instr_Macro_Frame, x
+    sta Instr_ArpLengths, x
 
     sta SndSeq_Active, x
     sta SndSeq_Waiting, x
+
+    lda #1
+    sta Instr_VolSteps, x
+    sta Instr_ArpSteps, x
 
     dex
     bpl @clr_loop
@@ -179,8 +178,9 @@ Sound_RunFrame:
 
 :
     jsr RunBeat
-    jsr RunSfxBeat
+    ;jsr RunSfxBeat
     jsr RunVolumeEnvelope
+    ;jsr RunArpeggio
 
     rts
 
@@ -243,39 +243,30 @@ RunVolumeEnvelope:
     lda Instr_VolLengths, x
     sec
     sbc Instr_VolSteps, x
-    bmi @loopNext    ; don't read data past the end
+    bmi @skipLoop    ; don't read data past the end
 
-    ; Load volume macro pointer
-    stx TmpChanId    ; Save orig value for later
+    inc Instr_VolSteps, x
+
+    ; ID -> offset
     txa
-    asl a       ; ID -> word offset
-    tax
+    asl a
+    sta TmpChanOffset
 
-    lda SndPointer_VolMacro, x
-    sta TmpAddress
-    lda SndPointer_VolMacro+1, x
-    sta TmpAddress+1
-
-    ldx TmpChanId
-    ldy TmpChanId
+    ;ldx TmpChanId   ; Source channel
+    ldy TmpChanId   ; Real channel
     jsr sndGetRealChannel
-
-    ; Clear volume bits, keeping Duty and Constant Volume bits
-    lda #$F0
-    and Pulse1_DutyVolume, y
 
     cpx #2
     bne @notTri
 
-    ; Triangle specific stuff
-    ldy Instr_VolSteps+2
-    inc Instr_VolSteps+2
-
     ; Triangle has no volume, only on/off
-    lda (TmpAddress), y
+    ldx TmpChanOffset
+    lda (SndPointer_VolMacro, x)
     beq :+
 
     ; Channel is on
+    lda #$FF
+    sta Triangle_Counter
     jmp @loopNext
 :
     ; Mute channel
@@ -286,6 +277,7 @@ RunVolumeEnvelope:
     lda SndTriNoiseFlags
     ora #%00000001
     sta SndTriNoiseFlags
+    jmp @loopNext
 
 @notTri:
     cpx #3
@@ -293,32 +285,99 @@ RunVolumeEnvelope:
 
     ; Set noise update flags
     lda SndTriNoiseFlags
-    ora #%00010000
+    ora #%10110000
     sta SndTriNoiseFlags
+    jmp @pulseNoiseVol
 
 @notNoise:
-    ldy TmpChanId
-    jsr sndGetRealChannel
-    sty TmpChanIdReal
-
-    ldy Instr_VolSteps, x
-    inc Instr_VolSteps, x
-
-    ; OR volume bits onto DutyVolume variable
-    ora (TmpAddress), y
-    ldx TmpChanIdReal
-    sta Pulse1_DutyVolume, x
-
     lda SndPulseFlags
     ora #SND_PULSE1_UPDATE_DV|SND_PULSE2_UPDATE_DV
     sta SndPulseFlags
 
+@pulseNoiseVol:
+    ldy TmpChanId
+    ; Clear volume bits, keeping Duty and Constant Volume bits
+
+    jsr sndGetRealChannel
+    sty TmpChanIdReal
+
+    ; ID -> offset
+    ldx TmpChanOffset
+
+    ; Load old value
+    lda Pulse1_DutyVolume, y
+    ; Clear the low bits
+    and #$F0
+    ; OR it with the new value
+    ora (SndPointer_VolMacro, x)
+    ; Save it again
+    sta Pulse1_DutyVolume, y
+
 @loopNext:
+    ldx TmpChanOffset
+    inc SndPointer_VolMacro, x
+    bne :+
+    inc SndPointer_VolMacro+1, x
+:
+
+@skipLoop:
     inc TmpChanId
     ldx TmpChanId
     cpx #5
     bne @RunEnvelopeLoop
     rts
+
+RunArpeggio:
+    ldy #0
+@loop:
+    ; Check length of macro
+    lda Instr_ArpLengths, y
+    sec
+    sbc Instr_ArpSteps, y
+    bmi @loopNext
+
+    tya
+    tax
+    inc Instr_ArpSteps, x
+
+    ; Channel ID -> word offset
+    tya
+    asl a
+    tax
+
+    lda Notes, y
+    clc
+    adc (SndPointer_ArpMacro, x)
+    inc SndPointer_ArpMacro, x
+    tax ; new note ID
+
+    ; Determine if it's a noise channel
+    jsr sndGetRealChannel
+    cpy #3
+    beq @itsNoise
+
+    ; Load note and apply arpeggio delta
+    lda note_table, x
+    sta Pulse1_TimerLow, y
+
+    ; Again for the note high bits.  Keep the
+    ; high bits of the register.
+    lda Pulse1_TimerHigh, y
+    and #$F8
+    ora note_table+1, x
+    sta Pulse1_TimerHigh, y
+
+@loopNext:
+    iny
+    cpy #4
+    bne @loop
+    rts
+
+@itsNoise:
+    ; It's just a value, not a note.
+    and #$0F
+    sta Noise_Period
+    jmp @loopNext
 
 ; Sequence ID in A
 ; Channel ID in Y
@@ -448,6 +507,7 @@ DecodeNoise:
 
     and #$0F
     sta Noise_Period
+    sta Notes, y
 
     lda #%01000000
     ora SndTriNoiseFlags
@@ -488,7 +548,6 @@ LoadInstrument:
     ldy TmpChanId ; restore Y
     ldx TmpChanOffset   ; channel offset in X
     lda (SndPointer_Instrument, x) ; Load the volume macro ID
-    sta Instr_Volumes, y
 
     ; vol macro ID -> word offset
     asl a
@@ -518,25 +577,55 @@ LoadInstrument:
     ; move the pointer to the start of the data
     ldx TmpChanOffset
     inc SndPointer_VolMacro, x
-
+    bne :+
+    inc SndPointer_VolMacro+1, x
+:
     ; Reset steps to the beginning
     ldy TmpChanId
     lda #0
     sta Instr_VolSteps, y
 
+    ; Arpeggio
+    inc SndPointer_Instrument, x
+    bne :+
+    inc SndPointer_Instrument+1, x
+:
+
+    lda (SndPointer_Instrument, x)
+    cmp #$FF
+    beq @noArpeggio
+
+    tax
+    ldy TmpChanOffset
+
+    ; Load arpeggio pointer
+    lda snd_macros_Arpeggio, x
+    sta SndPointer_ArpMacro, y
+    lda snd_macros_Arpeggio+1, x
+    sta SndPointer_ArpMacro+1, y
+
+
+    ; Load the macro length and reset steps
+    lda (SndPointer_ArpMacro, x)
+    ldy TmpChanId
+    sta Instr_ArpLengths, y
+    lda #0
+    sta Instr_ArpSteps, y
+
+    ; Increment the pointer past the length
+    inc SndPointer_ArpMacro, x
+    bne :+
+    inc SndPointer_ArpMacro+1, x
+:
+
+@noArpeggio:
     jsr sndGetRealChannel
     cpy #2
     bcs @triNoiseFlags
 
-    ; Word offset -> mask offset
-    tya
-    asl a
-    asl a
-    tax
-
     ; Load the volume mask, and apply it
     lda SndPulseFlags
-    ora snd_update_masks, x
+    ora snd_update_masks, y
     sta SndPulseFlags
     rts
 
@@ -590,36 +679,20 @@ LoadNote:
     jsr sndGetRealChannel
     sta Pulse1_TimerLow, y ; TODO: move this to engine run loop
 
-    ldy TmpChanId
+    ;ldy TmpChanId
     lda Pulse1_TimerHigh, y
     and #$F8
     ora note_table+1, x
     sta Notes_HighByte, y
+    sta Pulse1_TimerHigh, y
 
     jsr sndGetRealChannel
-    sta Pulse1_TimerHigh, y ; TODO: move this to engine run loop
-
     cpy #2
     beq @triFlags
 
-    ; Channel ID -> mask offset
-    tya
-    asl a
-    asl a
-    tax
-
     ; Pulse 1, volume
     lda SndPulseFlags
-    ora snd_update_masks, x
-
-    ; Pulse 1, tone low byte
-    inx
-    inx
-    ora snd_update_masks, x
-
-    ; Pulse 1, tone high byte
-    inx
-    ora snd_update_masks, x
+    ora snd_update_masks, y
     sta SndPulseFlags
     rts
 
@@ -636,13 +709,6 @@ LoadNote:
     rts
 
 snd_update_masks:
-    .byte %00000001    ; Pulse 1, volume
-    .byte %00000010    ; Pulse 1, Sweep (currently unused/ignored)
-    .byte %00000100    ; Pulse 1, Tone Low byte (currently unused/ignored)
-    .byte %00001000    ; Pulse 1, Tone High & Duty (currently unused/ignored)
-
-    .byte %00010000    ; Pulse 2, volume
-    .byte %00100000    ; Pulse 2, Sweep (currently unused/ignored)
-    .byte %01000000    ; Pulse 2, Tone Low byte (currently unused/ignored)
-    .byte %10000000    ; Pulse 2, Tone High & Duty (currently unused/ignored)
+    .byte %00001101    ; Pulse 1
+    .byte %11010000    ; Pulse 2
 

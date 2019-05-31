@@ -38,9 +38,8 @@ Pulse2_4005:        .res 1
 
 SndPointer_Instrument:  .res 10
 SndPointer_VolMacro:    .res 10
-
+SndPointer_ArpMacro:    .res 10
 SndPointer_Sequence:    .res 10
-SndSeq_Index:           .res 5
 
 ; Ticks until next beat
 SndBeat:    .res 1
