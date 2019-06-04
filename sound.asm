@@ -158,26 +158,23 @@ Sound_RunFrame:
     ; TODO: remove this
     lda #BUTTON_SELECT
     jsr ButtonPressedP1
-    beq :+
+    beq @topOfBeat
 
-    lda #5
-    ldy #0
-    jsr LoadSequence
+    jsr LoadSong
 
-    lda #6
-    ldy #1
-    jsr LoadSequence
-
-    lda #7
-    ldy #2
-    jsr LoadSequence
-
-    lda #8
-    ldy #3
-    jsr LoadSequence
-
-:
+@topOfBeat:
     jsr RunBeat
+
+    ; Only set when decoding a MIDI_END op code
+    bit SndRerunBeat
+    bpl @noRerun
+    lda #0
+    sta SndRerunBeat
+    lda #1
+    sta SndBeat
+    jmp @topOfBeat
+@noRerun:
+
     jsr RunSfxBeat
     jsr RunVolumeEnvelope
     jsr RunArpeggio
@@ -214,6 +211,7 @@ RunBeat:
     cpy #4
     bne @seqDecodeLoop
 
+    nop
 @noBeat:
     rts
 
@@ -423,33 +421,107 @@ UpdateChannelFlags:
     sta SndPulseFlags
     rts
 
-; Sequence ID in A
-; Channel ID in Y
-LoadSequence:
-    ; ID -> word offset
+; TODO: this. it's broken (end of sequence breaks)
+LoadSong:
+    lda #0
+    ldx #0
+@loop:
+    sta SndOrder_Index, x
+    inx
+    cpx #4
+    bne @loop
+
+    ldx #0
+    jsr UpdateSequences
+
+    ldx #1
+    jsr UpdateSequences
+
+    ldx #2
+    jsr UpdateSequences
+
+    ldx #3
+    jmp UpdateSequences
+
+; Load up individual sequences
+; Channel ID in X
+UpdateSequences:
+    ; Find the sequences
+
+;    ldx #0  ; channel ID
+    stx TmpX
+;@loop:
+    ldy SndOrder_Index, x
+
+    ; Channel ID -> offset
+    lda TmpX
     asl a
     tax
 
-    tya
-    pha
+    ; Pattern Index -> TmpAddr2
+    lda Pattern_Idx, x
+    sta TmpAddr2
+    lda Pattern_Idx+1, x
+    sta TmpAddr2+1
+
+    ; load channel order index table pointer
+    lda Orders, x
+    sta TmpAddress
+    lda Orders+1, x
+    sta TmpAddress+1
+
+    ; load ID of current pattern
+    lda (TmpAddress), y
+
+    ; ID -> offset
     asl a
     tay
 
-    lda Song_A, x
-    sta SndPointer_Sequence, y
-    lda Song_A+1, x
-    sta SndPointer_Sequence+1, y
+    ; Pattern pointer
 
-    pla
-    tay
+    lda (TmpAddr2), y
+    sta SndPointer_Sequence, x
+    iny
+    lda (TmpAddr2), y
+    sta SndPointer_Sequence+1, x
 
+    ldx TmpX
     lda #1
-    sta SndSeq_Active, y
+    sta SndSeq_Active, x
 
+    ;inc TmpX
+    ;ldx TmpX
+    ;cpx #4
+    ;bne @loop
     rts
 
-; Load the next command in the sequence, and execute it.
+; Sequence ID in A
 ; Channel ID in Y
+;LoadSfx:
+;    ; ID -> word offset
+;    asl a
+;    tax
+;
+;    tya
+;    pha
+;    asl a
+;    tay
+;
+;    lda Pattern_Idx, x
+;    sta SndPointer_Sequence, y
+;    lda Pattern_Idx+1, x
+;    sta SndPointer_Sequence+1, y
+;
+;    pla
+;    tay
+;
+;    lda #1
+;    sta SndSeq_Active, y
+;
+;    rts
+
+; Load the next command in the sequence, and execute it.
+; Channel ID in TmpChanId
 DecodeSequenceCommand:
     ldy TmpChanId
 
@@ -537,9 +609,21 @@ DecodeMute:
 
 DecodeEnd:
     ldx TmpChanId
+    inc SndOrder_Index, x
+
+    lda SndOrder_Index, x
+    cmp #SONG_LENGTH
+    bne :+
     lda #0
-    sta SndSeq_Active, x
-    jmp IncrSequencePointer
+    sta SndOrder_Index
+:
+
+    lda #$FF
+    sta SndRerunBeat
+
+    jmp UpdateSequences
+    ;jmp IncrSequencePointer
+    ;jmp DecodeSequenceCommand
 
 DecodeNoise:
     ldy TmpChanId
@@ -584,9 +668,9 @@ LoadInstrument:
     sty TmpChanOffset
 
     ; Load pointer to instrument macro definitions
-    lda snd_lookup_instruments, x
+    lda sndIdx_Instruments, x
     sta SndPointer_Instrument, y    ; storing eg snd_inst_Voice
-    lda snd_lookup_instruments+1, x
+    lda sndIdx_Instruments+1, x
     sta SndPointer_Instrument+1, y
 
     ldy TmpChanId ; restore Y
@@ -601,10 +685,10 @@ LoadInstrument:
     ldy TmpChanOffset
 
     ; Load up the pointer to the volume macro
-    lda snd_macros_Volume, x
+    lda sndIdx_Macro_Volume, x
     sta SndPointer_VolMacro, y
     sta TmpAddress
-    lda snd_macros_Volume+1, x
+    lda sndIdx_Macro_Volume+1, x
     sta SndPointer_VolMacro+1, y
     sta TmpAddress+1
 
@@ -644,9 +728,9 @@ LoadInstrument:
     ldy TmpChanOffset
 
     ; Load arpeggio pointer
-    lda snd_macros_Arpeggio, x
+    lda sndIdx_Macro_Arpeggio, x
     sta SndPointer_ArpMacro, y
-    lda snd_macros_Arpeggio+1, x
+    lda sndIdx_Macro_Arpeggio+1, x
     sta SndPointer_ArpMacro+1, y
 
 

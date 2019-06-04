@@ -771,7 +771,7 @@ UpdatePlayer:
 
     lda #0
     ldy #4
-    jsr LoadSequence
+    ;jsr LoadSequence
 :
 
     ; Has the player hit the peak of the jump? (have we run out of jump frames?)
@@ -816,7 +816,7 @@ UpdatePlayer:
     ; Start playing the fall sfx
     lda #1
     ldy #4
-    jsr LoadSequence
+    ;jsr LoadSequence
 :
 
     ; Load the frame's address

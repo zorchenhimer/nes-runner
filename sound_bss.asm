@@ -19,3 +19,8 @@ Instr_Id:   .res 5
 
 SndSeq_Active:  .res 5
 SndSeq_Waiting: .res 5   ; Wait command countdown (noting between notes)
+
+; Music sequence indexes (eg, for Song_A_ch2)
+SndOrder_Index: .res 4
+
+SndRerunBeat:   .res 1
