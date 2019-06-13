@@ -451,13 +451,25 @@ func main() {
 				// First Row
 				NewGenericData(CR_OP_RLE, 13, []byte(" ")),
 				NewGenericData(CR_OP_INC_BYTE, 7, []byte{0x09}),
-				NewGenericData(CR_OP_RLE, 27, []byte(" ")),
+				NewGenericData(CR_OP_RLE, 21, []byte(" ")),
 
 				// Second row
-				NewGenericData(CR_OP_INC_BYTE, 3, []byte{0xE0}),
-				NewGenericData(CR_OP_RLE, 14, []byte(" ")),
+				NewGenericData(CR_OP_INC_BYTE, 14, []byte{0xE1}),
+				NewGenericData(CR_OP_RLE, 9, []byte(" ")),
 				// attribute
 				NewGenericData(CR_OP_ATTR, 0, []byte{0xF0}),
+			},
+		},
+
+		&GenericChunk{
+			Comment: "Special thanks for music, pt2",
+			Attribute: uint(0),
+			OpCodes: []*GenericData{
+				NewGenericData(CR_OP_RLE, 9, []byte(" ")),
+				NewGenericData(CR_OP_INC_BYTE, 14, []byte{0xF1}),
+				NewGenericData(CR_OP_RLE, 9, []byte(" ")),
+
+				NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
 			},
 		},
 
