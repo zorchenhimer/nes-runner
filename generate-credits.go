@@ -470,6 +470,7 @@ func main() {
 				NewGenericData(CR_OP_RLE, 9, []byte(" ")),
 
 				NewGenericData(CR_OP_CLEAR_ROW, 0, nil),
+				NewGenericData(CR_OP_ATTR, 0, []byte{0xF0}),
 			},
 		},
 

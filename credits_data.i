@@ -70,6 +70,7 @@ cr_data_chunk_08:
     .byte CR_OP_INC_BYTE, 14, $F1
     .byte CR_OP_RLE, 9, $20
     .byte CR_OP_CLEAR_ROW
+    .byte CR_OP_ATTR, $F0
 
 ; Blank row before names
 cr_data_chunk_09:
@@ -233,21 +234,24 @@ cr_data_chunk_162: .byte CR_OP_NAME, $05, "im331"
 cr_data_chunk_163: .byte CR_OP_NAME, $08, "jmatth11"
 cr_data_chunk_164: .byte CR_OP_NAME, $08, "DOWRIGHT"
 cr_data_chunk_165: .byte CR_OP_NAME, $0A, "MrBankster"
-; Bottom padding for Attribute
-cr_data_chunk_166:
-    .byte CR_OP_CLEAR_ROW
-    .byte CR_OP_CLEAR_ROW
-    .byte CR_OP_ATTR, $00
-
-cr_data_chunk_167: .byte CR_OP_NAME, $0B, "Thank you!!"
-; Bottom padding for Attribute
-cr_data_chunk_168:
-    .byte CR_OP_CLEAR_ROW
-    .byte CR_OP_CLEAR_ROW
-    .byte CR_OP_ATTR, $00
-
+cr_data_chunk_166: .byte CR_OP_NAME, $15, "HexlerHeavyIndustries"
+cr_data_chunk_167: .byte CR_OP_NAME, $0D, "justsomeguy13"
+cr_data_chunk_168: .byte CR_OP_NAME, $04, "jkiv"
 ; Bottom padding for Attribute
 cr_data_chunk_169:
+    .byte CR_OP_CLEAR_ROW
+    .byte CR_OP_CLEAR_ROW
+    .byte CR_OP_ATTR, $00
+
+cr_data_chunk_170: .byte CR_OP_NAME, $0B, "Thank you!!"
+; Bottom padding for Attribute
+cr_data_chunk_171:
+    .byte CR_OP_CLEAR_ROW
+    .byte CR_OP_CLEAR_ROW
+    .byte CR_OP_ATTR, $00
+
+; Bottom padding for Attribute
+cr_data_chunk_172:
     .byte CR_OP_CLEAR_ROW
     .byte CR_OP_CLEAR_ROW
     .byte CR_OP_ATTR, $00
