@@ -3,13 +3,17 @@
 DedInit:
     jsr MMC1_Setup_Vert
 
+    lda #$FF
+    sta game_paused ; to stop the skyline scroll
+
     lda #1
     sta Ded_Fading
     lda #0
     sta Ded_Pal
     lda #DED_FADESPEED
     sta Ded_FadeNext
-    jsr update_scroll
+    jsr bufferScroll
+    jsr BufferSkylineScroll
 
     lda #<Ded_Frame
     sta DoFramePointer
@@ -21,6 +25,7 @@ DedInit:
     lda #>Ded_NMI
     sta DoNMIPointer+1
 
+    jsr WriteSkylineScroll
     jsr Scores_CheckIfNew
     bne :+
     rts
@@ -35,7 +40,7 @@ Ded_NMI:
     lda Ded_Fading
     beq @noscroll
     ; only update the scroll (for the status bar thing) if fading
-    jsr update_scroll
+    jsr WriteSkylineScroll
     jmp @end
 
 @noscroll:

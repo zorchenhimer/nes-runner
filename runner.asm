@@ -195,6 +195,10 @@ PlayerNextFrameIn:  .res 1  ; countdown to next frame
 .include "sound_zp.asm"
 
 StatusDrawn:    .res 1
+SkyScroll:      .res 2  ; Scroll position of the skyline
+SScrollNext:    .res 1  ; next frame to scroll
+ScrollBuffer:   .res 2  ; Playfield PPU scroll value
+SKYLINE_SCROLL_SPEED = 2
 
 .segment "SAVERAM"
     ; battery backed RAM
@@ -361,26 +365,7 @@ RESET:
 
 DoFrame:
     jsr ReadControllers
-
     jmp (DoFramePointer)
-
-WaitSpriteZero:
-    ; wait for vblank to end
-    bit $2002
-    bvs WaitSpriteZero
-
-; wait for sprite zero hit
-@loop_sprite2:
-    bit $2002
-    bvc @loop_sprite2
-
-    ; update scroll for status bar (only X matters here)
-    lda #00
-    sta $2005
-    ; first nametable
-    lda #PPU_CTRL_TITLE
-
-    sta $2000
 
 WaitFrame:
     jsr Sound_RunFrame

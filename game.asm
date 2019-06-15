@@ -50,6 +50,9 @@ Game_Init:
     ;sta meta_last_buffer
     sta sfxStart_Fall
     sta sfxStart_Jump
+    sta SkyScroll
+    sta SkyScroll+1
+    sta game_paused
 
 ; Status bar stuff
 
@@ -87,7 +90,7 @@ Game_Init:
 
 @scoredone:
     ; prepare sprite zero
-    lda #158
+    lda #88
     sta spritezero
 
     lda #$0F
@@ -96,7 +99,7 @@ Game_Init:
     lda #%00100001
     sta spritezero+2
 
-    lda #240
+    lda #88
     sta spritezero+3
 
     ; Setup the player sprite
@@ -304,7 +307,8 @@ game_FullInit:
     jsr game_DrawAttributeRow
     lda #$55
     jsr game_DrawAttributeRow
-    lda #$00
+    lda #$AA
+    jsr game_DrawAttributeRow
     jsr game_DrawAttributeRow
 
     ; Attributes for the first two columns on
@@ -417,11 +421,13 @@ Game_NMI:
     sta column_ready
 
     jsr Draw_Score
-    jsr update_scroll
+
+    jsr WriteSkylineScroll
     jmp NMI_Finished
 
 Game_Frame:
     jsr UpdateFire
+    jsr BufferSkylineScroll
 
     ; Check for start button presse.  Pause if it has been.
     lda #BUTTON_START
@@ -1368,8 +1374,8 @@ Draw_Column:
     rts
 
 ; update the PPU's scroll
-update_scroll:
-    bit $2002
+bufferScroll:
+    ;bit $2002
     ; mask off the fine scroll (left with coarse)
     lda calc_scroll
     and #$F8
@@ -1382,24 +1388,27 @@ update_scroll:
     clc
     asl a
     adc coarse_scroll
-    sta $2005
+    sta ScrollBuffer
+    ;sta $2005
 
     ; y is always 0
-    lda #00
-    sta $2005
+    ;lda #00
+    ;sta $2005
 
     ; 2nd nametable?
     bit calc_scroll
     bmi @nt2
 
     lda #PPU_CTRL_VERT
-    sta $2000
+    sta ScrollBuffer+1
+    ;sta $2000
     jmp @done
 
 @nt2:
     lda #PPU_CTRL_VERT
     ora #$01
-    sta $2000
+    sta ScrollBuffer+1
+    ;sta $2000
 
 @done:
     rts
@@ -1746,6 +1755,96 @@ UpdateFire:
     beq :+
     jmp @OuterLoop
 :
+    rts
+
+WaitSpriteZero:
+    jsr bufferScroll
+
+    ; wait for vblank to end
+:   bit $2002
+    bvs :-
+
+    bit game_paused
+    bpl :+
+    jsr WriteSkylineScroll
+:
+
+; wait for sprite zero hit
+@loop_sprite2:
+    bit $2002
+    bvc @loop_sprite2
+
+    ; update scroll for status bar (only X matters here)
+    ;lda #00
+    ;sta $2005
+    ;; first nametable
+    ;lda #PPU_CTRL_TITLE
+    ;sta $2000
+    jsr WritePlayfieldScroll
+
+    ldx #0
+:
+    .repeat 15
+    nop
+    .endrepeat
+    dex
+    bne :-
+
+    bit $2000
+    lda #00
+    sta $2005
+    ; first nametable
+    lda #PPU_CTRL_TITLE
+    sta $2000
+
+    jmp WaitFrame
+
+BufferSkylineScroll:
+    bit game_paused
+    bne @noWrap
+
+    dec SScrollNext
+    beq @noWrap
+
+    lda #SKYLINE_SCROLL_SPEED
+    sta SScrollNext
+
+    inc SkyScroll
+    bne @noWrap
+    lda SkyScroll+1
+    bne :+
+    lda #1
+    sta SkyScroll+1
+    jmp @noWrap
+:
+    lda #0
+    sta SkyScroll+1
+@noWrap:
+    rts
+
+WriteSkylineScroll:
+    bit $2000
+    ; X
+    lda SkyScroll
+    sta $2005
+    ; Y
+    lda #0
+    sta $2005
+
+    ; Nametable
+    lda #PPU_CTRL_VERT
+    ora SkyScroll+1
+    sta $2000
+    rts
+
+WritePlayfieldScroll:
+    bit $2000
+    lda ScrollBuffer
+    sta $2005
+    lda #0
+    sta $2005
+    lda ScrollBuffer+1
+    sta $2000
     rts
 
 FireSprite_Tiles:
