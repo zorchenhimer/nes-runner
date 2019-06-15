@@ -146,7 +146,7 @@ ttrans_nmi_meta_attr:
 .endrepeat
 
     ; Status bar
-    lda #$00
+    lda #$AA
 .repeat 16
     sta $2007
 .endrepeat

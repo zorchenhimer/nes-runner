@@ -744,7 +744,7 @@ Draw_Score:
     sta $2007
     lda PlayerScoreText+1
     sta $2007
-    lda #$0E
+    lda #$2D
     sta $2007
 
     lda PlayerScoreText+2
@@ -753,7 +753,7 @@ Draw_Score:
     sta $2007
     lda PlayerScoreText+4
     sta $2007
-    lda #$0E
+    lda #$2D
     sta $2007
 
     lda PlayerScoreText+5
@@ -1424,7 +1424,7 @@ WriteScoreLabel:
     sta $2007
     sta $2007
 
-    lda #$0E
+    lda #$2D
     sta $2007
 
     lda #$F0
@@ -1432,7 +1432,7 @@ WriteScoreLabel:
     sta $2007
     sta $2007
 
-    lda #$0E
+    lda #$2D
     sta $2007
 
     lda #$F0
