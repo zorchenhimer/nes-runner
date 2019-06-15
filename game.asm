@@ -392,7 +392,7 @@ Game_NMI:
     jsr WriteSprites
 
     bit StatusDrawn
-    bcc :+
+    bmi :+
     ldx #PPU_CTRL_HORIZ
     stx $2000
     jsr WriteScoreLabel
