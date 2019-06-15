@@ -1873,13 +1873,13 @@ Meta_Obstacle:
 Meta_Pit:
     .byte $37, $47, $38, $48, $FF
 Meta_Pit_Left:
-    .byte $6C, $70, $10, $20, $FF
+    .byte $50, $60, $10, $20, $FF
 Meta_Pit_Right:
-    .byte $30, $40, $6D, $71, $FF
+    .byte $30, $40, $51, $61, $FF
 Meta_Pit_Left_Bottom:
-    .byte $6E, $72, $38, $48, $FF
+    .byte $52, $62, $38, $48, $FF
 Meta_Pit_Right_Bottom:
-    .byte $37, $47, $6F, $73, $FF
+    .byte $37, $47, $53, $63, $FF
 
 Meta_Nothing:
     .byte $00, $00, $00, $00, $00
@@ -1887,13 +1887,13 @@ Meta_FireHydrant:
     .byte $35, $45, $36, $46, $AA
 
 Meta_Truck00:
-    .byte $58, $68, $59, $69, $FF
+    .byte $54, $64, $55, $65, $FF
 Meta_Truck01:
-    .byte $02, $5C, $55, $5D, $FF
+    .byte $02, $58, $5C, $59, $FF
 Meta_Truck02:
-    .byte $5A, $6A, $5B, $6B, $FF
+    .byte $56, $66, $57, $5F, $FF
 Meta_Truck03:
-    .byte $56, $5E, $57, $5F, $FF
+    .byte $5D, $5A, $5E, $5B, $FF
 
 Meta_Garbo00:
     .byte $1E, $2E, $1F, $2F, $AA

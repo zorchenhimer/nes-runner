@@ -385,10 +385,10 @@ TitleSeedText:
 
 TitleData:
     ; Start tile id, length, game state
-    .byte $8C, 9, STATES::GS_GAME  ; Start Game
-    .byte $7D, 9, STATES::GS_SEED
-    .byte $74, 9, STATES::GS_HIGHSCORE
-    .byte $86, 6, STATES::GS_CREDITS
+    .byte $7F, 9, STATES::GS_GAME  ; Start Game
+    .byte $70, 9, STATES::GS_SEED
+    .byte $67, 9, STATES::GS_HIGHSCORE
+    .byte $79, 6, STATES::GS_CREDITS
     .byte $00
 
 Title_BG1:
