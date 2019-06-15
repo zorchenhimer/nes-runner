@@ -194,6 +194,8 @@ PlayerNextFrameIn:  .res 1  ; countdown to next frame
 
 .include "sound_zp.asm"
 
+StatusDrawn:    .res 1
+
 .segment "SAVERAM"
     ; battery backed RAM
 rng_seed:       .res 2
@@ -376,7 +378,8 @@ WaitSpriteZero:
     lda #00
     sta $2005
     ; first nametable
-    lda #PPU_CTRL_VERT
+    lda #PPU_CTRL_TITLE
+
     sta $2000
 
 WaitFrame:

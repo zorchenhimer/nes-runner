@@ -68,18 +68,16 @@ bg_drawTransition:
 
     ; Load tile ID to start at
     ldy BGTheme
-    ldx bg_table_transitions, y
-    stx TmpX
+    lda bg_table_transitions, y
+    tax
+    inx
 
     ; Draw in chunks of four tiles
     ldy #8
-:   ldx TmpX
+:
+    sta $2007
     stx $2007
-    inx
-    stx $2007
-    inx
-    stx $2007
-    inx
+    sta $2007
     stx $2007
     dey
     bne :-
@@ -215,9 +213,10 @@ bg_DrawColumn:
 
     ; Reload tile and draw it
     lda (bg_lookup_data_pointer), y
-
-    ;jsr bg_WriteByte
-    sta $2007
+    and #$0F
+    beq :+
+    ora bg_tile_row
+:   sta $2007
 
     ; Unpack tiles and OR them with the CHR row
     ; id to get the real tile ID
@@ -226,6 +225,7 @@ bg_DrawColumn:
     ; First half of byte
     lda (bg_lookup_data_pointer), y
     and #$F0
+    beq @firstZero
 
     ; shift to prep OR'ing with CHR row
     lsr a
@@ -234,12 +234,17 @@ bg_DrawColumn:
     lsr a
 
     ora bg_tile_row ; get real tile ID
+@firstZero:
     sta $2007       ; draw it
+    jmp @secondHalf
 
+@secondHalf:
     ; Second half of byte
     lda (bg_lookup_data_pointer), y
     and #$0F
+    beq @secondZero
     ora bg_tile_row ; get real tile ID
+@secondZero:
     sta $2007       ; draw it
     iny
 
@@ -262,7 +267,7 @@ bg_table_palettes:
 
 ; Table of transition tile start IDs
 bg_table_transitions:
-    .byte $70
+    .byte $1C
 
 ; table of pointers the first screen's column data
 bg_table_screen_A:

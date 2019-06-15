@@ -42,6 +42,7 @@ Game_Init:
     ; Initialize a bunch of variables
     lda #0
     sta column_ready
+    sta StatusDrawn
     ;sta meta_column_offset
     sta meta_tile_addr
     sta TmpAttr
@@ -351,9 +352,7 @@ game_FullInit:
     lda #0
     sta column_ready
 
-    jsr game_ClearStatusBar
-    jsr WriteScoreLabel
-    jmp WriteSeedLabel
+    jmp game_ClearStatusBar
     ;rts
 ;; End of Game_Init
 
@@ -364,7 +363,7 @@ game_ClearStatusBar:
     sta $2006
 
     ldx #10
-    ldy #$10
+    ldy #$00
 @loop:
 .repeat 32
     sty $2007
@@ -391,6 +390,16 @@ game_DrawAttributeRow:
 Game_NMI:
     jsr WritePalettes
     jsr WriteSprites
+
+    bit StatusDrawn
+    bcc :+
+    ldx #PPU_CTRL_HORIZ
+    stx $2000
+    jsr WriteScoreLabel
+    jsr WriteSeedLabel
+    lda #$FF
+    sta StatusDrawn
+:
 
     ; Check to see if a column is buffered.  If so, draw it
     ; to the screen.
@@ -987,7 +996,7 @@ generate_column:
     cmp #MetaTileTypes::GARBO00
     bne :+
     ; Trigger new fire meta sprite in N frames
-    lda #16
+    lda #24
     sta NewFireIn
 :
     iny
@@ -1402,8 +1411,8 @@ WriteScoreLabel:
     sta $2006
 
     ; label
-    ldx #$52
-    ldy #($57 - $52)
+    ldx #$39
+    ldy #5  ;($55 - $50)
     jsr DrawSequential
 
     ; Singel padding space
@@ -1438,8 +1447,8 @@ WriteSeedLabel:
     lda #$2A
     sta $2006
 
-    ldx #$62
-    ldy #($6A - $62)
+    ldx #$44
+    ldy #8  ;($68 - $60)
     jsr DrawSequential
 
     ; "Initial" value
@@ -1852,44 +1861,44 @@ MetaColumn_HalfWall:
 
 ; Tile indicies
 Meta_Sky:
-    .byte $80, $90, $81, $91, $00
+    .byte $2C, $2C, $2C, $2C, $00
 Meta_Ground:
-    .byte $A0, $B0, $A1, $B1, $55
+    .byte $39, $49, $3A, $4A, $55
 Meta_Ground2:
-    .byte $C0, $D0, $C1, $D1, $55
+    .byte $3B, $4B, $3C, $4C, $55
 
 Meta_Obstacle:
     .byte $82, $92, $83, $93, $00
 
 Meta_Pit:
-    .byte $A3, $B3, $A2, $B2, $FF
+    .byte $37, $47, $38, $48, $FF
 Meta_Pit_Left:
-    .byte $C2, $D2, $A4, $B4, $FF
+    .byte $6C, $70, $10, $20, $FF
 Meta_Pit_Right:
-    .byte $A5, $B5, $C3, $D3, $FF
+    .byte $30, $40, $6D, $71, $FF
 Meta_Pit_Left_Bottom:
-    .byte $C4, $D4, $A2, $B2, $FF
+    .byte $6E, $72, $38, $48, $FF
 Meta_Pit_Right_Bottom:
-    .byte $A3, $B3, $C5, $D5, $FF
+    .byte $37, $47, $6F, $73, $FF
 
 Meta_Nothing:
     .byte $00, $00, $00, $00, $00
 Meta_FireHydrant:
-    .byte $84, $94, $85, $95, $AA
+    .byte $35, $45, $36, $46, $AA
 
 Meta_Truck00:
-    .byte $86, $96, $87, $97, $FF
+    .byte $58, $68, $59, $69, $FF
 Meta_Truck01:
-    .byte $A6, $B6, $A7, $B7, $FF
+    .byte $02, $5C, $55, $5D, $FF
 Meta_Truck02:
-    .byte $88, $98, $89, $99, $FF
+    .byte $5A, $6A, $5B, $6B, $FF
 Meta_Truck03:
-    .byte $A8, $B8, $A9, $B9, $FF
+    .byte $56, $5E, $57, $5F, $FF
 
 Meta_Garbo00:
-    .byte $8A, $9A, $8B, $9B, $AA
+    .byte $1E, $2E, $1F, $2F, $AA
 Meta_Garbo01:
-    .byte $AA, $BA, $AB, $BB, $AA
+    .byte $3E, $4E, $3F, $4F, $AA
 
 PAUSED_X    = 112
 PAUSED_Y    = 25

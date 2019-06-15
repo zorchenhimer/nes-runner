@@ -81,3 +81,8 @@ bin/$(NAME).nes: bin/$(NAME).o $(NESCFG)
 credits_data.i: $(GENCRED)
 	./$(GENCRED) -x zorchenhimer -o credits_data.i -i subscriber-list.csv
 
+music_data.asm: music-convert/music-convert.exe
+	#-music-convert/music-convert.exe RunnJumper_music.txt > music_data.asm
+
+music-convert/music-convert.exe: music-convert/*.go
+	#-cd music-convert && go build

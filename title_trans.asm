@@ -56,7 +56,7 @@ ttrans_frame_clear_00:
     sta TitlePPUCtrl
 
     dec framesub_next
-    jmp t_spritezero    ; Sprite zero is still on screen and it's needed.
+    jmp WaitFrame
 
 ; NMI 00
 ; Write sprites and palettes
@@ -201,8 +201,6 @@ ttrans_frame_statusbar:
 ; Draw the status bar stuff
 ttrans_nmi_draw_statusbar:
     jsr game_ClearStatusBar
-    jsr WriteScoreLabel
-    jsr WriteSeedLabel
     jmp Title_Trans_NMI_End
 
 ; Frame 04

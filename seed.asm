@@ -44,9 +44,9 @@ InitSeed:
     lda #$86
     sta $2006
 
-    lda #$50
+    lda sbTile_Rando+0
     sta $2007
-    lda #$60
+    lda sbTile_Rando+1
     sta $2007
 
     ; Rando button; right column
@@ -55,9 +55,9 @@ InitSeed:
     lda #$87
     sta $2006
 
-    lda #$51
+    lda sbTile_Rando+2
     sta $2007
-    lda #$61
+    lda sbTile_Rando+3
     sta $2007
 
     lda #$21
@@ -568,6 +568,9 @@ sb04:
     .byte $00, $00, $00, $44, $00
 sbThumb:
     .byte $00, $00, $00, $00, $55
+
+sbTile_Rando:
+    .byte $2D, $3D, $4D, $0F
 
 ; offset of the first sprite tile in the sprite sheet
 SPRITE_TILE_START = $80

@@ -31,7 +31,7 @@ InitTitle:
     lda #$80
     sta $2006
 
-    lda #$20
+    lda #$00
     ldx #18
 :
 .repeat 32
@@ -209,7 +209,7 @@ InitTitle:
     sta $2006
     lda #$80
     sta $2006
-    lda #$20
+    lda #$00
     ldx #18
 :
 .repeat 32
@@ -248,7 +248,7 @@ NMI_Title:
     lda #95
     sta $2005
 
-    lda #PPU_CTRL_TITLE
+    lda #PPU_CTRL_HORIZ
     sta $2000
 
     jmp NMI_Finished
@@ -375,16 +375,6 @@ Frame_Title:
     adc #TITLE_SPTOP
     sta SP_TITLEY0
     sta SP_TITLEY1
-
-t_spritezero:
-    bit $2002
-    bvs t_spritezero
-
-:   bit $2002
-    bvc :-
-
-    lda #PPU_CTRL_HORIZ
-    sta $2000
     jmp WaitFrame
 
 TitleText:
@@ -395,10 +385,10 @@ TitleSeedText:
 
 TitleData:
     ; Start tile id, length, game state
-    .byte $56, 9, STATES::GS_GAME  ; Start Game
-    .byte $44, 9, STATES::GS_SEED
-    .byte $30, 9, STATES::GS_HIGHSCORE
-    .byte $1A, 6, STATES::GS_CREDITS
+    .byte $8C, 9, STATES::GS_GAME  ; Start Game
+    .byte $7D, 9, STATES::GS_SEED
+    .byte $74, 9, STATES::GS_HIGHSCORE
+    .byte $86, 6, STATES::GS_CREDITS
     .byte $00
 
 Title_BG1:
