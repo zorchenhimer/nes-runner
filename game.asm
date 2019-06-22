@@ -266,6 +266,17 @@ Game_Init:
     sta DoNMIPointer
     lda #>Game_NMI
     sta DoNMIPointer+1
+
+    lda rng_seed
+    and #1
+    clc
+    adc #1
+.ifdef NTSC
+    ldx #0
+.else
+    ldx #1
+.endif
+    jsr snd_LOAD
     rts
 
 game_FullInit:

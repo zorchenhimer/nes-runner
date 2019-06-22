@@ -18,6 +18,14 @@ InitTitle:
 
     jsr ClearSprites
 
+    lda #0
+.ifdef NTSC
+    ldx #0
+.else
+    ldx #1
+.endif
+    jsr snd_LOAD
+
     bit $2002
     lda #$3F
     sta $2006

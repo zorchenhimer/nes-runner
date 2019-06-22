@@ -192,8 +192,6 @@ GameFullInit:       .res 1
 PlayerSpriteFrame:  .res 1  ; current frame index
 PlayerNextFrameIn:  .res 1  ; countdown to next frame
 
-.include "sound_zp.asm"
-
 StatusDrawn:    .res 1
 SkyScroll:      .res 2  ; Scroll position of the skyline
 SScrollNext:    .res 1  ; next frame to scroll
@@ -257,8 +255,6 @@ IgnoreInput:    .res 1  ; Number of frames to ignore input.
 DED_START_PAL   = $03AA
 DED_SPZ_PAL     = $039E
 DED_SPZ_BG_PAL  = $03A6 ; for the BG tile under sprite zero
-
-.include "sound_bss.asm"
 
 sfxStart_Fall: .res 1
 sfxStart_Jump: .res 1
@@ -358,7 +354,7 @@ RESET:
     sta current_gamestate
     jsr ChangeGameState
 
-    jsr Sound_Init
+    ;jsr Sound_Init
 
     lda #0
     sta SkipNMI
@@ -368,7 +364,7 @@ DoFrame:
     jmp (DoFramePointer)
 
 WaitFrame:
-    jsr Sound_RunFrame
+    ;jsr Sound_RunFrame
     lda #1
     sta sleeping
     ;inc sleeping
@@ -436,7 +432,7 @@ NMI:
 
 NMI_Finished:
 
-    jsr Sound_WriteBuffers
+    jsr snd_PLAY
 
     lda #0
     sta SkipNMI
@@ -554,13 +550,7 @@ GameState_InitTable:
     .include "utils.asm"
     .include "seed.asm"
     .include "credits.asm"
-    .include "sound.asm"
 
-    .ifdef PAL
-        .include "note_table_pal.i"
-    .else
-        .include "note_table.i"
-    .endif
-
-    ; This will probably go into it's own bank at some point
+    ; Data needs to come immediately after the driver
+    .include "sound/driver.s"
     .include "music_data.asm"

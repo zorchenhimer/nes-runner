@@ -180,6 +180,14 @@ Ded_Frame:
     lda DedStartPal
     sta DED_START_PAL
 
+    lda #3
+.ifdef NTSC
+    ldx #0
+.else
+    ldx #1
+.endif
+    jsr snd_LOAD
+
     lda #0
     sta TmpX    ; current color index
     lda #2
