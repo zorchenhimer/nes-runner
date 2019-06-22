@@ -54,6 +54,9 @@ Game_Init:
     sta SkyScroll+1
     sta game_paused
 
+    lda #SKYLINE_SCROLL_SPEED
+    sta SScrollNext
+
 ; Status bar stuff
 
 ; Generate and draw first screen of columns (plus a few)
@@ -1804,7 +1807,7 @@ BufferSkylineScroll:
     bne @noWrap
 
     dec SScrollNext
-    beq @noWrap
+    bne @noWrap
 
     lda #SKYLINE_SCROLL_SPEED
     sta SScrollNext

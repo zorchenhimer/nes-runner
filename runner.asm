@@ -198,7 +198,7 @@ StatusDrawn:    .res 1
 SkyScroll:      .res 2  ; Scroll position of the skyline
 SScrollNext:    .res 1  ; next frame to scroll
 ScrollBuffer:   .res 2  ; Playfield PPU scroll value
-SKYLINE_SCROLL_SPEED = 2
+SKYLINE_SCROLL_SPEED = 3
 
 .segment "SAVERAM"
     ; battery backed RAM

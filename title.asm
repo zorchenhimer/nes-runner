@@ -131,17 +131,28 @@ InitTitle:
     ; Draw Title
     lda #$22
     sta $2006
-    lda #$4A
+    lda #$28
     sta $2006
 
-    ldx #0
-@loop2:
-    lda TitleText, x
-    beq @titleTextDone
-    sta $2007
+    ; Top row of title
+    ldx #$90
+:
+    stx $2007
     inx
-    jmp @loop2
-@titleTextDone:
+    cpx #$A0
+    bne :-
+
+    ; Bottom row of title
+    lda #$22
+    sta $2006
+    lda #$48
+    sta $2006
+    ldx #$A0
+:
+    stx $2007
+    inx
+    cpx #$B0
+    bne :-
 
     lda #$22
     sta TmpAddr
@@ -408,14 +419,14 @@ Title_BG6:
 TitlePalette:
     ; Background
     .byte $0F,$0F,$0F,$0F
-    .byte $0F,$17,$25,$09
-    .byte $0F,$16,$39,$06
-    .byte $0F,$30,$21,$15
+    .byte $0F,$17,$24,$14
+    .byte $0F,$0F,$0F,$0F
+    .byte $0F,$0F,$0F,$0F
 
     ; Sprites
     .byte $0F,$10,$00,$30
-    .byte $0F,$05,$05,$05
-    .byte $0F,$0A,$0A,$0A
-    .byte $0F,$0F,$11,$11
+    .byte $0F,$0F,$0F,$0F
+    .byte $0F,$0F,$0F,$0F
+    .byte $0F,$0F,$0F,$0F
 
     .byte $EA, $EA
