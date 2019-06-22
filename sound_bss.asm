@@ -24,3 +24,5 @@ SndSeq_Waiting: .res 5   ; Wait command countdown (noting between notes)
 SndOrder_Index: .res 4
 
 SndRerunBeat:   .res 1
+SndBeatCount:   .res 2
+SndSongRunning: .res 1

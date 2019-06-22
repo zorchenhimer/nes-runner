@@ -28,6 +28,9 @@ Sound_Init:
     sta Noise_Period
     sta Noise_Length
 
+    sta SndBeatCount
+    sta SndBeatCount+1
+
     ; DMC channel.  Unused, just turn everything off.
     sta $4010
     sta $4011
@@ -156,9 +159,13 @@ Sound_WriteBuffers:
 
 Sound_RunFrame:
     ; TODO: remove this
+    jmp @topOfBeat
     lda #BUTTON_SELECT
     jsr ButtonPressedP1
     beq @topOfBeat
+
+    lda #$FF
+    sta SndSongRunning
 
     jsr LoadSong
 
@@ -192,6 +199,13 @@ RunBeat:
 
     ldy #0
     sty TmpY
+
+    bit SndSongRunning
+    bpl :+
+    inc SndBeatCount
+    bne :+
+    inc SndBeatCount+1
+:
 
 @seqDecodeLoop:
     lda SndSeq_Active, y
@@ -556,13 +570,13 @@ DecodeWait:
     ldx TmpChanOffset
     lda (SndPointer_Sequence, X)
     and #$0F
-    sec
-    sbc #1
-
-    ; Check for underflow
-    bpl :+
-    lda #0
-:
+;    sec
+;    sbc #1
+;
+;    ; Check for underflow
+;    bpl :+
+;    lda #0
+;:
     ldy TmpChanId
     sta SndSeq_Waiting, y
     jmp IncrSequencePointer
