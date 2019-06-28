@@ -22,7 +22,9 @@ Because it's fun!
 
 ## Where can I download the ROM?
 
-This game is still being made and I'm not going to put together a "release"
-every other day.  When I eventually finish this game I will provide an
-assembled ROM file.  In the meantime, follow the steps above for assembling
-the ROM.
+Head on over to the relases page and grab it!
+
+## License
+
+MIT.  See LICENSE.md for the full text.
+
