@@ -581,7 +581,7 @@ Scores_BG_RowH1:
     .byte SC_TILE_BACKGROUND,SC_TILE_BACKGROUND,SC_TILE_BACKGROUND
     .byte SC_TILE_BACKGROUND,SC_TILE_BACKGROUND,SC_TILE_BACKGROUND
     .byte $00,$00,$00,$00,$00,$00 ;,$00,$00,$00,$00,$00
-    .byte $30, $31, $32, $33, $34, $35, $36, $37, $38, $39; for seed"
+    .byte $30, $31, $32, $33, $34, $35, $36, $37, $38, $00; for seed"
     .byte $00,$00,$00,$00 ;,$00,$00,$00 ;,$00 ;,$00
     ;.byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00
     .byte SC_TILE_BACKGROUND,SC_TILE_BACKGROUND,SC_TILE_BACKGROUND
