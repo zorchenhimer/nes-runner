@@ -1772,7 +1772,6 @@ UpdateFire:
     rts
 
 WaitSpriteZero:
-    jsr bufferScroll
 
     ; wait for vblank to end
 :   bit $2002
@@ -1811,6 +1810,7 @@ WaitSpriteZero:
     lda #PPU_CTRL_TITLE
     sta $2000
 
+    jsr bufferScroll
     jmp WaitFrame
 
 BufferSkylineScroll:
