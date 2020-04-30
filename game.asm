@@ -1814,7 +1814,7 @@ WaitSpriteZero:
     jmp WaitFrame
 
 BufferSkylineScroll:
-    bit game_paused
+    lda game_paused
     bne @noWrap
 
     dec SScrollNext
